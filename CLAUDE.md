@@ -23,7 +23,7 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 0 selesai. Berikutnya Fase 1 — Typing Engine + Storage.**
+Status sekarang: **Fase 1 — Typing Engine + Storage (sedang berjalan).**
 
 **Jangan mulai fase berikutnya sebelum DoD fase berjalan terpenuhi** (dok. 08).
 Jangan mengerjakan fitur dari fase yang jauh di depan hanya karena "sekalian".
@@ -65,10 +65,17 @@ npm run verify
 ```
 
 Itu menjalankan lint → test (termasuk validator kurikulum) → build (`tsc -b` strict) →
-anggaran bundel. **Bundel awal < 90 KB gzip**, total < 250 KB (dok. 06 §6).
+anggaran bundel. Anggarannya dipecah dua (ADR-018):
 
-Margin saat ini tipis (~3 KB, lihat ADR-017). Menambah dependensi runtime baru bukan
-keputusan bebas: ukur dampaknya dengan `npm run budget` dan catat di dok. 10.
+| Anggaran      | Batas       | Artinya                                                            |
+| ------------- | ----------- | ------------------------------------------------------------------ |
+| framework     | 85 KB gzip  | **terkunci** — menambah/mengganti dependensi runtime wajib ADR     |
+| kode aplikasi | 20 KB gzip  | ini yang menggigit tiap hari; kalau jebol, pindahkan ke chunk lazy |
+| bundel awal   | 105 KB gzip | atap keduanya + CSS                                                |
+| total         | 250 KB gzip | seluruh chunk                                                      |
+
+Kalau ada kode yang tidak dibutuhkan sebelum keystroke pertama, ia **tidak boleh** ada
+di bundel awal — pakai `lazy()` / dynamic import, bukan menaikkan angka.
 
 ## 6. Kalau rencananya ternyata salah
 

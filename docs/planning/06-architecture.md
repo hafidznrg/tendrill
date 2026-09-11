@@ -8,21 +8,22 @@
 
 ## 1. Stack
 
-| Lapisan | Pilihan | Alasan |
-|---|---|---|
-| Framework | **React 19 + Vite + TypeScript** | Tanpa backend, tidak butuh SSR. Vite = dev server tercepat, build = static files |
-| Routing | **React Router** | Cukup untuk 6 halaman client-side |
-| Styling | **Tailwind CSS** | Iterasi cepat, konsisten, bundle kecil setelah purge |
-| Komponen UI | **Tidak ada di awal** (R-13) | 6 halaman ini butuh ~1 dialog dan 2 select; shadcn menarik Radix tanpa imbalan sepadan. Salin satu komponen shadcn *saat* dialog aksesibel benar-benar dibutuhkan |
-| State global | **Zustand** | Ringan, di luar React tree, tidak memaksa re-render tak perlu |
-| Grafik | **SVG tulis tangan** (R-10) | Recharts ≈ 90–110 KB gzip untuk dua grafik di halaman yang jarang dibuka — anggaran bundel jebol sebelum kode aplikasi ditulis. `<polyline>` + `<rect>` ≈ 80 baris dan sepenuhnya terkendali |
-| Test | **Vitest** + **Testing Library** | Cepat, satu konfigurasi dengan Vite |
-| Hosting | **Vercel / Netlify / GitHub Pages** | Static site, gratis |
+| Lapisan      | Pilihan                             | Alasan                                                                                                                                                                                       |
+| ------------ | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework    | **React 19 + Vite + TypeScript**    | Tanpa backend, tidak butuh SSR. Vite = dev server tercepat, build = static files                                                                                                             |
+| Routing      | **React Router**                    | Cukup untuk 6 halaman client-side                                                                                                                                                            |
+| Styling      | **Tailwind CSS**                    | Iterasi cepat, konsisten, bundle kecil setelah purge                                                                                                                                         |
+| Komponen UI  | **Tidak ada di awal** (R-13)        | 6 halaman ini butuh ~1 dialog dan 2 select; shadcn menarik Radix tanpa imbalan sepadan. Salin satu komponen shadcn _saat_ dialog aksesibel benar-benar dibutuhkan                            |
+| State global | **Zustand**                         | Ringan, di luar React tree, tidak memaksa re-render tak perlu                                                                                                                                |
+| Grafik       | **SVG tulis tangan** (R-10)         | Recharts ≈ 90–110 KB gzip untuk dua grafik di halaman yang jarang dibuka — anggaran bundel jebol sebelum kode aplikasi ditulis. `<polyline>` + `<rect>` ≈ 80 baris dan sepenuhnya terkendali |
+| Test         | **Vitest** + **Testing Library**    | Cepat, satu konfigurasi dengan Vite                                                                                                                                                          |
+| Hosting      | **Vercel / Netlify / GitHub Pages** | Static site, gratis                                                                                                                                                                          |
 
 ### Kenapa Vite, bukan Next.js
+
 Tidak ada server, tidak ada SEO yang kritikal, tidak ada API route. Next.js hanya menambah lapisan konsep (App Router, server components, hydration) yang tidak memberi manfaat di sini — dan hydration justru menambah kompleksitas untuk aplikasi yang sangat sensitif terhadap input latency. Jika suatu saat butuh backend, migrasi ke Next.js tetap mungkin.
 
-*(Keputusan ini dicatat sebagai ADR-001 di dok. 10.)*
+_(Keputusan ini dicatat sebagai ADR-001 di dok. 10.)_
 
 ## 2. Batasan arsitektur (mengikat)
 
@@ -115,10 +116,10 @@ Satu-satunya tempat yang menghubungkan dunia murni dan dunia React: `useTypingSe
 
 ```ts
 function useTypingSession(target: string) {
-  const sessionRef = useRef(createSession(target, cols));  // sumber kebenaran
-  const spansRef   = useRef<HTMLSpanElement[]>([]);        // lapisan teks (R-08)
+  const sessionRef = useRef(createSession(target, cols)); // sumber kebenaran
+  const spansRef = useRef<HTMLSpanElement[]>([]); // lapisan teks (R-08)
   const [structuralTick, setStructuralTick] = useState(0); // HANYA untuk ganti target/restart
-  const [metrics, setMetrics] = useState(EMPTY);           // diupdate tiap 250ms
+  const [metrics, setMetrics] = useState(EMPTY); // diupdate tiap 250ms
 
   // keydown → applyKey → KeyOutcome
   //   → for (i of outcome.dirty) spansRef.current[i].className = CLASS[state]
@@ -130,6 +131,7 @@ function useTypingSession(target: string) {
 ```
 
 Yang **tidak boleh** dilakukan di sini:
+
 - Menaruh `SessionState` di `useState` — setiap keystroke akan menyalin seluruh array karakter.
 - Menaruh objek sesi di context.
 - Memanggil `setState` apa pun di jalur keystroke. Jalur itu harus nol pekerjaan React (R-08).
@@ -151,20 +153,35 @@ Tidak memakai state management library selain Zustand, tidak memakai form librar
 Prinsip produk #1 adalah "keystroke pertama < 3 detik", tapi v1 membundel kurikulum,
 wordlist, dan halaman statistik ke dalam satu bundel awal. Peta pemuatan sekarang mengikat:
 
-| Chunk | Isi | Kapan dimuat |
-|---|---|---|
-| `main` | React, router, tema, engine, layar sesi | awal |
-| `unit-1` | data lesson Unit 0–1 | awal (prefetch) |
-| `unit-n` | data lesson unit lain | saat unit dibuka |
-| `wordlists` | daftar kata & kutipan | saat `/practice` atau Unit 4+ |
-| `stats` | halaman statistik + chart SVG | saat `/stats` |
-| `settings` | halaman pengaturan | saat `/settings` |
+| Chunk       | Isi                                     | Kapan dimuat                  |
+| ----------- | --------------------------------------- | ----------------------------- |
+| `main`      | React, router, tema, engine, layar sesi | awal                          |
+| `unit-1`    | data lesson Unit 0–1                    | awal (prefetch)               |
+| `unit-n`    | data lesson unit lain                   | saat unit dibuka              |
+| `wordlists` | daftar kata & kutipan                   | saat `/practice` atau Unit 4+ |
+| `stats`     | halaman statistik + chart SVG           | saat `/stats`                 |
+| `settings`  | halaman pengaturan                      | saat `/settings`              |
 
 ### Anggaran
 
-- **Bundel awal < 90 KB gzip.** (Angka lama "150 KB" tidak mendefinisikan apa itu
-  "bundel awal", jadi tidak bisa diverifikasi — dan sudah jebol hanya oleh Recharts.)
+Anggaran dipecah dua (ADR-018). Angka tunggal "bundel awal" ternyata 96% berisi
+dependensi pihak ketiga, jadi ia tidak pernah bisa menangkap kode kita sendiri
+membengkak — ia hanya meledak sekali saat dependensi bertambah, lalu dinaikkan.
+
+- **Framework ≤ 85 KB gzip** — React, react-dom, router, zustand. Terkunci:
+  menambah atau mengganti dependensi runtime **wajib ADR**, bukan keputusan bebas.
+- **Kode aplikasi ≤ 20 KB gzip** di bundel awal — ini yang digigit tiap hari, dan
+  ini satu-satunya angka yang benar-benar kita kendalikan. Proyeksi sampai Fase 8:
+  engine ~6 + layar sesi ~4 + virtual keyboard ~3 + layout/store ~2 ≈ 15 KB.
+- **Bundel awal < 105 KB gzip** (jumlah keduanya, plus CSS).
 - Total seluruh chunk < 250 KB gzip.
+
+> **Angka 105 belum diukur, dan itu utang.** Ia dinaikkan dari 90 karena kepentok
+> (ADR-018), bukan karena diturunkan dari pengukuran. Utangnya dibayar di Fase 8:
+> ukur waktu ke keystroke pertama di Fast 3G ter-throttle, lalu **turunkan** angka
+> ini ke hasil pengukuran. Sampai itu terjadi, 105 adalah tebakan yang jujur
+> mengaku sebagai tebakan.
+
 - Lighthouse Performance ≥ 95 di desktop.
 - **Waktu ke keystroke pertama** diukur dengan `performance.mark` dari navigasi sampai
   `TypingArea` interaktif, pada jaringan Fast 3G ter-throttle: **< 3 detik** (R-24).

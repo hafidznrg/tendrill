@@ -6,7 +6,7 @@ Semua progres tinggal di `localStorage` browser.
 Perencanaan lengkap ada di [`docs/planning/`](docs/planning/00-README.md).
 Aturan kerja (termasuk untuk agent) ada di [`CLAUDE.md`](CLAUDE.md).
 
-**Status: Fase 0 (fondasi) selesai. Berikutnya Fase 1 — typing engine + storage.**
+**Status: Fase 1 — typing engine + storage (sedang berjalan).**
 
 ## Perintah
 

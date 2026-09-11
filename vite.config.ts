@@ -21,6 +21,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Dependensi runtime dipisah supaya anggaran framework vs kode
+          // aplikasi bisa DIUKUR, bukan diperkirakan (ADR-018). Efek samping
+          // yang menguntungkan: perubahan kode kita tidak lagi membatalkan
+          // cache framework di browser pengguna.
+          if (id.includes('/node_modules/')) return 'vendor';
           if (id.includes('/src/data/curriculum/')) {
             const m = /\/lessons\/unit-(\d)\./.exec(id);
             if (m) return `unit-${m[1]}`;

@@ -16,7 +16,15 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist');
 
-const INITIAL_BUDGET_KB = 90; // dok. 06 §6
+/**
+ * Anggaran dipecah dua (ADR-018). Angka tunggal 96% berisi dependensi pihak
+ * ketiga, jadi ia tidak pernah bisa menangkap kode kita sendiri membengkak.
+ * `APP_BUDGET_KB` adalah satu-satunya angka yang benar-benar kita kendalikan —
+ * itulah yang digigit tiap hari.
+ */
+const FRAMEWORK_BUDGET_KB = 85; // terkunci: menambah dependensi runtime wajib ADR
+const APP_BUDGET_KB = 20; // kode kita di bundel awal
+const INITIAL_BUDGET_KB = 105; // atap keduanya + CSS; belum diukur, lihat ADR-018
 const TOTAL_BUDGET_KB = 250; // dok. 06 §6
 
 function walk(dir: string): string[] {
@@ -44,26 +52,50 @@ const referenced = new Set(
 
 const assets = walk(DIST).filter((f) => /\.(js|css)$/.test(f));
 
+/** Chunk `vendor` = seluruh isi node_modules (lihat manualChunks di vite.config.ts). */
+const isVendor = (rel: string) => /(^|\/)vendor-[^/]*\.js$/.test(rel);
+
 let initial = 0;
+let framework = 0;
+let app = 0;
 let total = 0;
-const rows: Array<[string, number, boolean]> = [];
+const rows: Array<[string, number, boolean, string]> = [];
 
 for (const file of assets) {
   const rel = relative(DIST, file).split(sep).join('/');
   const kb = gzipKb(file);
   const isInitial = referenced.has(rel);
   total += kb;
-  if (isInitial) initial += kb;
-  rows.push([rel, kb, isInitial]);
+  if (isInitial) {
+    initial += kb;
+    if (isVendor(rel)) framework += kb;
+    else if (rel.endsWith('.js')) app += kb;
+  }
+  const kind = isVendor(rel) ? 'framework' : rel.endsWith('.css') ? 'css' : 'app';
+  rows.push([rel, kb, isInitial, kind]);
 }
 
 rows.sort((a, b) => b[1] - a[1]);
-for (const [rel, kb, isInitial] of rows) {
-  console.log(`  ${isInitial ? '*' : ' '} ${kb.toFixed(1).padStart(7)} KB  ${rel}`);
+for (const [rel, kb, isInitial, kind] of rows) {
+  console.log(
+    `  ${kb.toFixed(1).padStart(7)} KB  ${(isInitial ? kind : '—').padEnd(9)}  ${rel}`,
+  );
 }
-console.log('  (* = bundel awal)\n');
+console.log('  (— = dimuat belakangan, di luar bundel awal)\n');
 
 const problems: string[] = [];
+if (framework > FRAMEWORK_BUDGET_KB) {
+  problems.push(
+    `framework ${framework.toFixed(1)} KB > ${FRAMEWORK_BUDGET_KB} KB gzip — ` +
+      'menambah atau mengganti dependensi runtime wajib ADR (ADR-018)',
+  );
+}
+if (app > APP_BUDGET_KB) {
+  problems.push(
+    `kode aplikasi ${app.toFixed(1)} KB > ${APP_BUDGET_KB} KB gzip — ` +
+      'ini kode kita sendiri, bukan dependensi. Pindahkan ke chunk lazy atau rampingkan',
+  );
+}
 if (initial > INITIAL_BUDGET_KB) {
   problems.push(`bundel awal ${initial.toFixed(1)} KB > ${INITIAL_BUDGET_KB} KB gzip`);
 }
@@ -71,8 +103,17 @@ if (total > TOTAL_BUDGET_KB) {
   problems.push(`total ${total.toFixed(1)} KB > ${TOTAL_BUDGET_KB} KB gzip`);
 }
 
-console.log(`bundel awal : ${initial.toFixed(1)} / ${INITIAL_BUDGET_KB} KB gzip`);
-console.log(`total       : ${total.toFixed(1)} / ${TOTAL_BUDGET_KB} KB gzip`);
+function bar(used: number, budget: number): string {
+  return '#'.repeat(Math.min(20, Math.round((used / budget) * 20))).padEnd(20, '.');
+}
+
+const line = (label: string, used: number, budget: number) =>
+  `${label.padEnd(14)}${bar(used, budget)} ${used.toFixed(1).padStart(6)} / ${budget} KB gzip`;
+
+console.log(line('framework', framework, FRAMEWORK_BUDGET_KB));
+console.log(line('kode aplikasi', app, APP_BUDGET_KB));
+console.log(line('bundel awal', initial, INITIAL_BUDGET_KB));
+console.log(line('total', total, TOTAL_BUDGET_KB));
 
 if (problems.length > 0) {
   console.error(`\nAnggaran bundel terlampaui (dok. 06 §6):`);
