@@ -68,7 +68,8 @@ function main(): void {
   }
 
   const deltas: number[] = [];
-  let discarded = 0;
+  let discardedGc = 0;
+  let discardedNegative = 0;
 
   for (let r = 0; r < ROUNDS; r++) {
     restartSession(session);
@@ -83,10 +84,23 @@ function main(): void {
 
     if (gcCount !== gcBefore) {
       // GC menyapu di tengah pengukuran: selisihnya tidak berarti apa-apa.
-      discarded++;
+      discardedGc++;
       continue;
     }
-    deltas.push((after - before) / chars.length);
+
+    const delta = (after - before) / chars.length;
+
+    // Heap TIDAK MUNGKIN menyusut di jendela tanpa GC. Ronde negatif berarti ada
+    // yang dibebaskan tanpa terdeteksi observer, jadi angkanya tidak bisa dipakai
+    // — dan karena gerbang ini mengambil MINIMUM, membiarkannya masuk justru
+    // berbahaya: satu ronde −496 byte (terpantau 2026-09-11) bisa menutupi
+    // alokasi nyata yang kecil di ronde lain. Diperlakukan sama seperti ronde
+    // yang kejatuhan GC: dibuang, bukan dipercaya.
+    if (delta < 0) {
+      discardedNegative++;
+      continue;
+    }
+    deltas.push(delta);
   }
 
   observer.disconnect();
@@ -94,7 +108,8 @@ function main(): void {
   if (deltas.length < MIN_VALID_ROUNDS) {
     console.error(
       `perf-heap: GAGAL — hanya ${deltas.length} ronde valid dari ${ROUNDS} ` +
-        `(${discarded} kejatuhan GC). Pengukuran tidak bisa disimpulkan.`,
+        `(${discardedGc} kejatuhan GC, ${discardedNegative} negatif). ` +
+        'Pengukuran tidak bisa disimpulkan.',
     );
     process.exit(1);
   }
@@ -106,9 +121,13 @@ function main(): void {
   const rounded = +best.toFixed(2);
 
   console.log(`perf-heap: ${rounded} byte/keystroke (ambang ${MAX_BYTES_PER_KEYSTROKE})`);
+  const dibuang = [
+    discardedGc > 0 ? `${discardedGc} GC` : null,
+    discardedNegative > 0 ? `${discardedNegative} negatif` : null,
+  ].filter(Boolean);
   console.log(
     `  ${deltas.length} ronde valid × ${chars.length} keystroke` +
-      (discarded > 0 ? ` · ${discarded} dibuang karena GC` : '') +
+      (dibuang.length > 0 ? ` · dibuang: ${dibuang.join(', ')}` : '') +
       `\n  ronde: ${deltas.map((d) => d.toFixed(1)).join(', ')}`,
   );
 
