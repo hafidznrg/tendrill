@@ -54,7 +54,8 @@ export async function autotype(durationMs = 60_000) {
   const longTasks = [];
 
   const po = new PerformanceObserver((list) => {
-    for (const e of list.getEntries()) if (e.duration > 50) longTasks.push(+e.duration.toFixed(1));
+    for (const e of list.getEntries())
+      if (e.duration > 50) longTasks.push(+e.duration.toFixed(1));
   });
   try {
     po.observe({ type: 'longtask' });
@@ -92,7 +93,8 @@ export async function autotype(durationMs = 60_000) {
     p99: quantile(samples, 0.99),
     maks: +samples.at(-1).toFixed(2),
     longTasks,
-    lulus: quantile(samples, 0.95) <= 8 && quantile(samples, 0.99) <= 16 && longTasks.length === 0,
+    lulus:
+      quantile(samples, 0.95) <= 8 && quantile(samples, 0.99) <= 16 && longTasks.length === 0,
   };
 
   console.table(hasil);
@@ -161,7 +163,8 @@ export async function countDomWork(keystrokes = 50) {
 
   const mutations = [];
   const obs = new MutationObserver((list) => {
-    for (const m of list) mutations.push(`${m.target.nodeName}:${m.type}:${m.attributeName ?? '-'}`);
+    for (const m of list)
+      mutations.push(`${m.target.nodeName}:${m.type}:${m.attributeName ?? '-'}`);
   });
   obs.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
 
