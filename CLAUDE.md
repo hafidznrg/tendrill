@@ -25,11 +25,23 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 Status sekarang: **Fase 2 — layar sesi lengkap.**
 
-Fase 1 kodenya selesai. Verifikasi performanya **ditunda ke titik henti Fase 2**
-atas keputusan pemilik (2026-09-11) dan sekarang tercantum sebagai DoD Fase 2:
-Memory allocation profiler, React Profiler, `autotype()` + `watchRealInput()`
-dengan virtual keyboard menyala, dan 15 menit memakai sendiri.
-**Utang ini tidak boleh ditunda dua kali.**
+Fase 1 kodenya selesai. Utang verifikasi performanya **sebagian besar sudah lunas**
+(2026-09-11):
+
+| Utang Fase 1 | Status |
+|---|---|
+| Nol alokasi heap per keystroke | ✅ `npm run perf:heap` — otomatis, tiap commit |
+| Nol re-render per keystroke | ✅ `rerender.test.tsx` — otomatis, tiap commit |
+| 15 menit memakai sendiri | ✅ dijalankan; menemukan layout shift scrollbar, diperbaiki |
+| `autotype()` + `watchRealInput()` | ❌ **masih terbuka — hanya bisa manual** |
+
+Dua yang pertama tidak lagi lewat DevTools (ADR-021). Yang terakhir **tidak bisa
+diotomasi sama sekali**: Event Timing menolak input non-manusia (ADR-020), dan panel
+browser otomasi tidak pernah memanggil `requestAnimationFrame` — tanpa paint, tidak ada
+p95 input→paint. Ia butuh tangan manusia di Chrome, dan **tidak boleh ditunda lagi**.
+
+Sisa DoD Fase 2 yang juga menunggu manusia: diagnosis layar hasil terasa bermakna, dan
+caret tetap presisi setelah webfont termuat & setelah resize/zoom.
 
 **Jangan mulai fase berikutnya sebelum DoD fase berjalan terpenuhi** (dok. 08).
 Jangan mengerjakan fitur dari fase yang jauh di depan hanya karena "sekalian".
