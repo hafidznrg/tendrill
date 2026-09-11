@@ -10,6 +10,10 @@
 
 1. **Layar sesi adalah produknya.** Semua halaman lain hanya pengantar ke sana. Saat sesi berjalan, tidak ada elemen yang bergerak selain caret dan angka metrik.
 2. **Tidak ada layout shift.** Angka metrik memakai font tabular; teks target punya tinggi tetap. Karakter salah tidak boleh mengubah lebar.
+   Termasuk **lahirnya scrollbar**: `html` memesan `scrollbar-gutter: stable` supaya
+   halaman yang tiba-tiba melewati tinggi layar — layar hasil di akhir sesi — tidak
+   menyempitkan viewport dan menggeser seluruh isi yang di-`mx-auto`. Terukur −7,6 px
+   sebelum diperbaiki (2026-09-11).
 3. **Keyboard-first.** Semua aksi utama bisa dilakukan tanpa mouse.
 4. **Kontras rendah untuk yang belum diketik, kontras tinggi untuk posisi saat ini.** Mata harus tertarik ke caret secara otomatis.
 

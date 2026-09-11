@@ -59,6 +59,19 @@
 
 html {
   color-scheme: light dark;
+
+  /* Sediakan ruang scrollbar SEJAK AWAL, terpakai atau tidak (dok. 07 §1 poin 2).
+     Tanpa ini, layar hasil di akhir sesi membuat halaman melewati tinggi layar,
+     scrollbar muncul, dan SELURUH isi halaman bergeser ke kiri ~15 px — persis
+     jenis "layout shift" yang dilarang, hanya saja pemicunya bukan mengetik
+     melainkan selesai mengetik. Ditemukan saat 15 menit memakai sendiri
+     (titik henti Fase 2, 2026-09-11); nol test yang ada bisa melihatnya.
+
+     Konsekuensi yang disengaja: di halaman yang tidak pernah bergulir, ada
+     jalur kosong selebar scrollbar di kanan. Lebar yang konsisten lebih
+     berharga daripada beberapa piksel itu. Di macOS scrollbar-nya overlay,
+     jadi baris ini tidak berefek apa pun di sana. */
+  scrollbar-gutter: stable;
 }
 
 body {

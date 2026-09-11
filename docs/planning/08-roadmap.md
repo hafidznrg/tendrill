@@ -108,7 +108,9 @@ penyimpanan hasil saat idle.
 - [x] Virtual keyboard menyorot tombol berikutnya termasuk Shift sisi berlawanan —
       `fingerMap.test.ts` + `VirtualKeyboard.test.tsx`
 - [ ] Nol layout shift saat mengetik; caret tetap presisi setelah webfont termuat
-      dan setelah resize/zoom (R-06) — *sebagian manual: `layout-shift` butuh paint*
+      dan setelah resize/zoom (R-06) — *sebagian manual: `layout-shift` butuh paint.*
+      Satu sumber sudah ditutup: lahirnya scrollbar saat layar hasil muncul menggeser
+      seluruh halaman **−7,6 px**; diperbaiki `scrollbar-gutter: stable`
 - [x] Sesi tersimpan setelah selesai, nol penulisan saat berjalan —
       `sessionFlow.test.tsx` + `persistSession.test.ts`
 - [x] Seluruh alur sesi bisa dijalankan tanpa mouse — `sessionFlow.test.tsx`
@@ -129,7 +131,9 @@ sekali (ADR-021):
       dikendalikan agent tidak pernah memanggil `requestAnimationFrame` meski
       `visibilityState` "visible" — diuji 2026-09-11, 36 keydown tiba, nol rAF.
       Tanpa paint, tidak ada p95 input→paint.
-- [ ] 15 menit memakai sendiri
+- [x] 15 menit memakai sendiri — **dijalankan 2026-09-11.** Menemukan satu hal yang
+      lolos dari 150 test: halaman bergeser saat layar hasil memunculkan scrollbar.
+      Diperbaiki di hari yang sama. Sisanya memuaskan.
 
 ---
 
