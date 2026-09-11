@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run test)",
+      "Bash(npm run test:watch)",
+      "Bash(npm run build)",
+      "Bash(npm run budget)",
+      "Bash(npm run verify)",
+      "Bash(npm run validate:curriculum)",
+      "Bash(npx tsc -b)",
+      "Bash(npx vitest run:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hook-validate-on-data-edit.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

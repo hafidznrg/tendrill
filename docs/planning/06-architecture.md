@@ -1,0 +1,180 @@
+# 06 — Technical Architecture
+
+**Versi:** v2 (revisi setelah dok. 11) · **Tanggal:** 2026-09-10
+
+> **Catatan revisi v2.** Recharts dihapus (R-10), shadcn ditunda (R-13), ditambahkan peta
+> code-splitting dan anggaran bundel yang bisa diverifikasi (R-11), skrip build wordlist
+> (R-12), serta lapisan teks imperatif (R-08).
+
+## 1. Stack
+
+| Lapisan | Pilihan | Alasan |
+|---|---|---|
+| Framework | **React 19 + Vite + TypeScript** | Tanpa backend, tidak butuh SSR. Vite = dev server tercepat, build = static files |
+| Routing | **React Router** | Cukup untuk 6 halaman client-side |
+| Styling | **Tailwind CSS** | Iterasi cepat, konsisten, bundle kecil setelah purge |
+| Komponen UI | **Tidak ada di awal** (R-13) | 6 halaman ini butuh ~1 dialog dan 2 select; shadcn menarik Radix tanpa imbalan sepadan. Salin satu komponen shadcn *saat* dialog aksesibel benar-benar dibutuhkan |
+| State global | **Zustand** | Ringan, di luar React tree, tidak memaksa re-render tak perlu |
+| Grafik | **SVG tulis tangan** (R-10) | Recharts ≈ 90–110 KB gzip untuk dua grafik di halaman yang jarang dibuka — anggaran bundel jebol sebelum kode aplikasi ditulis. `<polyline>` + `<rect>` ≈ 80 baris dan sepenuhnya terkendali |
+| Test | **Vitest** + **Testing Library** | Cepat, satu konfigurasi dengan Vite |
+| Hosting | **Vercel / Netlify / GitHub Pages** | Static site, gratis |
+
+### Kenapa Vite, bukan Next.js
+Tidak ada server, tidak ada SEO yang kritikal, tidak ada API route. Next.js hanya menambah lapisan konsep (App Router, server components, hydration) yang tidak memberi manfaat di sini — dan hydration justru menambah kompleksitas untuk aplikasi yang sangat sensitif terhadap input latency. Jika suatu saat butuh backend, migrasi ke Next.js tetap mungkin.
+
+*(Keputusan ini dicatat sebagai ADR-001 di dok. 10.)*
+
+## 2. Batasan arsitektur (mengikat)
+
+1. **Engine tidak mengenal React.** `src/lib/engine/` tidak boleh mengimpor apa pun dari `react`. Bisa dites di Node murni.
+2. **Komponen tidak menyentuh localStorage.** Semua lewat `src/lib/storage/`.
+3. **Konten tidak di-hardcode di komponen.** Semua teks latihan ada di `src/data/`.
+4. **Tidak ada network request saat runtime.** Semua aset dibundel.
+5. **Satu arah aliran data:** `data → engine → store → komponen`. Komponen tidak pernah
+   memodifikasi objek sesi secara langsung.
+6. **Lapisan teks sesi tidak dikelola React setelah mount** (R-08). `TypingArea` memasang
+   span sekali, lalu memperbarui `className` secara imperatif dari `outcome.dirty`.
+   Ini satu-satunya tempat manipulasi DOM langsung diizinkan, dan wajib diberi komentar
+   penjelas supaya tidak "dirapikan" menjadi React idiomatic di kemudian hari.
+7. **Tidak ada `getBoundingClientRect()` di jalur input.** Posisi caret dihitung aritmetika
+   dari `charWidth` × `lineHeight` (dok. 03 §8).
+
+## 3. Struktur folder
+
+```
+src/
+├── app/
+│   ├── router.tsx
+│   └── layout/
+│
+├── pages/
+│   ├── HomePage.tsx
+│   ├── LearnPage.tsx
+│   ├── LessonPage.tsx
+│   ├── PracticePage.tsx
+│   ├── StatsPage.tsx
+│   └── SettingsPage.tsx
+│
+├── features/
+│   ├── typing/                 # inti produk
+│   │   ├── components/
+│   │   │   ├── TypingArea.tsx
+│   │   │   ├── CharCell.tsx        # memo, props primitif
+│   │   │   ├── Caret.tsx
+│   │   │   ├── LiveMetrics.tsx
+│   │   │   └── ResultScreen.tsx
+│   │   ├── hooks/
+│   │   │   ├── useTypingSession.ts # jembatan engine ↔ React
+│   │   │   └── useKeyboardCapture.ts
+│   │   └── index.ts
+│   │
+│   ├── keyboard/               # virtual keyboard + panduan jari
+│   │   ├── components/VirtualKeyboard.tsx
+│   │   └── fingerMap.ts
+│   │
+│   ├── curriculum/
+│   │   ├── components/UnitList.tsx
+│   │   └── useProgress.ts
+│   │
+│   └── stats/
+│       ├── components/WpmChart.tsx      # SVG tulis tangan, tanpa library
+│       ├── components/KeyHeatmap.tsx    # heatmap error
+│       └── components/LatencyHeatmap.tsx # heatmap latensi (R-18)
+│
+├── lib/
+│   ├── engine/                 # PURE — tanpa React, tanpa DOM
+│   │   ├── session.ts          # createSession, applyKey, backspace, pause/resume
+│   │   ├── log.ts              # buffer kolumnar typed-array (R-03)
+│   │   ├── accumulators.ts     # Welford, metrik live O(1) (R-02)
+│   │   ├── metrics.ts          # computeResult (O(n), sekali per sesi)
+│   │   ├── wrap.ts             # wrapText() (R-07)
+│   │   ├── generator.ts
+│   │   └── types.ts
+│   ├── storage/
+│   │   ├── index.ts
+│   │   ├── schema.ts
+│   │   └── migrations.ts
+│   └── utils/
+│
+├── data/
+│   ├── curriculum/en/
+│   ├── wordlists/en/
+│   └── quotes/en/
+│
+└── store/
+    ├── settingsStore.ts
+    └── progressStore.ts
+
+scripts/
+└── build-wordlists.ts          # filter 10k kata → file per unit (R-12)
+```
+
+## 4. Jembatan engine ↔ React
+
+Satu-satunya tempat yang menghubungkan dunia murni dan dunia React: `useTypingSession`.
+
+```ts
+function useTypingSession(target: string) {
+  const sessionRef = useRef(createSession(target, cols));  // sumber kebenaran
+  const spansRef   = useRef<HTMLSpanElement[]>([]);        // lapisan teks (R-08)
+  const [structuralTick, setStructuralTick] = useState(0); // HANYA untuk ganti target/restart
+  const [metrics, setMetrics] = useState(EMPTY);           // diupdate tiap 250ms
+
+  // keydown → applyKey → KeyOutcome
+  //   → for (i of outcome.dirty) spansRef.current[i].className = CLASS[state]
+  //   → caret.style.transform = translate(col*charWidth, row*lineHeight)
+  //   → TIDAK ada setState di jalur ini
+  // rAF bergerbang 250ms, hanya saat status==='running' → computeLiveMetrics (O(1)) → setMetrics
+  // finished → computeResult → requestIdleCallback → storage layer
+}
+```
+
+Yang **tidak boleh** dilakukan di sini:
+- Menaruh `SessionState` di `useState` — setiap keystroke akan menyalin seluruh array karakter.
+- Menaruh objek sesi di context.
+- Memanggil `setState` apa pun di jalur keystroke. Jalur itu harus nol pekerjaan React (R-08).
+- `setInterval` untuk metrik — pakai rAF bergerbang supaya berhenti sendiri saat tab tersembunyi (R-09).
+
+## 5. Perkakas
+
+```
+TypeScript strict: true
+ESLint + Prettier
+Vitest untuk unit test
+Husky pre-commit: typecheck + lint + test (opsional, tambahkan bila terasa perlu)
+```
+
+Tidak memakai state management library selain Zustand, tidak memakai form library, tidak memakai animation library di v1.
+
+## 6. Code splitting & anggaran build (R-11)
+
+Prinsip produk #1 adalah "keystroke pertama < 3 detik", tapi v1 membundel kurikulum,
+wordlist, dan halaman statistik ke dalam satu bundel awal. Peta pemuatan sekarang mengikat:
+
+| Chunk | Isi | Kapan dimuat |
+|---|---|---|
+| `main` | React, router, tema, engine, layar sesi | awal |
+| `unit-1` | data lesson Unit 0–1 | awal (prefetch) |
+| `unit-n` | data lesson unit lain | saat unit dibuka |
+| `wordlists` | daftar kata & kutipan | saat `/practice` atau Unit 4+ |
+| `stats` | halaman statistik + chart SVG | saat `/stats` |
+| `settings` | halaman pengaturan | saat `/settings` |
+
+### Anggaran
+
+- **Bundel awal < 90 KB gzip.** (Angka lama "150 KB" tidak mendefinisikan apa itu
+  "bundel awal", jadi tidak bisa diverifikasi — dan sudah jebol hanya oleh Recharts.)
+- Total seluruh chunk < 250 KB gzip.
+- Lighthouse Performance ≥ 95 di desktop.
+- **Waktu ke keystroke pertama** diukur dengan `performance.mark` dari navigasi sampai
+  `TypingArea` interaktif, pada jaringan Fast 3G ter-throttle: **< 3 detik** (R-24).
+- Berfungsi penuh secara offline setelah kunjungan pertama (PWA opsional di P2).
+
+CI wajib menggagalkan build jika anggaran bundel terlampaui — batas yang tidak ditegakkan
+otomatis akan dilanggar dalam dua minggu.
+
+## 7. Penanganan kegagalan
+
+Satu `ErrorBoundary` di level rute (R-24), dengan tombol "muat ulang tampilan" yang
+**tidak menghapus data pengguna**. Kesalahan render di `/stats` tidak boleh membuat
+halaman sesi ikut mati.

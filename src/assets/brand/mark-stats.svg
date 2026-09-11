@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="tendrill — statistik">
+  <title>tendrill — mark sekunder</title>
+  <g stroke-linecap="round" stroke-width="4.2" fill="none">
+    <line x1="9"  y1="53" x2="9"  y2="39" stroke="var(--f1, #4C6E8A)"/>
+    <line x1="17" y1="53" x2="17" y2="33" stroke="var(--f2, #5B7F5E)"/>
+    <line x1="25" y1="53" x2="25" y2="25" stroke="var(--f3, #8A7340)"/>
+    <line x1="33" y1="53" x2="33" y2="16" stroke="var(--f4, #8C5A6E)"/>
+    <line x1="41" y1="53" x2="41" y2="25" stroke="var(--f5, #7A5F94)"/>
+    <line x1="49" y1="53" x2="49" y2="33" stroke="var(--f6, #3F7C7A)"/>
+    <line x1="55" y1="53" x2="55" y2="39" stroke="var(--f7, #96612F)"/>
+  </g>
+  <line x1="9" y1="58" x2="55" y2="58" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".3"/>
+</svg>

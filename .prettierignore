@@ -1,0 +1,7 @@
+dist
+node_modules
+package-lock.json
+
+# Mirror verbatim dari docs/planning/12-brand-identity.md §5 —
+# Prettier me-lowercase nilai heksnya dan membuat diff palsu terhadap dok. 12.
+src/assets/brand/

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Menjalankan test unit + validator kurikulum (dok. 04 §5).
+      - name: Test
+        run: npm run test
+
+      # `tsc -b` di dalamnya — strict, nol error (dok. 08 Fase 0 DoD).
+      - name: Build
+        run: npm run build
+
+      # Gerbang anggaran bundel — build GAGAL kalau terlampaui (dok. 06 §6).
+      - name: Anggaran bundel
+        run: npm run budget

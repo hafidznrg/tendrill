@@ -1,0 +1,4 @@
+# Normalisasi akhir baris: repo selalu LF, checkout ikut platform.
+* text=auto eol=lf
+*.woff2 binary
+*.png binary

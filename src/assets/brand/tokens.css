@@ -1,0 +1,73 @@
+/* tendrill — token warna brand.
+   Sumber kebenaran: docs/planning/12-brand-identity.md §5
+   Terang sebagai default, gelap sebagai override. */
+
+:root {
+  --bg: #EFF2EE;
+  --surface: #E3E8E1;
+  --surface-2: #F7F9F6;
+  --fg: #161A17;
+  --fg-dim: #6E776E;
+  --line: #C9D1C7;
+  --accent: #2F6B4A;
+  --caret: #B0791F;
+  --error: #A8432F;
+
+  /* palet jari — virtual keyboard */
+  --f1: #4C6E8A; /* kelingking kiri  */
+  --f2: #5B7F5E; /* manis kiri       */
+  --f3: #8A7340; /* tengah kiri      */
+  --f4: #8C5A6E; /* telunjuk kiri    */
+  --f5: #7A5F94; /* telunjuk kanan   */
+  --f6: #3F7C7A; /* tengah kanan     */
+  --f7: #96612F; /* manis kanan      */
+  --f8: #55617F; /* kelingking kanan */
+  /* jempol memakai --fg-dim */
+
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #11150F;
+    --surface: #1A2018;
+    --surface-2: #222A20;
+    --fg: #E7ECE3;
+    --fg-dim: #8E988B;
+    --line: #2E3829;
+    --accent: #77B98D;
+    --caret: #D7A94E;
+    --error: #D2705A;
+
+    --f1: #8BB0CE;
+    --f2: #9CC39F;
+    --f3: #CBB27A;
+    --f4: #CE97AA;
+    --f5: #B8A0D2;
+    --f6: #7FC0BE;
+    --f7: #D6A473;
+    --f8: #9AA6C6;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #11150F;
+  --surface: #1A2018;
+  --surface-2: #222A20;
+  --fg: #E7ECE3;
+  --fg-dim: #8E988B;
+  --line: #2E3829;
+  --accent: #77B98D;
+  --caret: #D7A94E;
+  --error: #D2705A;
+
+  --f1: #8BB0CE;
+  --f2: #9CC39F;
+  --f3: #CBB27A;
+  --f4: #CE97AA;
+  --f5: #B8A0D2;
+  --f6: #7FC0BE;
+  --f7: #D6A473;
+  --f8: #9AA6C6;
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/assets/brand/icon-32.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="tendrill — belajar mengetik sepuluh jari, bertahap." />
+    <title>tendrill</title>
+    <script>
+      /* Tema diterapkan sebelum paint pertama supaya tidak ada kedipan.
+         Sengaja inline & duplikat kecil dari src/lib/storage/theme.ts —
+         modul mana pun akan datang terlambat. */
+      (function () {
+        try {
+          var t = localStorage.getItem('tendrill.theme');
+          document.documentElement.dataset.theme =
+            t === 'light' || t === 'dark'
+              ? t
+              : matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+        } catch (_) {
+          /* mode privat / storage diblokir: biarkan default dari HTML */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

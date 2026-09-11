@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="16" height="16" role="img" aria-label="tendrill">
+  <title>tendrill</title>
+  <rect width="64" height="64" rx="10" fill="#2F6B4A"/>
+  <path d="M32 52 C32 40 21 38 21 30 C21 24 30 23 31 29"
+        fill="none" stroke="#F4F8F2" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="42" y="22" width="10" height="18" rx="2" fill="#B0791F"/>
+</svg>
