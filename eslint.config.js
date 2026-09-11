@@ -5,7 +5,8 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage'] },
+  // Skrip yang ditempel ke konsol DevTools, bukan bagian dari bundel.
+  { ignores: ['dist', 'node_modules', 'coverage', 'scripts/perf-autotype.js'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

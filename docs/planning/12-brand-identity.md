@@ -190,5 +190,6 @@ Berkas: `src/assets/brand/icon-512.svg`, `icon-32.svg`, `icon-16.svg`.
 ## 8. Yang belum diputuskan
 
 - [ ] og:image dan meta sosial (butuh lockup vertikal di kanvas 1200×630)
-- [ ] Subdomain persisnya di situs pribadi
+- [x] ~~Subdomain persisnya di situs pribadi~~ → **`tendrill.hafidznrg.my.id`**,
+      di-deploy ke Vercel (2026-09-11). Menutup pertanyaan terbuka ADR-015.
 - [ ] Apakah mark B benar dipakai di `/stats`, atau cukup mark A saja

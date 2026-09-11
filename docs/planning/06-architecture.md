@@ -190,6 +190,21 @@ membengkak — ia hanya meledak sekali saat dependensi bertambah, lalu dinaikkan
 CI wajib menggagalkan build jika anggaran bundel terlampaui — batas yang tidak ditegakkan
 otomatis akan dilanggar dalam dua minggu.
 
+## 6b. Deployment
+
+Seluruh routing terjadi di sisi klien (dok. 02 §1), jadi host statis **wajib**
+mengembalikan `index.html` untuk path apa pun yang tidak cocok dengan berkas nyata.
+Tanpa itu hanya `/` yang hidup: setiap deep link dan setiap refresh di `/learn`,
+`/stats`, atau `/settings` berakhir 404 — dan pengguna yang menyimpan bookmark ke
+lesson-nya kehilangan jalan masuk.
+
+Di Vercel aturan itu tinggal di `vercel.json` (`rewrites` → `/index.html`). Berkas
+statis dilayani lebih dulu, jadi aturan tangkap-semua ini tidak pernah menelan
+`/assets/*`.
+
+Ditemukan saat verifikasi deploy pertama pada 2026-09-11: `/` hidup, `/learn/u1-l1`
+404. Kalau host-nya suatu saat pindah, ini hal pertama yang harus diperiksa ulang.
+
 ## 7. Penanganan kegagalan
 
 Satu `ErrorBoundary` di level rute (R-24), dengan tombol "muat ulang tampilan" yang
