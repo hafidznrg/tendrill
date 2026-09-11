@@ -81,10 +81,17 @@ berikutnya — di v1 ia terjebak di Fase 3 sehingga Fase 2 tidak bisa diuji seca
 > **Titik henti wajib.** Setelah fase ini, pakai sendiri 15 menit. Kalau ada yang terasa
 > "berat" atau "meleset", perbaiki **sekarang** — bukan nanti.
 >
-> **Belum dijalankan.** Tiga verifikasi di atas butuh tangan manusia di Chrome DevTools
-> (Memory allocation profiler, React Profiler, Event Timing dengan input sungguhan),
-> dan 15 menit memakai sendiri tidak bisa didelegasikan — justru itu gunanya.
-> **Fase 2 belum boleh dimulai sebelum ini dikerjakan.**
+> **DITUNDA ke titik henti Fase 2 (keputusan pemilik, 2026-09-11).** Tiga verifikasi
+> di atas butuh tangan manusia di Chrome DevTools (Memory allocation profiler, React
+> Profiler, Event Timing dengan input sungguhan), plus 15 menit memakai sendiri.
+>
+> Fase 2 dimulai lebih dulu. **Utangnya tidak hilang, hanya dipindah**: ia sekarang
+> menjadi syarat DoD Fase 2, dan justru lebih berat di sana karena virtual keyboard
+> baru menyala — itulah kasus terburuk yang memang diminta dok. 09 §5, dan yang di
+> Fase 1 belum bisa diuji karena keyboardnya belum ada.
+>
+> **Risiko yang diterima:** kalau ternyata ada yang meleset, yang harus dibongkar
+> bukan lagi engine saja melainkan engine + layar sesi lengkap.
 
 ---
 
@@ -102,6 +109,13 @@ penyimpanan hasil saat idle.
       dan setelah resize/zoom (R-06)
 - [ ] Sesi tersimpan setelah selesai, nol penulisan saat berjalan
 - [ ] Seluruh alur sesi bisa dijalankan tanpa mouse
+
+**Utang Fase 1 yang jatuh tempo di sini** (ditunda 2026-09-11, lihat catatan Fase 1):
+- [ ] Chrome Memory allocation profiler: nol alokasi heap per keystroke
+- [ ] React Profiler: nol re-render per keystroke
+- [ ] `autotype()` + `watchRealInput()` **dengan virtual keyboard menyala** —
+      kasus terburuk dok. 09 §5 yang baru bisa diuji setelah fase ini
+- [ ] 15 menit memakai sendiri
 
 ---
 

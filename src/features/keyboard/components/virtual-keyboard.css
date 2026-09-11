@@ -1,0 +1,105 @@
+/* Virtual keyboard (dok. 07 §4, palet jari dok. 12 §5).
+   Kelas `vk-next` ditulis IMPERATIF dari komponen, jadi ia tidak boleh
+   bergantung pada Tailwind JIT. */
+
+.vk-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  padding: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  user-select: none;
+}
+
+.vk-row {
+  display: flex;
+  gap: 0.28rem;
+}
+
+.vk-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 2.1rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--fg-dim);
+  /* Transisi dijaga pendek: keyboard tidak boleh terasa bergerak sendiri
+     saat mengetik cepat (prinsip UX #1 — hanya caret yang bergerak). */
+  transition:
+    background-color 80ms linear,
+    color 80ms linear;
+}
+
+/* Palet jari, semuanya disaturasi rendah supaya keyboard tidak berteriak
+   lebih keras daripada teks latihan (dok. 12 §5). */
+.vk-key[data-finger='f1'] {
+  color: var(--f1);
+}
+.vk-key[data-finger='f2'] {
+  color: var(--f2);
+}
+.vk-key[data-finger='f3'] {
+  color: var(--f3);
+}
+.vk-key[data-finger='f4'] {
+  color: var(--f4);
+}
+.vk-key[data-finger='f5'] {
+  color: var(--f5);
+}
+.vk-key[data-finger='f6'] {
+  color: var(--f6);
+}
+.vk-key[data-finger='f7'] {
+  color: var(--f7);
+}
+.vk-key[data-finger='f8'] {
+  color: var(--f8);
+}
+.vk-key[data-finger='thumb'] {
+  color: var(--fg-dim);
+}
+
+/* Panduan jari bisa dimatikan — pengguna lanjut akan mematikannya, dan pemula
+   didorong mematikannya setelah Unit 3 (dok. 07 §4). */
+.vk-mono .vk-key {
+  color: var(--fg-dim);
+}
+
+/* Penanda taktil home row, seperti tonjolan di F dan J pada keyboard nyata. */
+.vk-home::after {
+  content: '';
+  position: absolute;
+  transform: translateY(0.72rem);
+  width: 0.6rem;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.vk-key {
+  position: relative;
+}
+
+/* Tombol berikutnya. Outline, bukan isian penuh — dok. 07 §4.
+   TIDAK memakai --caret: warna itu eksklusif milik penanda posisi (ADR-016). */
+.vk-next {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--bg);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vk-key {
+    transition: none;
+  }
+}

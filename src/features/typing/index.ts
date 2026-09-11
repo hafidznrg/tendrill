@@ -1,6 +1,11 @@
 export { TypingArea } from './components/TypingArea.tsx';
+export { ResultScreen } from './components/ResultScreen.tsx';
+export { LiveMetrics } from './components/LiveMetrics.tsx';
+export { diagnose, topProblemKeys } from './diagnosis.ts';
 export { useTypingSession, CHAR_CLASS } from './hooks/useTypingSession.ts';
 export { useCharMetrics } from './hooks/useCharMetrics.ts';
 export { useKeyboardCapture } from './hooks/useKeyboardCapture.ts';
 export type { TypingSessionApi, UseTypingSessionOptions } from './hooks/useTypingSession.ts';
 export type { CharMetrics } from './hooks/useCharMetrics.ts';
+export type { PassCriteria, ResultScreenProps } from './components/ResultScreen.tsx';
+export type { Diagnosis } from './diagnosis.ts';

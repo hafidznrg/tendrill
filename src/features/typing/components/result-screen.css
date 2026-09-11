@@ -1,0 +1,147 @@
+/* Layar hasil (dok. 02 §5, nada dok. 07 §11).
+   Tanpa confetti, tanpa lencana, tanpa warna menyala untuk "lulus" —
+   informasi, bukan perayaan. */
+
+.rs-root {
+  margin-top: 2rem;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.rs-verdict {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.rs-note {
+  margin: 0.4rem 0 0;
+  color: var(--fg-dim);
+  max-width: 60ch;
+}
+
+/* Diagnosis adalah alasan layar ini ada — ia diberi bobot visual paling besar
+   setelah verdict, dan ditaruh SEBELUM angka (dok. 02 §5). */
+.rs-diagnosis {
+  margin: 0.9rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--accent);
+  font-size: 15px;
+  max-width: 62ch;
+}
+
+.rs-diagnosis code,
+.rs-key {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.rs-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 2rem;
+  margin: 1.1rem 0 0;
+}
+
+@media (min-width: 640px) {
+  .rs-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.rs-stat-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+.rs-stat-value {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  /* Angka metrik wajib tabular — tanpa ini layar hasil bergeser tiap kali
+     jumlah digitnya berubah (dok. 07 §1 prinsip 2). */
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-delta {
+  margin-left: 0.4rem;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-dim);
+}
+
+.rs-delta-up {
+  color: var(--accent);
+}
+
+.rs-keys {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 1rem 0 0;
+  flex-wrap: wrap;
+}
+
+.rs-keys-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  margin-right: 0.2rem;
+}
+
+.rs-key {
+  min-width: 1.6rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface-2);
+  text-align: center;
+  font-size: 13px;
+}
+
+.rs-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.rs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rs-btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.rs-hint {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}

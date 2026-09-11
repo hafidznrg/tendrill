@@ -6,7 +6,7 @@ import { AppRoutes } from '../router';
 const CASES: Array<[string, string]> = [
   ['/', 'Beranda'],
   ['/learn', 'Kurikulum'],
-  ['/learn/u1-l1', 'Sesi lesson'],
+  ['/learn/u1-l1', 'Unit 1 · Lesson 1'],
   ['/practice', 'Latihan bebas'],
   ['/stats', 'Statistik'],
   ['/settings', 'Pengaturan'],

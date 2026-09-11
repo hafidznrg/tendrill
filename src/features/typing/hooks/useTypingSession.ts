@@ -73,6 +73,8 @@ export interface TypingSessionApi {
   registerSpans: (spans: HTMLElement[]) => void;
   registerCaret: (el: HTMLElement | null) => void;
   registerViewport: (el: HTMLElement | null) => void;
+  /** Virtual keyboard menitipkan pelukisnya di sini (dok. 07 §4). */
+  registerNextKeyPainter: (paint: (char: string | null) => void) => void;
   restart: () => void;
   resumeNow: () => void;
 }
@@ -88,6 +90,7 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   const spansRef = useRef<HTMLElement[]>([]);
   const caretRef = useRef<HTMLElement | null>(null);
   const viewportRef = useRef<HTMLElement | null>(null);
+  const nextKeyPainterRef = useRef<((char: string | null) => void) | null>(null);
   const geometryRef = useRef({ charWidth, lineHeight });
   geometryRef.current = { charWidth, lineHeight };
 
@@ -144,10 +147,20 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     caret.style.transform = `translate(${col * cw}px, ${row * lh}px)`;
 
     // Gulir per baris: satu translate pada kontainer, bukan scrollTop.
+    // Teks bergulir hanya setelah baris pertama selesai, jadi pengguna selalu
+    // melihat satu baris konteks di atas posisinya (dok. 07 §2).
     const viewport = viewportRef.current;
     if (viewport) {
       const firstVisibleRow = Math.max(0, row - 1);
       viewport.style.transform = `translateY(${-firstVisibleRow * lh}px)`;
+    }
+
+    // Sorot tombol berikutnya di virtual keyboard — bagian dari jalur imperatif
+    // yang sama, jadi tetap nol pekerjaan React per keystroke.
+    const paintKey = nextKeyPainterRef.current;
+    if (paintKey) {
+      const next = s.cells[s.cursor];
+      paintKey(next ? next.expected : null);
     }
   }, []);
 
@@ -269,6 +282,15 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     viewportRef.current = el;
   }, []);
 
+  const registerNextKeyPainter = useCallback((paint: (char: string | null) => void) => {
+    nextKeyPainterRef.current = paint;
+    // Sorot tombol pertama begitu keyboard siap — tanpa ini, keyboard baru
+    // hidup setelah keystroke pertama, yang justru saat pemula paling butuh.
+    const s = sessionRef.current;
+    const next = s.cells[s.cursor];
+    paint(next ? next.expected : null);
+  }, []);
+
   return {
     status,
     metrics,
@@ -278,6 +300,7 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     registerSpans,
     registerCaret,
     registerViewport,
+    registerNextKeyPainter,
     restart,
     resumeNow,
   };

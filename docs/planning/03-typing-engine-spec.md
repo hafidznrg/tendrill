@@ -247,6 +247,11 @@ for (const i of outcome.dirty) {
 ```
 
 Rata-rata **1–2 penulisan DOM per keystroke, nol pekerjaan React.**
+
+Dengan virtual keyboard menyala, jumlahnya menjadi **4**: 1 `className` karakter,
+1 `transform` caret, dan 2 `className` tombol (matikan yang lama, nyalakan yang
+baru). Tetap O(1) dan tetap nol pekerjaan React — keyboard memakai jalur imperatif
+yang sama (dok. 07 §4). Angka ini diverifikasi di browser pada 2026-09-11.
 React hanya dipakai ulang saat perubahan struktural: ganti target, restart, resize.
 `renderTick` di dok. 06 §4 karenanya hanya untuk kasus struktural itu.
 

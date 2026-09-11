@@ -23,12 +23,13 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 1 — kode selesai, menunggu verifikasi manual.**
+Status sekarang: **Fase 2 — layar sesi lengkap.**
 
-Tiga item DoD Fase 1 butuh tangan manusia di Chrome DevTools dan **belum dikerjakan**:
-Memory allocation profiler (nol alokasi/keystroke), React Profiler, dan Event Timing
-p95 input→paint. Plus 15 menit memakai sendiri — titik henti wajib dok. 08.
-**Jangan mulai Fase 2 sebelum itu.**
+Fase 1 kodenya selesai. Verifikasi performanya **ditunda ke titik henti Fase 2**
+atas keputusan pemilik (2026-09-11) dan sekarang tercantum sebagai DoD Fase 2:
+Memory allocation profiler, React Profiler, `autotype()` + `watchRealInput()`
+dengan virtual keyboard menyala, dan 15 menit memakai sendiri.
+**Utang ini tidak boleh ditunda dua kali.**
 
 **Jangan mulai fase berikutnya sebelum DoD fase berjalan terpenuhi** (dok. 08).
 Jangan mengerjakan fitur dari fase yang jauh di depan hanya karena "sekalian".

@@ -1,0 +1,176 @@
+import { useEffect, useMemo } from 'react';
+import type { SessionResult } from '@/lib/engine';
+import { diagnose, topProblemKeys } from '../diagnosis.ts';
+import './result-screen.css';
+
+/**
+ * Layar hasil (dok. 02 §5).
+ *
+ * Urutannya mengikat dan disusun dari yang paling aktionable: lulus/belum →
+ * diagnosis → angka → tombol bermasalah → aksi. Angka WPM sengaja BUKAN yang
+ * pertama; ia hal yang paling ingin dilihat pengguna dan paling sedikit
+ * memberitahu mereka harus berbuat apa.
+ *
+ * Nada mengikuti dok. 07 §11: ringkas, faktual, tanpa gamifikasi.
+ */
+
+export interface PassCriteria {
+  minWpm: number;
+  minAccuracy: number;
+}
+
+export interface ResultScreenProps {
+  result: SessionResult | null;
+  /** true = sesi di-void karena diam > 30 detik. */
+  voided: boolean;
+  /** Kriteria kelulusan lesson. null untuk latihan bebas — murni skor. */
+  criteria?: PassCriteria | null;
+  /** Percobaan terbaik sebelumnya, untuk pembanding. */
+  previousBest?: { netWpm: number; accuracy: number } | null;
+  onRetry: () => void;
+  onNext?: (() => void) | undefined;
+  onExit?: (() => void) | undefined;
+}
+
+export function ResultScreen({
+  result,
+  voided,
+  criteria = null,
+  previousBest = null,
+  onRetry,
+  onNext,
+  onExit,
+}: ResultScreenProps) {
+  // Pintasan layar hasil (dok. 07 §7).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onRetry();
+      } else if ((e.key === 'n' || e.key === 'N') && onNext) {
+        e.preventDefault();
+        onNext();
+      } else if (e.key === 'Escape' && onExit) {
+        onExit();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onRetry, onNext, onExit]);
+
+  const diagnosis = useMemo(() => (result ? diagnose(result) : null), [result]);
+  const problemKeys = useMemo(() => (result ? topProblemKeys(result) : []), [result]);
+
+  // Sesi yang tidak sah TIDAK menampilkan angka (dok. 02 §5): WPM dari sesi
+  // yang dijeda lima menit membingungkan lebih daripada membantu.
+  if (voided || !result) {
+    return (
+      <section className="rs-root" aria-live="polite">
+        <h2 className="rs-verdict">Sesi tidak dihitung</h2>
+        <p className="rs-note">
+          Ada jeda lebih dari 30 detik di tengah sesi, jadi kecepatannya tidak lagi
+          menggambarkan apa pun. Coba lagi tanpa jeda panjang.
+        </p>
+        <Actions onRetry={onRetry} onExit={onExit} />
+      </section>
+    );
+  }
+
+  const passed =
+    criteria === null ||
+    (result.netWPM >= criteria.minWpm && result.accuracy >= criteria.minAccuracy);
+
+  return (
+    <section className="rs-root" aria-live="polite">
+      <h2 className={`rs-verdict${passed ? '' : ' rs-verdict-short'}`}>
+        {criteria === null ? 'Selesai' : passed ? 'Lulus' : 'Belum lulus'}
+      </h2>
+
+      {criteria !== null && !passed && (
+        <p className="rs-note">
+          Butuh {criteria.minWpm} WPM & {criteria.minAccuracy}% — kamu dapat{' '}
+          {Math.round(result.netWPM)} WPM & {result.accuracy.toFixed(1)}%.
+        </p>
+      )}
+
+      {diagnosis && <p className="rs-diagnosis">{diagnosis.text}</p>}
+
+      <dl className="rs-stats">
+        <Stat
+          label="net wpm"
+          value={result.netWPM.toFixed(1)}
+          delta={previousBest ? result.netWPM - previousBest.netWpm : null}
+        />
+        <Stat
+          label="akurasi"
+          value={`${result.accuracy.toFixed(1)}%`}
+          delta={previousBest ? result.accuracy - previousBest.accuracy : null}
+        />
+        <Stat label="gross wpm" value={result.grossWPM.toFixed(1)} delta={null} />
+        <Stat label="konsistensi" value={result.consistency.toFixed(2)} delta={null} />
+      </dl>
+
+      {problemKeys.length > 0 && (
+        <p className="rs-keys">
+          <span className="rs-keys-label">paling bermasalah</span>
+          {problemKeys.map((char) => (
+            <kbd key={char} className="rs-key">
+              {char === ' ' ? 'spasi' : char}
+            </kbd>
+          ))}
+        </p>
+      )}
+
+      <Actions onRetry={onRetry} onNext={onNext} onExit={onExit} />
+    </section>
+  );
+}
+
+function Stat({ label, value, delta }: { label: string; value: string; delta: number | null }) {
+  // Perbandingan hanya ditampilkan kalau memang berubah bermakna. "+0,0"
+  // adalah kebisingan, dan panah merah untuk selisih 0,2 WPM menghukum derau.
+  const meaningful = delta !== null && Math.abs(delta) >= 0.5;
+  return (
+    <div className="rs-stat">
+      <dt className="rs-stat-label">{label}</dt>
+      <dd className="rs-stat-value">
+        {value}
+        {meaningful && (
+          <span className={`rs-delta${delta > 0 ? ' rs-delta-up' : ''}`}>
+            {delta > 0 ? '+' : ''}
+            {delta.toFixed(1)}
+          </span>
+        )}
+      </dd>
+    </div>
+  );
+}
+
+function Actions({
+  onRetry,
+  onNext,
+  onExit,
+}: {
+  onRetry: () => void;
+  onNext?: (() => void) | undefined;
+  onExit?: (() => void) | undefined;
+}) {
+  return (
+    <div className="rs-actions">
+      <button type="button" className="rs-btn rs-btn-primary" onClick={onRetry}>
+        Ulangi <span className="rs-hint">Enter</span>
+      </button>
+      {onNext && (
+        <button type="button" className="rs-btn" onClick={onNext}>
+          Lanjut <span className="rs-hint">N</span>
+        </button>
+      )}
+      {onExit && (
+        <button type="button" className="rs-btn" onClick={onExit}>
+          Kembali <span className="rs-hint">Esc</span>
+        </button>
+      )}
+    </div>
+  );
+}
