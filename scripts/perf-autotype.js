@@ -1,8 +1,12 @@
 /**
  * Skrip autotype untuk uji performa (dok. 09 §5).
  *
- * CARA PAKAI: buka layar sesi, buka DevTools Console, tempel seluruh berkas ini,
- * lalu jalankan `await autotype()`.
+ * CARA PAKAI: buka layar sesi, buka DevTools Console, tempel SELURUH berkas ini,
+ * tekan Enter, lalu jalankan perintah yang dicetak.
+ *
+ * Sengaja TIDAK memakai `export` / `import`: konsol DevTools mengeksekusi
+ * potongan kode sebagai skrip biasa, dan satu kata `export` saja sudah membuat
+ * seluruh tempelan gagal dengan "Unexpected token 'export'".
  *
  * Wajib dijalankan di **production build** (`npm run build && npm run preview`,
  * atau situs yang sudah di-deploy). Dev build memakai React StrictMode yang
@@ -40,7 +44,7 @@ function quantile(sorted, p) {
  * Tab HARUS terlihat di depan: requestAnimationFrame berhenti di tab tersembunyi,
  * dan hasilnya akan tampak "sempurna" karena tidak ada yang pernah dicat.
  */
-export async function autotype(durationMs = 60_000) {
+async function autotype(durationMs = 60_000) {
   const spans = document.querySelectorAll('.ta-text span');
   if (spans.length === 0) {
     throw new Error('Tidak ada area mengetik di halaman ini. Buka layar sesi dulu.');
@@ -106,7 +110,7 @@ export async function autotype(durationMs = 60_000) {
  *
  * Jalankan, lalu ketik sendiri selama 60 detik, lalu panggil hasil `.stop()`.
  */
-export function watchRealInput() {
+function watchRealInput() {
   const durations = [];
 
   const po = new PerformanceObserver((list) => {
@@ -149,7 +153,7 @@ export function watchRealInput() {
  * caret). Angka yang jauh lebih besar berarti lapisan teks kembali dikelola
  * React — biasanya karena seseorang "merapikan" TypingArea menjadi `cells.map()`.
  */
-export async function countDomWork(keystrokes = 50) {
+async function countDomWork(keystrokes = 50) {
   // Restart DULU, baru catat span-nya. Restart adalah perubahan struktural yang
   // memang membangun ulang seluruh span (itu perilaku yang benar) — mencatat
   // daftar span sebelum restart membuat pengukuran ini melaporkan "span dibuat
@@ -189,3 +193,8 @@ export async function countDomWork(keystrokes = 50) {
 }
 
 Object.assign(globalThis, { autotype, watchRealInput, countDomWork });
+
+console.log('Siap. Tiga perintah:');
+console.log('  await countDomWork()        mutasi DOM per keystroke (harus 2)');
+console.log('  await autotype(60000)       beban 140 WPM 60 detik (tab harus terlihat)');
+console.log('  const r = watchRealInput()  lalu ketik sungguhan, lalu r.stop()');

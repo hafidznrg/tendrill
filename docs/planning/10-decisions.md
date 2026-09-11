@@ -472,6 +472,49 @@ persen karakter yang kamu kenai dengan benar pada percobaan pertama".
   terpisah (`_firstOk`) di dalam `SessionState`.
 
 
+---
+
+## ADR-020 — p95 input→paint diukur rAF; Event Timing turun jadi gerbang lulus/gagal
+**Tanggal:** 2026-09-11 · **Status:** Diterima
+
+**Konteks.** Dok. 09 §5 mensyaratkan "p95 input→paint ≤ 8 ms (Event Timing API)" dan
+sekaligus menyuruh memakai skrip autotype keystroke sintetis. Saat verifikasi Fase 1
+dijalankan, dua syarat itu ternyata **saling meniadakan**.
+
+Yang diuji di situs produksi pada 2026-09-11:
+
+| Cara mengirim keydown | Sampai ke aplikasi? | Terekam Event Timing? |
+|---|---|---|
+| `document.dispatchEvent` dari konsol | ya | **tidak** |
+| CDP (`computer key` lewat browser automation) | ya | **tidak** |
+| CDP, dengan handler sengaja diblokir 60 ms | ya | **tidak** |
+
+Baris ketiga yang menutup perkara: bahkan interaksi yang jelas-jelas lambat pun tidak
+menghasilkan satu entri pun. Jadi bukan soal ambang `durationThreshold`, melainkan
+Event Timing memang tidak menghitung input yang tidak berasal dari manusia.
+
+**Keputusan.** Dua sumber angka yang berbeda, dengan tugas yang berbeda:
+
+1. **p95/p99 dispatch→paint** diukur `scripts/perf-autotype.js` — tiap keystroke diikuti
+   satu `requestAnimationFrame`, dijalankan pada beban konstan 140 WPM selama 60 detik.
+   Inilah yang dibandingkan dengan anggaran 8 ms / 16 ms.
+2. **Event Timing** dipakai dengan mengetik sungguhan, sebagai **gerbang lulus/gagal**:
+   nol entri = tidak ada interaksi yang tersendat. Ia tidak lagi diminta menghasilkan p95.
+
+**Konsekuensi.**
+- (+) Kedua angka sekarang benar-benar bisa diperoleh. Syarat lama tidak pernah bisa
+  dipenuhi oleh siapa pun, dan itu jenis DoD paling berbahaya: kelihatan ketat, padahal
+  hanya bisa dilewati dengan berpura-pura.
+- (+) Beban 140 WPM selama 60 detik tetap terotomasi — tangan manusia tidak bisa
+  mempertahankan laju itu dengan stabil.
+- (−) **Verifikasi performa tidak bisa sepenuhnya diotomasi**, termasuk oleh agent.
+  Mengetik sungguhan tetap dibutuhkan, dan begitu pula Chrome Memory profiler serta
+  React Profiler yang hanya hidup di antarmuka DevTools.
+- (−) `rAF` mengukur "sampai frame berikutnya dicat", sedikit berbeda dari definisi
+  Event Timing (`processingEnd` → presentasi). Bedanya kecil dan arahnya konservatif
+  (rAF cenderung melaporkan lebih besar), jadi lulus di sini berarti lulus di sana.
+
+
 # Backlog ide
 
 Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sampai fase berjalan selesai.**

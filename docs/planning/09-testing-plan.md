@@ -125,12 +125,27 @@ paling murah terhadap regresi diam-diam.
 
 ## 5. Uji performa (manual tapi wajib)
 
-**Skrip autotype:** kirim event `keydown` sintetis pada 700 CPM (=140 WPM) selama 60 detik,
-pada teks 500 karakter dengan virtual keyboard menyala (kasus terburuk).
+**Skrip autotype:** `scripts/perf-autotype.js` — kirim event `keydown` pada 700 CPM
+(=140 WPM) selama 60 detik, pada teks 500 karakter dengan virtual keyboard menyala
+(kasus terburuk).
 
-- [ ] **Event Timing API** (`PerformanceObserver`, entri bertipe event):
-      **p95 input→paint ≤ 8 ms**, p99 ≤ 16 ms (R-19). Ini mengukur input→paint yang
-      sesungguhnya; React Profiler hanya mengukur bagian React-nya.
+> **Dua hal wajib dibaca sebelum memakai angkanya.**
+>
+> 1. **Keystroke sintetis TIDAK terekam Event Timing API** — tidak dari
+>    `dispatchEvent` di konsol, dan tidak pula dari CDP (diuji 2026-09-11: keydown
+>    yang sengaja diblokir 60 ms tetap menghasilkan nol entri). Konsekuensinya
+>    p95 input→paint **tidak bisa diotomasi sama sekali**; lihat ADR-020.
+> 2. Jalankan di **build produksi** dan dengan **tab terlihat di depan**.
+>    `requestAnimationFrame` berhenti di tab tersembunyi, dan hasilnya akan tampak
+>    sempurna justru karena tidak ada yang pernah dicat.
+
+- [ ] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
+      (`autotype()`): tiap keystroke diikuti satu `requestAnimationFrame`, jadi yang
+      terukur adalah keystroke sampai frame berikutnya benar-benar dicat.
+- [ ] **Event Timing API sebagai gerbang lulus/gagal, bukan sumber p95** (lihat ADR-020):
+      ketik SUNGGUHAN selama 60 detik dengan `watchRealInput()` — **nol entri = lulus**,
+      karena entri hanya muncul untuk interaksi yang melewati ambang. Satu entri saja
+      berarti ada interaksi yang tersendat dan harus dikejar.
 - [ ] React Profiler: **0** komponen re-render per keystroke (R-08)
 - [ ] Chrome Memory: **0 alokasi heap per keystroke** — grafik allocation datar selama sesi
 - [ ] Chrome Performance: nol long task (> 50 ms) selama sesi
