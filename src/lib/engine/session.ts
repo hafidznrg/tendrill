@@ -88,6 +88,21 @@ export function restartSession(s: SessionState): void {
   s._result = null;
 }
 
+/**
+ * Kosongkan `_dirty` TANPA mengalokasikan.
+ *
+ * Sengaja `pop()`, bukan `length = 0`. Keduanya tampak setara dan hanya satu yang
+ * benar: `length = 0` membuat V8 memangkas backing store array, lalu `push`
+ * berikutnya mengalokasikan backing store baru — **152 byte per keystroke**,
+ * diukur `npm run perf:heap` pada 2026-09-11. Identitas array-nya tetap sama,
+ * jadi property test identitas tidak pernah bisa menangkapnya.
+ *
+ * `_dirty` tidak pernah berisi lebih dari satu indeks, jadi loop ini satu iterasi.
+ */
+function clearDirty(st: InternalSessionState): void {
+  while (st._dirty.length > 0) st._dirty.pop();
+}
+
 function outcome(
   s: SessionState,
   accepted: boolean,
@@ -116,7 +131,7 @@ function endSession(s: SessionState, atMs: number): void {
  */
 export function applyKey(s: SessionState, key: string, atMs: number): KeyOutcome {
   const st = s as InternalSessionState;
-  st._dirty.length = 0;
+  clearDirty(st);
 
   if (s.status === 'finished') return outcome(s, false, false, true);
   if (key.length !== 1) return outcome(s, false, false, false);
@@ -183,7 +198,7 @@ export function applyKey(s: SessionState, key: string, atMs: number): KeyOutcome
  */
 export function applyBackspace(s: SessionState): KeyOutcome {
   const st = s as InternalSessionState;
-  st._dirty.length = 0;
+  clearDirty(st);
 
   if (s.status === 'finished') return outcome(s, false, false, true);
   if (s.cursor === 0) return outcome(s, false, false, false);

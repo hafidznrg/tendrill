@@ -515,6 +515,54 @@ Event Timing memang tidak menghitung input yang tidak berasal dari manusia.
   (rAF cenderung melaporkan lebih besar), jadi lulus di sini berarti lulus di sana.
 
 
+## ADR-021 — Nol alokasi heap & nol re-render turun dari DevTools ke `npm run verify`
+**Tanggal:** 2026-09-11 · **Status:** Diterima
+
+**Konteks.** Dok. 09 §5 menaruh empat verifikasi performa di DevTools Chrome, dan
+ADR-020 menyimpulkan verifikasi performa "tidak bisa sepenuhnya diotomasi". Kesimpulan
+itu benar **untuk p95 input→paint**, tetapi terlanjur ikut menyeret dua item lain yang
+sebenarnya tidak butuh DevTools sama sekali:
+
+- **nol alokasi heap per keystroke** — engine wajib murni Node (dok. 06 §2 batasan 1),
+  jadi ia bisa diukur `process.memoryUsage().heapUsed` dengan `--expose-gc`, jauh lebih
+  deterministik daripada membaca grafik allocation dengan mata.
+- **nol re-render per keystroke** — `<Profiler>` adalah API `react`, bukan fitur
+  ekstensi DevTools. Ia jalan di Vitest tanpa browser.
+
+Keduanya punya sifat yang sama: **regresi diam-diam**. Satu `useState` yang tidak
+sengaja masuk jalur keystroke, atau satu objek yang dialokasikan per karakter, tidak
+akan terlihat sampai seseorang membuka DevTools lagi berbulan-bulan kemudian. Verifikasi
+manual hanya benar pada hari ia dijalankan.
+
+Pemeriksaan ulang pada 2026-09-11 lewat browser automation juga menambahkan satu fakta
+baru ke tabel ADR-020: di dalam panel browser yang dikendalikan agent,
+`requestAnimationFrame` **tidak pernah dipanggil** meski `document.visibilityState`
+bernilai `"visible"` — 36 keydown tiba di aplikasi, nol callback rAF. Jadi bukan hanya
+Event Timing yang tertutup: **seluruh pengukuran yang bergantung pada paint** tertutup
+di jalur otomasi, termasuk pengganti rAF yang dipilih ADR-020.
+
+**Keputusan.** Belah daftar dok. 09 §5 menjadi dua menurut apakah ia butuh **paint**:
+
+| Verifikasi | Butuh paint? | Ke mana |
+|---|---|---|
+| Nol alokasi heap per keystroke | tidak | `npm run perf:heap`, masuk `npm run verify` |
+| Nol re-render per keystroke | tidak | Vitest `<Profiler>`, masuk `npm run verify` |
+| Caret presisi setelah webfont & resize | tidak (layout saja) | skrip geometri di browser panel |
+| p95 dispatch→paint, long task, forced reflow | **ya** | tetap manual (ADR-020) |
+
+**Konsekuensi.**
+- (+) Dua dari empat utang performa berubah dari "diperiksa sekali" menjadi "dijaga tiap
+  commit". Inilah yang sebenarnya dibeli: bukan menghemat waktu hari ini, melainkan
+  menolak regresi besok.
+- (+) Nol dependensi baru, nol perubahan anggaran bundel — `--expose-gc` adalah flag
+  Node, `<Profiler>` sudah ikut React.
+- (−) `npm run verify` jadi lebih lambat (uji heap ~2 detik) dan sedikit lebih rapuh:
+  ambang byte-per-keystroke bergantung versi Node. Karena itu ambangnya ditetapkan
+  longgar dan diukur sebagai **minimum lintas ronde**, bukan sekali jalan.
+- (−) Yang tersisa manual tetap manual. ADR ini **tidak** menghapus titik henti Fase 2;
+  ia hanya memperkecilnya dari empat item jadi dua.
+
+
 # Backlog ide
 
 Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sampai fase berjalan selesai.**

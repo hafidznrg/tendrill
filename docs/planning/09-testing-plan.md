@@ -146,14 +146,41 @@ paling murah terhadap regresi diam-diam.
       ketik SUNGGUHAN selama 60 detik dengan `watchRealInput()` — **nol entri = lulus**,
       karena entri hanya muncul untuk interaksi yang melewati ambang. Satu entri saja
       berarti ada interaksi yang tersendat dan harus dikejar.
-- [ ] React Profiler: **0** komponen re-render per keystroke (R-08)
-- [ ] Chrome Memory: **0 alokasi heap per keystroke** — grafik allocation datar selama sesi
 - [ ] Chrome Performance: nol long task (> 50 ms) selama sesi
 - [ ] Nol "forced reflow" di panel Performance (R-06)
 - [ ] Waktu ke keystroke pertama < 3 detik pada Fast 3G ter-throttle,
       diukur dengan `performance.mark` (R-24)
 
 Jalankan uji ini di akhir Fase 1 dan ulangi di akhir Fase 8.
+
+### 5.1 Yang sudah TIDAK manual lagi (ADR-021)
+
+Dua item pindah dari daftar di atas ke `npm run verify`, karena keduanya sama sekali
+tidak butuh **paint** — dan verifikasi manual hanya benar pada hari ia dijalankan:
+
+| Dijaga oleh | Menggantikan |
+|---|---|
+| `npm run perf:heap` | Chrome Memory allocation profiler |
+| `src/features/typing/__tests__/rerender.test.tsx` | React Profiler DevTools |
+| `src/features/typing/__tests__/sessionFlow.test.tsx` | periksa sendiri metrik live, nol penulisan storage, alur tanpa mouse |
+
+> **Cara `perf:heap` mengukur, dan satu jebakan yang wajib diketahui.**
+> Membandingkan `heapUsed` di antara dua `gc()` mengukur memori yang **ditahan**,
+> bukan yang **dialokasikan** — dan alokasi per keystroke yang normal justru berumur
+> pendek, jadi `gc()` terakhir menghapus persis bukti yang dicari. Versi pertama skrip
+> ini melakukan itu dan **meloloskan kontrol negatif**. Yang benar: `gc()` sekali di
+> awal, `heapUsed` sesudah loop tanpa gc, dan ronde yang kejatuhan GC dibuang.
+>
+> Aturan yang lahir dari situ: **tiap gerbang performa wajib diuji dengan kontrol
+> negatif** — sisipkan alokasi/render palsu, pastikan gerbangnya merah. Gerbang yang
+> belum pernah merah belum terbukti menjaga apa pun.
+
+Hasil pertama (2026-09-11) langsung menangkap pelanggaran yang lolos dari seluruh
+verifikasi Fase 1: `_dirty.length = 0` di `session.ts` membuat V8 memangkas backing
+store array, dan `push` berikutnya mengalokasikan yang baru — **152 byte per
+keystroke**. Identitas array-nya tidak berubah, jadi property test identitas tidak
+pernah bisa melihatnya. Diganti `pop()`; sekarang 0,5 byte, sama dengan lantai
+pengukuran.
 
 ## 6. Uji komponen (terbatas)
 

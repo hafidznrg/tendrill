@@ -102,19 +102,33 @@ panduan jari + highlight tombol berikutnya, gulir teks per baris, restart cepat,
 penyimpanan hasil saat idle.
 
 **DoD**
-- [ ] Metrik live akurat dibanding hitungan manual
-- [ ] Layar hasil menampilkan kalimat diagnosis yang bermakna
-- [ ] Virtual keyboard menyorot tombol berikutnya termasuk Shift sisi berlawanan
+- [x] Metrik live akurat dibanding hitungan manual — `sessionFlow.test.tsx`
+- [ ] Layar hasil menampilkan kalimat diagnosis yang bermakna — *penilaian manusia,
+      tidak bisa diotomasi; `diagnosis.test.ts` hanya menjaga ia tidak kosong/salah*
+- [x] Virtual keyboard menyorot tombol berikutnya termasuk Shift sisi berlawanan —
+      `fingerMap.test.ts` + `VirtualKeyboard.test.tsx`
 - [ ] Nol layout shift saat mengetik; caret tetap presisi setelah webfont termuat
-      dan setelah resize/zoom (R-06)
-- [ ] Sesi tersimpan setelah selesai, nol penulisan saat berjalan
-- [ ] Seluruh alur sesi bisa dijalankan tanpa mouse
+      dan setelah resize/zoom (R-06) — *sebagian manual: `layout-shift` butuh paint*
+- [x] Sesi tersimpan setelah selesai, nol penulisan saat berjalan —
+      `sessionFlow.test.tsx` + `persistSession.test.ts`
+- [x] Seluruh alur sesi bisa dijalankan tanpa mouse — `sessionFlow.test.tsx`
 
-**Utang Fase 1 yang jatuh tempo di sini** (ditunda 2026-09-11, lihat catatan Fase 1):
-- [ ] Chrome Memory allocation profiler: nol alokasi heap per keystroke
-- [ ] React Profiler: nol re-render per keystroke
+**Utang Fase 1 yang jatuh tempo di sini** (ditunda 2026-09-11, lihat catatan Fase 1).
+Dua di antaranya **selesai dan sekarang dijaga `npm run verify`**, bukan diperiksa
+sekali (ADR-021):
+- [x] Nol alokasi heap per keystroke — `npm run perf:heap`. Tidak lagi lewat Chrome
+      Memory profiler. **Gerbang ini langsung menemukan pelanggaran nyata**:
+      `_dirty.length = 0` mengalokasikan 152 byte/keystroke lewat pemangkasan backing
+      store V8. Diperbaiki; sekarang 0,5 byte = lantai pengukuran.
+- [x] Nol re-render per keystroke — `rerender.test.tsx`, memakai `<Profiler>` dari
+      paket `react` (bukan ekstensi DevTools), dengan virtual keyboard menyala.
+      Tepat 2 commit per sesi, keduanya transisi status.
 - [ ] `autotype()` + `watchRealInput()` **dengan virtual keyboard menyala** —
-      kasus terburuk dok. 09 §5 yang baru bisa diuji setelah fase ini
+      kasus terburuk dok. 09 §5. **Tetap manual dan tidak bisa dihindari**: selain
+      Event Timing yang menolak input non-manusia (ADR-020), panel browser yang
+      dikendalikan agent tidak pernah memanggil `requestAnimationFrame` meski
+      `visibilityState` "visible" — diuji 2026-09-11, 36 keydown tiba, nol rAF.
+      Tanpa paint, tidak ada p95 input→paint.
 - [ ] 15 menit memakai sendiri
 
 ---
