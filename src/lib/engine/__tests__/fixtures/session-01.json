@@ -1,0 +1,172 @@
+{
+  "_catatan": "Golden fixture (dok. 09 Sec 2.2). Satu rekaman keystroke nyata beserta SessionResult yang diharapkan. Angka di sini TIDAK boleh diubah hanya supaya test hijau -- kalau ia berubah, yang berubah adalah arti metriknya, dan itu butuh alasan tertulis di dok. 10.",
+  "_verifikasi_tangan": "target 19 karakter, diketik dengan 'i' dan 'c' tertukar -> 17/19 benar = 89,47%. durationMs 3102 -> netWPM = 17/5 / (3102/60000) = 65,76.",
+  "target": "the quick brown fox",
+  "stream": [
+    {
+      "key": "t",
+      "atMs": 0
+    },
+    {
+      "key": "h",
+      "atMs": 180
+    },
+    {
+      "key": "e",
+      "atMs": 330
+    },
+    {
+      "key": " ",
+      "atMs": 420
+    },
+    {
+      "key": "q",
+      "atMs": 640
+    },
+    {
+      "key": "u",
+      "atMs": 815
+    },
+    {
+      "key": "c",
+      "atMs": 975
+    },
+    {
+      "key": "i",
+      "atMs": 1170
+    },
+    {
+      "key": "k",
+      "atMs": 1380
+    },
+    {
+      "key": " ",
+      "atMs": 1680
+    },
+    {
+      "key": "b",
+      "atMs": 1820
+    },
+    {
+      "key": "r",
+      "atMs": 1975
+    },
+    {
+      "key": "o",
+      "atMs": 2140
+    },
+    {
+      "key": "w",
+      "atMs": 2290
+    },
+    {
+      "key": "n",
+      "atMs": 2385
+    },
+    {
+      "key": " ",
+      "atMs": 2625
+    },
+    {
+      "key": "f",
+      "atMs": 2795
+    },
+    {
+      "key": "o",
+      "atMs": 2953
+    },
+    {
+      "key": "x",
+      "atMs": 3102
+    }
+  ],
+  "expected": {
+    "target": "the quick brown fox",
+    "durationMs": 3102,
+    "grossWPM": 73.50096711798838,
+    "netWPM": 65.76402321083171,
+    "accuracy": 89.47368421052632,
+    "totalKeystrokes": 19,
+    "correctKeystrokes": 17,
+    "consistency": 0.7142948318089721,
+    "errorsByKey": {
+      "i": 1,
+      "c": 1
+    },
+    "latencyByKey": {
+      "h": {
+        "sumMs": 180,
+        "count": 1
+      },
+      "e": {
+        "sumMs": 150,
+        "count": 1
+      },
+      " ": {
+        "sumMs": 630,
+        "count": 3
+      },
+      "q": {
+        "sumMs": 220,
+        "count": 1
+      },
+      "u": {
+        "sumMs": 175,
+        "count": 1
+      },
+      "i": {
+        "sumMs": 160,
+        "count": 1
+      },
+      "c": {
+        "sumMs": 195,
+        "count": 1
+      },
+      "k": {
+        "sumMs": 210,
+        "count": 1
+      },
+      "b": {
+        "sumMs": 140,
+        "count": 1
+      },
+      "r": {
+        "sumMs": 155,
+        "count": 1
+      },
+      "o": {
+        "sumMs": 323,
+        "count": 2
+      },
+      "w": {
+        "sumMs": 150,
+        "count": 1
+      },
+      "n": {
+        "sumMs": 95,
+        "count": 1
+      },
+      "f": {
+        "sumMs": 170,
+        "count": 1
+      },
+      "x": {
+        "sumMs": 149,
+        "count": 1
+      }
+    },
+    "confusions": [
+      {
+        "expected": "i",
+        "actual": "c",
+        "count": 1
+      },
+      {
+        "expected": "c",
+        "actual": "i",
+        "count": 1
+      }
+    ],
+    "logOverflowed": false
+  }
+}

@@ -431,6 +431,47 @@ bukan diperkirakan.
 - (−) Lighthouse ≥ 95 tidak bisa jadi jaring pengaman kedua — ia lolos santai bahkan
   di 200 KB untuk desktop. Satu-satunya yang menjaga adalah anggaran kode aplikasi.
 
+---
+
+## ADR-019 — Hanya percobaan pertama yang tercatat
+**Tanggal:** 2026-09-11 · **Status:** Diterima
+
+**Konteks.** Dok. 03 §4 menetapkan "akurasi dihitung dari percobaan pertama" (ADR-003)
+dan dok. 02 §4 menetapkan "backspace mengoreksi teks tetapi error yang sudah tercatat
+tetap dihitung". Keduanya tidak menjawab satu pertanyaan yang baru muncul saat menulis
+`applyKey`: **saat pengguna mengetik ulang karakter yang sama setelah backspace, apakah
+keystroke itu masuk `acc.total`?**
+
+Tiga jawaban mungkin, dan ketiganya menghasilkan akurasi berbeda untuk kejadian yang
+sama persis (salah 1 karakter dari 50, lalu dikoreksi):
+
+| Perlakuan | Akurasi | Masalahnya |
+|---|---|---|
+| Percobaan ulang menambah `total` saja | 49/51 ≈ 96% lalu turun tiap koreksi | Menghukum koreksi dua kali: sekali lewat waktu, sekali lagi lewat akurasi |
+| Percobaan ulang menambah `total` **dan** `correct` | 50/51 ≈ 98% | Backspace jadi alat memutihkan kesalahan — melanggar ADR-003 |
+| **Percobaan ulang tidak dicatat sama sekali** | **49/50 = 98%** | — |
+
+**Keputusan.** Percobaan ulang tidak dicatat sama sekali. Log dan akumulator hanya
+memuat percobaan pertama di tiap indeks, sehingga `accuracy` persis berarti "berapa
+persen karakter yang kamu kenai dengan benar pada percobaan pertama".
+
+**Konsekuensi.**
+- (+) Satu definisi yang bisa dijelaskan ke pengguna dalam satu kalimat, dan sebanding
+  dengan cara aplikasi mengetik lain melaporkan akurasi.
+- (+) Koreksi tetap ada ongkosnya — waktunya terpakai, jadi WPM turun sendiri. Cukup
+  satu hukuman, bukan dua.
+- (+) `log.count` tidak bisa membengkak karena pengguna yang gemar backspace; kapasitas
+  `target.length * 2 + 64` jadi punya arti.
+- (+) Invarian "metrik(akumulator) == metrik(log)" jadi sepele dijaga karena keduanya
+  memuat himpunan kejadian yang sama.
+- (−) `confusions` kehilangan informasi tentang kesalahan pada percobaan kedua dan
+  seterusnya ("sudah dikoreksi pun masih salah"). Ini kerugian nyata untuk diagnosis,
+  dan diterima karena percobaan ulang biasanya sudah dituntun oleh sel yang ditandai
+  merah — jadi nilainya sebagai sinyal diagnosis rendah.
+- (−) `state: 'corrected'` tidak bisa lagi diturunkan dari log; ia butuh penanda
+  terpisah (`_firstOk`) di dalam `SessionState`.
+
+
 # Backlog ide
 
 Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sampai fase berjalan selesai.**

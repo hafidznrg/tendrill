@@ -100,7 +100,9 @@ untuk `sessions[].lessonId` yang menggantung.
   }>
 }
 ```
-**Rolling buffer:** simpan maksimal 500 entri terbaru. Saat melebihi, buang yang tertua.
+**Rolling buffer:** simpan maksimal **200** entri terbaru. Saat melebihi, buang yang tertua.
+*(Baris ini sempat tertinggal menulis 500 saat revisi v2 — R-20 menurunkannya ke 200,
+lihat §2. Diperbaiki 2026-09-11.)*
 Grafik jangka panjang tetap akurat karena agregat harian juga disimpan (lihat di bawah).
 
 ### `typing:keystats`

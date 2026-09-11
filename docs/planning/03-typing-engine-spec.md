@@ -156,6 +156,25 @@ netWPM   = (acc.correct / 5) / elapsedMinutes
 accuracy = acc.correct / acc.total × 100
 ```
 
+### Apa yang dicatat, dan apa yang tidak (ADR-019)
+
+**Hanya percobaan pertama di tiap indeks yang masuk log dan akumulator.** Mengetik
+ulang setelah backspace mengubah tampilan sel, menggerakkan cursor, dan tetap memakan
+waktu — tetapi tidak pernah menambah `total` maupun `correct`.
+
+Konsekuensinya `accuracy` = akurasi percobaan pertama: teks 50 karakter dengan 5 salah
+yang semuanya dikoreksi tetap 90%, bukan 0% dan bukan 100%. Koreksi menurunkan WPM
+dengan sendirinya karena waktunya terpakai (dok. 02 §4), tanpa perlu dihukum dua kali.
+Alasan lengkap di ADR-019.
+
+### Waktu di dalam log sudah dikurangi pause
+
+`log.atMs` dan `CharCell.firstAttemptAt` menyimpan **waktu aktif** (`now - startedAt -
+pausedMs`), bukan waktu dinding sejak mulai. Tanpa ini, jeda yang melintasi satu pause
+akan tercatat sebagai latensi raksasa di jalur log sementara jalur akumulator
+mengabaikannya — dan invarian "metrik(akumulator) == metrik(log)" (dok. 09 §2.1) pecah
+tepat di kasus yang paling sulit di-debug.
+
 ### Keputusan penting
 - **Angka utama yang ditampilkan = `netWPM`.** Jujur secara pedagogis; gross WPM memberi
   hadiah untuk mengetik ngawur dengan cepat.
