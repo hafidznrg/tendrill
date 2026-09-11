@@ -148,6 +148,13 @@ export function watchRealInput() {
  * React — biasanya karena seseorang "merapikan" TypingArea menjadi `cells.map()`.
  */
 export async function countDomWork(keystrokes = 50) {
+  // Restart DULU, baru catat span-nya. Restart adalah perubahan struktural yang
+  // memang membangun ulang seluruh span (itu perilaku yang benar) — mencatat
+  // daftar span sebelum restart membuat pengukuran ini melaporkan "span dibuat
+  // ulang" pada dirinya sendiri.
+  press('Tab');
+  await new Promise((r) => setTimeout(r, 80));
+
   const host = document.querySelector('.ta-root');
   const spans = [...document.querySelectorAll('.ta-text span')];
   const target = spans.map((s) => s.textContent).join('');
@@ -158,18 +165,20 @@ export async function countDomWork(keystrokes = 50) {
   });
   obs.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
 
-  press('Tab');
-  for (let i = 0; i < keystrokes; i++) press(target[i % target.length]);
+  // Berhenti sebelum karakter terakhir: menyelesaikan teks memicu layar hasil,
+  // dan render-nya akan terhitung sebagai pekerjaan per-keystroke.
+  const n = Math.min(keystrokes, target.length - 1);
+  for (let i = 0; i < n; i++) press(target[i]);
   await new Promise((r) => setTimeout(r, 50));
   obs.disconnect();
 
   const spansAfter = [...document.querySelectorAll('.ta-text span')];
   const hasil = {
-    keystroke: keystrokes,
+    keystroke: n,
     mutasiTotal: mutations.length,
-    perKeystroke: +(mutations.length / keystrokes).toFixed(2),
+    perKeystroke: +(mutations.length / n).toFixed(2),
     spanDibuatUlang: !spans.every((s, i) => s === spansAfter[i]),
-    lulus: mutations.length / keystrokes <= 2 && spans.every((s, i) => s === spansAfter[i]),
+    lulus: mutations.length / n <= 2 && spans.every((s, i) => s === spansAfter[i]),
   };
 
   console.table(hasil);
