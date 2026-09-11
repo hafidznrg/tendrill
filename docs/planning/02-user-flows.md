@@ -81,6 +81,13 @@ STATE: idle → running → finished
   keystroke → sesi di-void, hasil tidak disimpan, dan layar hasil menjelaskan alasannya.
   Ini mencegah "sesi 4 jam dengan 12 WPM" mencemari statistik.
 - Karakter salah **tidak memblokir** — pengguna tetap bisa lanjut (mode non-strict). Karakter salah ditandai dan dihitung.
+  > ⚠️ **Aturan ini sedang ditinjau, jangan dianggap final.** Engine tidak punya model
+  > penyisipan, jadi satu tombol berlebih menggeser seluruh sisa drill — dan hanya
+  > pengguna yang **melihat layar** yang bisa menyelamatkannya lewat backspace. Terukur
+  > selisih 20 poin akurasi dari kesalahan jari yang persis sama
+  > (`src/lib/engine/__tests__/nonStrict.test.ts`). Usulan penggantinya — mode
+  > strict/non-strict yang bisa dipilih, default strict di `/learn` — ada di dok. 10
+  > "Kandidat ADR". **Diputuskan lewat uji pemula Fase 3, dikerjakan di Fase 4.**
 
 ## 5. Layar hasil
 

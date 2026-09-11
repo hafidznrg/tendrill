@@ -577,3 +577,92 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 - [ ] Playwright untuk 3 skenario E2E
 - [ ] Router tulis sendiri (−13 KB) — jalan keluar kalau anggaran mengikat (ADR-018)
 - [ ] Preact via `compat` (−60 KB) — jalan keluar darurat, evaluasi setelah Fase 2 (ADR-018)
+- [ ] **Mode strict/non-strict bisa dipilih** — kandidat ADR, rinciannya di bawah
+
+---
+
+## Kandidat ADR — Mode input strict/non-strict bisa dipilih pengguna
+
+**Diusulkan:** 2026-09-11 · **Status:** *Kandidat — belum diputuskan, belum dikerjakan*
+· **Diputuskan:** uji pemula Fase 3 · **Dikerjakan:** Fase 4 (bersyarat)
+
+> Ini **belum** ADR. Ia ditulis di sini, bukan di daftar ADR di atas, justru supaya
+> tidak terbaca sebagai keputusan yang sudah diambil.
+
+### Konteks
+
+Dok. 02 §4 menetapkan satu baris tanpa ADR: *"Karakter salah tidak memblokir —
+pengguna tetap bisa lanjut (mode non-strict)."* Kodenya patuh — `applyKey` selalu
+memajukan kursor, benar atau salah.
+
+Peninjauan pada 2026-09-11 menemukan satu konsekuensi yang belum pernah tertulis
+di dokumen mana pun.
+
+**Engine ini tidak punya model penyisipan.** Setiap karakter tercetak mengonsumsi
+tepat satu sel target, jadi **satu tombol berlebih menggeser seluruh sisa drill** —
+dan tiap karakter sesudahnya tercatat salah meski jarinya benar. Pada drill 500
+karakter, pergeseran di awal bisa merusak seluruh sisanya, termasuk `confusions`,
+`errorsByKey`, dan heatmap latensi yang menjadi bahan diagnosis (ADR-011, R-18).
+
+Akibatnya arti backspace bergeser. Di bawah ADR-019 ia **tidak memperbaiki akurasi**;
+yang ia perbaiki adalah **keselarasan**. Tapi untuk memakainya, pengguna harus sadar
+bahwa ia sudah bergeser — dan itu berarti **melihat ke layar**, kebalikan dari yang
+diajarkan aplikasi ini.
+
+Terukur di `nonStrict.test.ts`: dua sesi dengan kesalahan jari yang **persis sama**
+berselisih **20 poin akurasi**, dan satu-satunya pembeda adalah apakah pengguna
+sempat melihat layar.
+
+### Usulan
+
+Mode input menjadi **pilihan pengguna**, dengan default per konteks:
+
+| Halaman | Default | Alasan |
+|---|---|---|
+| `/learn` | **strict** | membentuk pola jari yang benar; pergeseran mustahil terjadi |
+| `/practice` | **non-strict** | membangun kecepatan; ritme tidak boleh putus |
+
+Tiga syarat yang mengikat usulan ini:
+
+1. **Bisa diganti pengguna**, per halaman, tersimpan di pengaturan (dok. 05).
+2. **Mode yang aktif harus terlihat**, bukan tersembunyi di pengaturan. Pengguna yang
+   tertahan di mode strict harus langsung paham **kenapa** ia tertahan — kalau tidak,
+   perilaku itu terbaca sebagai aplikasi yang rusak. Sorotan tombol berikutnya di
+   virtual keyboard yang tetap menyala adalah bagian dari penjelasan itu.
+3. **Strict layak jadi anak tangga assist ladder** (ADR-010): pengguna yang gagal tiga
+   kali di lesson yang sama justru paling butuh dipaksa melakukan gerakan yang benar.
+
+### Yang mendukung, dan yang menentang
+
+**Mendukung strict di `/learn`:**
+- Gerakan yang diulang menjadi gerakan yang **benar**; pola motorik salah tidak dibiarkan lewat.
+- Sorotan tombol berikutnya tetap menyala sampai ditekan benar — panduan jari tidak
+  menjauh justru saat paling dibutuhkan.
+- Pergeseran mustahil, jadi data diagnosis bersih dan backspace tidak lagi wajib.
+- Selaras dok. 04 §292: *"akurasi tidak pernah dikompromikan, kecepatan boleh menunggu."*
+
+**Menentang (dan ini keberatan terkuat):**
+- **Pengguna yang benar-benar tidak melihat layar akan menabrak tembok tanpa sadar.**
+  Suara belum ada (Fase 8, opsional), jadi umpan baliknya hanya visual — padahal ia
+  sedang tidak melihat. Ini yang belum bisa dijawab dokumen mana pun.
+- Persona "menengah tersendat" (prioritas v1, ADR-010) akan jengkel kalau tertahan tiap
+  typo. Dimitigasi oleh default non-strict di `/practice` dan `passed-by-placement`.
+
+### Kenapa belum diputuskan sekarang
+
+Instrumen untuk menjawabnya sudah dijadwalkan: **uji ke satu pemula nyata di ~hari 11**
+(ADR-012), dengan instruksi mengamati tanpa memberi instruksi. Pertanyaan "pemula
+tersesat saat diblokir, atau justru tersesat saat dibiarkan lanjut?" adalah persis yang
+uji itu dirancang untuk menjawab. Memutuskannya sekarang berarti menebak beberapa hari
+sebelum datanya tiba.
+
+**Jadikan ini butir observasi eksplisit di uji tersebut** — bukan sekadar "amati",
+melainkan: *hitung berapa kali ia bergeser, dan apakah ia menyadarinya.*
+
+### Kalau jadi dikerjakan
+
+Urutannya mengikat (dok. 00): ubah dok. 02 §4 → naikkan bagian ini menjadi ADR →
+baru kode. Yang tersentuh: `applyKey` (mode), `TypingArea` (umpan balik tertahan),
+`VirtualKeyboard` (sorotan bertahan), pengaturan + storage, dan
+`src/lib/engine/__tests__/nonStrict.test.ts` — test karakterisasi yang sengaja dipasang
+supaya **berubah merah** saat perilaku ini diubah.

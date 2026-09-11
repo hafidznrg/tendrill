@@ -150,13 +150,23 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
 - [ ] **Uji ke satu pemula nyata (~hari 11).** Amati tanpa memberi instruksi.
       Kalau mereka tidak paham posisi jari setelah Lesson 1, kurikulumnya yang salah —
       perbaiki sekarang, selagi baru 11 hari kerja yang dipertaruhkan, bukan 25.
+- [ ] **Butir pengamatan khusus di uji itu: pergeseran mode non-strict.**
+      Bukan sekadar "amati" — **hitung berapa kali ia menekan satu tombol berlebih,
+      dan apakah ia menyadarinya.** Ini satu-satunya data yang bisa memutuskan kandidat
+      ADR mode strict (dok. 10), dan hanya bisa diambil dari pemula sungguhan.
+      Keputusannya diambil di sini; implementasinya di Fase 4.
 
 ---
 
-## Fase 4 — Kurikulum Unit 2–6 + review session · ~3,5 hari
+## Fase 4 — Kurikulum Unit 2–6 + review session · ~3,5 hari (+0,5 bersyarat)
 
 Sisa 25 lesson (konten sudah ditulis sebagai pekerjaan latar), review session tiap akhir unit,
 validasi data kurikulum otomatis.
+
+**Plus, kalau uji pemula Fase 3 memutuskannya: mode strict/non-strict** (~0,5 hari).
+Ditaruh di sini, bukan di Fase 3, karena Fase 3 adalah fase uji risiko yang DoD-nya sudah
+penuh — dan karena datanya baru ada setelah uji pemula selesai. Urutannya mengikat
+(dok. 00): ubah dok. 02 §4 → naikkan kandidat di dok. 10 menjadi ADR → baru kode.
 
 **DoD**
 - [ ] Semua 30 lesson + 6 review terisi konten nyata, bukan placeholder
@@ -164,6 +174,15 @@ validasi data kurikulum otomatis.
       sudah diperkenalkan sebelumnya
 - [ ] **Kamu sendiri sudah menyelesaikan Unit 1–3 dari nol** — ini uji kualitas kurikulum
 - [ ] Kriteria lulus terasa adil (tidak terlalu mudah, tidak menyiksa)
+
+**DoD tambahan — hanya kalau mode strict jadi dikerjakan:**
+- [ ] Mode bisa diganti pengguna per halaman dan tersimpan; default **strict di `/learn`,
+      non-strict di `/practice`**
+- [ ] **Mode yang aktif terlihat tanpa membuka pengaturan.** Pengguna yang tertahan harus
+      langsung paham KENAPA ia tertahan — kalau tidak, itu terbaca sebagai aplikasi rusak
+- [ ] Sorotan tombol berikutnya di virtual keyboard **bertahan** sampai ditekan benar
+- [ ] `nonStrict.test.ts` diperbarui dengan sengaja, bukan dihapus — ia memang dipasang
+      untuk berubah merah di titik ini
 
 ---
 
@@ -228,7 +247,7 @@ favicon/meta, deploy.
 | 1 Engine + Storage | 4,5 |
 | 2 Layar sesi | 3 |
 | 3 Kurikulum U0–U1 + uji pengguna | 3 |
-| 4 Kurikulum U2–U6 + review | 3,5 |
+| 4 Kurikulum U2–U6 + review | 3,5 (+0,5 kalau mode strict jadi dikerjakan) |
 | 5 Latihan bebas | 1,5 |
 | 6 Statistik | 3 |
 | 7 Adaptif | 2,5 |
