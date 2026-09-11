@@ -58,21 +58,33 @@ Implementasi `src/lib/engine/` lengkap sesuai dok. 03 v2: log kolumnar, akumulat
 **Ekor fase (~0,5 hari): storage layer** sesuai dok. 05. Kecil, tapi membuka semua fase
 berikutnya — di v1 ia terjebak di Fase 3 sehingga Fase 2 tidak bisa diuji secara nyata.
 
-**DoD**
-- [ ] Unit test engine lulus; semua kasus tepi dok. 03 §10 punya test
-- [ ] **Property test lulus**: `netWPM ≤ grossWPM`, `0 ≤ accuracy ≤ 100`,
-      dan **metrik(akumulator) == metrik(log)** (R-19)
-- [ ] Golden fixture terpasang dan hijau
-- [ ] **Nol alokasi heap per keystroke** — diverifikasi lewat Chrome Memory profiler
-- [ ] **Nol re-render React per keystroke** — diverifikasi lewat React Profiler
+**DoD** — kode selesai 2026-09-11; tiga item performa menunggu verifikasi manual
+- [x] Unit test engine lulus; semua kasus tepi dok. 03 §10 punya test
+- [x] **Property test lulus**: `netWPM ≤ grossWPM`, `0 ≤ accuracy ≤ 100`,
+      dan **metrik(akumulator) == metrik(log)** (R-19) — 500 aliran acak per invarian
+- [x] Golden fixture terpasang dan hijau (`fixtures/session-01.json`)
+- [ ] **Nol alokasi heap per keystroke** — *belum diverifikasi Chrome Memory profiler.*
+      Yang sudah ada: buffer typed-array dialokasikan sekali, array `dirty` dipakai
+      ulang, dan property test menegakkan identitasnya tidak pernah berubah.
+- [x] **Nol re-render React per keystroke** — diukur di browser: **tepat 2 mutasi DOM
+      per keystroke** (1 `className` karakter + 1 `transform` caret) dan identitas
+      seluruh span tidak berubah. *React Profiler sendiri belum dijalankan.*
 - [ ] Mengetik 140 WPM sintetis selama 60 detik: **p95 input→paint ≤ 8 ms**
-      (Event Timing API), nol long task
-- [ ] Backspace, Tab, Esc, key repeat, blur/pause, void 30 detik sesuai spesifikasi
-- [ ] Paste terblokir termasuk `Shift+Insert` dan drag-drop
-- [ ] Storage: baca rusak, kuota penuh (4 tingkat pemangkasan), versi lama, mode memori
+      (Event Timing API), nol long task — *belum.* Yang terukur: biaya **sinkron**
+      jalur keystroke atas 2000 keystroke beruntun di dev build — p95 **0,1 ms**,
+      p99 0,2 ms, maks 2,3 ms. Lapang terhadap anggaran 8 ms, tetapi paint belum
+      ikut terukur dan Event Timing butuh input sungguhan.
+- [x] Backspace, Tab, Esc, key repeat, blur/pause, void 30 detik sesuai spesifikasi
+- [x] Paste terblokir termasuk `Shift+Insert` dan drag-drop
+- [x] Storage: baca rusak, kuota penuh (4 tingkat pemangkasan), versi lama, mode memori
 
 > **Titik henti wajib.** Setelah fase ini, pakai sendiri 15 menit. Kalau ada yang terasa
 > "berat" atau "meleset", perbaiki **sekarang** — bukan nanti.
+>
+> **Belum dijalankan.** Tiga verifikasi di atas butuh tangan manusia di Chrome DevTools
+> (Memory allocation profiler, React Profiler, Event Timing dengan input sungguhan),
+> dan 15 menit memakai sendiri tidak bisa didelegasikan — justru itu gunanya.
+> **Fase 2 belum boleh dimulai sebelum ini dikerjakan.**
 
 ---
 

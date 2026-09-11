@@ -23,7 +23,12 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 1 — Typing Engine + Storage (sedang berjalan).**
+Status sekarang: **Fase 1 — kode selesai, menunggu verifikasi manual.**
+
+Tiga item DoD Fase 1 butuh tangan manusia di Chrome DevTools dan **belum dikerjakan**:
+Memory allocation profiler (nol alokasi/keystroke), React Profiler, dan Event Timing
+p95 input→paint. Plus 15 menit memakai sendiri — titik henti wajib dok. 08.
+**Jangan mulai Fase 2 sebelum itu.**
 
 **Jangan mulai fase berikutnya sebelum DoD fase berjalan terpenuhi** (dok. 08).
 Jangan mengerjakan fitur dari fase yang jauh di depan hanya karena "sekalian".

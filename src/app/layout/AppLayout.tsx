@@ -1,7 +1,8 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { ThemeToggle } from './ThemeToggle';
 import markUrl from '@/assets/brand/mark.svg';
+import { prefetchSessionPath } from '../prefetch.ts';
 
 const NAV = [
   { to: '/learn', label: 'belajar' },
@@ -11,6 +12,9 @@ const NAV = [
 ] as const;
 
 export function AppLayout() {
+  // Jalur sesi disiapkan di latar sejak halaman mana pun dibuka (dok. 06 §6).
+  useEffect(prefetchSessionPath, []);
+
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <header className="flex items-center gap-6 border-b border-line px-6 py-3">

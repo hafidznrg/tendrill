@@ -1,0 +1,80 @@
+/* Lapisan teks sesi (dok. 07 §6, dok. 12 §4–§5).
+   Kelas di sini ditulis IMPERATIF dari useTypingSession, jadi ia tidak boleh
+   bergantung pada Tailwind JIT — nama kelas yang tidak pernah muncul di JSX
+   akan dibuang saat purge. */
+
+.ta-root {
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.8;
+}
+
+.ta-viewport {
+  position: relative;
+  will-change: transform;
+}
+
+.ta-text {
+  white-space: pre-wrap;
+  word-break: normal;
+  /* Teks dibungkus engine (wrapText), bukan CSS — lihat dok. 03 §8. */
+}
+
+.ta-pending {
+  color: var(--fg-dim);
+}
+
+.ta-correct {
+  color: var(--fg);
+}
+
+/* Salah ditandai, bukan diteriaki (prinsip PRD #3): warna rendah saturasi,
+   dan SELALU berpasangan dengan garis bawah supaya tetap terbaca oleh mata
+   yang tidak membedakan warna (dok. 12 §5 aturan 2). */
+.ta-incorrect {
+  color: var(--error);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* Pernah salah, sudah dikoreksi. Tidak dirayakan, tidak dihukum. */
+.ta-corrected {
+  color: var(--fg);
+  text-decoration: underline dotted;
+  text-decoration-color: var(--fg-dim);
+  text-underline-offset: 3px;
+}
+
+/* Satu-satunya warna panas di seluruh antarmuka (dok. 12 §5 aturan 1). */
+.ta-caret {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--caret);
+  border-radius: 1px;
+  will-change: transform;
+  animation: ta-blink 1.1s steps(1, end) infinite;
+}
+
+@keyframes ta-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  95% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ta-caret {
+    animation: none;
+  }
+}
