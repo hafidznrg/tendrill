@@ -139,17 +139,23 @@ paling murah terhadap regresi diam-diam.
 >    `requestAnimationFrame` berhenti di tab tersembunyi, dan hasilnya akan tampak
 >    sempurna justru karena tidak ada yang pernah dicat.
 
-- [ ] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
+- [x] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
       (`autotype()`): tiap keystroke diikuti satu `requestAnimationFrame`, jadi yang
       terukur adalah keystroke sampai frame berikutnya benar-benar dicat.
-- [ ] **Event Timing API sebagai gerbang lulus/gagal, bukan sumber p95** (lihat ADR-020):
+- [x] **Event Timing API sebagai gerbang lulus/gagal, bukan sumber p95** (lihat ADR-020):
       ketik SUNGGUHAN selama 60 detik dengan `watchRealInput()` — **nol entri = lulus**,
       karena entri hanya muncul untuk interaksi yang melewati ambang. Satu entri saja
       berarti ada interaksi yang tersendat dan harus dikejar.
-- [ ] Chrome Performance: nol long task (> 50 ms) selama sesi
+- [x] Chrome Performance: nol long task (> 50 ms) selama sesi — ikut diukur `autotype()`,
+      yang menolak lulus kalau ada satu pun entri `longtask`
 - [ ] Nol "forced reflow" di panel Performance (R-06)
 - [ ] Waktu ke keystroke pertama < 3 detik pada Fast 3G ter-throttle,
       diukur dengan `performance.mark` (R-24)
+
+> **Dijalankan pemilik 2026-09-11, dengan virtual keyboard menyala** — kasus terburuk
+> yang di Fase 1 belum bisa diuji karena keyboardnya belum ada. `autotype()` dan
+> `watchRealInput()` keduanya **lulus**. Dua item yang belum dicentang di bawah adalah
+> pemeriksaan DevTools terpisah yang tidak dicakup kedua perintah itu.
 
 Jalankan uji ini di akhir Fase 1 dan ulangi di akhir Fase 8.
 
