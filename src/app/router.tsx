@@ -17,6 +17,7 @@ import { RouteErrorBoundary } from './layout/ErrorBoundary';
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const LearnPage = lazy(() => import('@/pages/LearnPage'));
 const LessonPage = lazy(() => import('@/pages/LessonPage'));
+const PlacementPage = lazy(() => import('@/pages/PlacementPage'));
 const PracticePage = lazy(() => import('@/pages/PracticePage'));
 const StatsPage = lazy(() => import('@/pages/StatsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
@@ -29,10 +30,10 @@ export function AppRoutes() {
           <Route index element={<HomePage />} />
           <Route path="learn" element={<LearnPage />} />
           <Route path="learn/:lessonId" element={<LessonPage />} />
+          <Route path="placement" element={<PlacementPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="settings" element={<SettingsPage />} />
-          {/* TODO(Fase 3): /placement — dok. 02 §1. */}
           <Route path="*" element={<HomePage />} />
         </Route>
       </Routes>

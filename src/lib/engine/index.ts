@@ -17,8 +17,17 @@ export {
   VOID_THRESHOLD_MS,
 } from './session.ts';
 export { computeLiveMetrics, computeResult, activeElapsedMs } from './metrics.ts';
+export { combineResults } from './combine.ts';
+export { generateLetterDrill, generateWordDrill, keyWeights } from './generator.ts';
 export { wrapText, rowOf, colOf } from './wrap.ts';
 export { consistencyFrom, intervalStdev } from './accumulators.ts';
+
+export type {
+  DrillShape,
+  KeyUsage,
+  KeyUsageMap,
+  WordDrillShape,
+} from './generator.ts';
 
 export type {
   CharCell,

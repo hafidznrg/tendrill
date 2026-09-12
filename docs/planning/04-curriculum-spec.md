@@ -1,6 +1,6 @@
 # 04 — Curriculum Specification
 
-**Versi:** v3 (kurikulum sudah ditulis) · **Tanggal:** 2026-09-10
+**Versi:** v4 (kurikulum berjalan di aplikasi) · **Tanggal:** 2026-09-12
 
 Kurikulum adalah *produk*, bukan data pelengkap. Kualitasnya menentukan apakah orang
 benar-benar bisa mengetik 10 jari.
@@ -8,6 +8,12 @@ benar-benar bisa mengetik 10 jari.
 > **Catatan revisi v2.** Ditambahkan: Unit 0 placement test (R-14), assist ladder untuk
 > pengguna mentok (R-15), review session berjarak (R-16), tabel 30 lesson eksplisit dan
 > perbaikan tumpang tindih Unit 3/5 serta pemindahan Shift (R-17), pembobotan latensi (R-18).
+>
+> **Catatan revisi v4 (Fase 3).** Kurikulumnya sekarang **dijalankan**, bukan hanya
+> ada sebagai data. Tiga hal yang belum ditentukan v3 dan baru muncul saat dijalankan
+> dicatat di §16, semuanya berpasangan dengan ADR: cara beberapa drill menjadi satu
+> sesi (ADR-024), apa yang dihitung sebagai percobaan (ADR-025), dan arti `Shift` di
+> dalam generator (ADR-026).
 >
 > **Catatan revisi v3.** Kurikulumnya sekarang benar-benar ada (§14), dan proses menulisnya
 > membongkar enam hal yang salah atau belum ditentukan di v2 — semuanya dicatat di §15.
@@ -29,6 +35,12 @@ benar-benar bisa mengetik 10 jari.
    saat pengguna sampai Unit 4 (R-16).
 
 ## 2. Struktur
+
+> **Bagaimana "dalam satu sesi" diwujudkan (ADR-024).** Engine hanya mengenal satu
+> `target` per sesi, jadi tiap drill dijalankan sebagai sesi engine sendiri, berurutan
+> tanpa layar perantara, lalu digabung `combineResults()` menjadi **satu** hasil
+> lesson. Kriteria kelulusan §4a dinilai terhadap gabungan itu — bukan terhadap drill
+> terakhir.
 
 ```
 Curriculum
@@ -271,6 +283,11 @@ mereka lambat di tombol tertentu. Tanpa faktor ini, generator buta terhadap masa
 persona prioritas kedua. Faktornya diberi rentang lebih sempit daripada error karena
 kesalahan tetap lebih penting daripada kelambatan.
 
+**`Shift` bukan karakter (ADR-026).** Kalau `Shift` ada di `newKeys`/`reviewKeys`,
+generator tidak pernah menuliskannya; ia menambahkan varian **kapital** dari huruf
+yang sudah menjadi kandidat, dengan bobot **separuh** bobot huruf kecilnya. Bobot
+penuh membuat drill berubah menjadi mayoritas chord dua tangan.
+
 Aturan agar hasilnya tidak terasa acak-brutal:
 - Jangan menghasilkan huruf yang sama tiga kali berturut-turut.
 - Kelompokkan jadi "kata" 3–5 huruf dipisah spasi — aliran huruf tanpa spasi tidak
@@ -428,3 +445,25 @@ sebelum tombolnya diajarkan) — semuanya lolos dari mata manusia.
 
 Yang **tidak** berubah: urutan unit, pemindahan Shift ke Unit 3, pembagian tugas `,` `.` `/`
 antara Unit 3 dan Unit 5, dan seluruh mekanisme placement / assist ladder / review.
+
+---
+
+## 16. Yang baru ditentukan saat kurikulum dijalankan (v4)
+
+Ketiganya adalah lubang yang tidak terlihat selama kurikulum masih berupa data saja.
+
+1. **Beberapa drill → satu sesi** (ADR-024). Satu sesi engine per drill, hasil
+   lesson = gabungannya, kelulusan dinilai terhadap gabungan. `Tab` mengulang lesson
+   dari drill pertama, bukan drill yang sedang berjalan.
+2. **Apa yang dihitung sebagai percobaan** (ADR-025) — penggerak seluruh assist
+   ladder §9, dan v3 tidak pernah menyebutkannya. Yang **tidak** dihitung: sesi yang
+   di-void (> 30 detik diam) dan drill mikro. Gagal setelah pernah lulus juga tidak
+   mencabut kelulusan.
+3. **`Shift` di generator** (ADR-026) — §8 di atas.
+
+Ditambah satu aturan uji yang sekarang mengikat: **aturan kumulatif §5 nomor 5 juga
+diperiksa untuk teks yang dibangkitkan runtime**, bukan hanya untuk isi statis dan
+pool. Validator tidak bisa melihat teks yang baru lahir saat pengguna membuka lesson;
+`src/features/curriculum/__tests__/drills.test.ts` menutup celah itu untuk ke-36
+lesson non-placement, dengan dan tanpa statistik pengguna, dan gerbangnya sudah
+dibuktikan merah dengan kontrol negatif.

@@ -52,6 +52,7 @@ src/
 │   ├── HomePage.tsx
 │   ├── LearnPage.tsx
 │   ├── LessonPage.tsx
+│   ├── PlacementPage.tsx
 │   ├── PracticePage.tsx
 │   ├── StatsPage.tsx
 │   └── SettingsPage.tsx
@@ -63,7 +64,8 @@ src/
 │   │   │   ├── CharCell.tsx        # memo, props primitif
 │   │   │   ├── Caret.tsx
 │   │   │   ├── LiveMetrics.tsx
-│   │   │   └── ResultScreen.tsx
+│   │   │   ├── ResultScreen.tsx
+│   │   │   └── TypingStage.tsx      # panggung sesi, dipakai lesson & placement
 │   │   ├── hooks/
 │   │   │   ├── useTypingSession.ts # jembatan engine ↔ React
 │   │   │   └── useKeyboardCapture.ts
@@ -73,9 +75,13 @@ src/
 │   │   ├── components/VirtualKeyboard.tsx
 │   │   └── fingerMap.ts
 │   │
-│   ├── curriculum/
+│   ├── curriculum/                 # PURE kecuali useProgress.ts
 │   │   ├── components/UnitList.tsx
-│   │   └── useProgress.ts
+│   │   ├── progress.ts             # unlock, assist ladder, pencatatan percobaan
+│   │   ├── placement.ts            # ambang penempatan (dok. 04 §3)
+│   │   ├── drills.ts               # Lesson → teks target (static + generator)
+│   │   ├── loadLesson.ts           # pemuat per-unit, bukan seluruh kurikulum
+│   │   └── useProgress.ts          # satu-satunya yang menyentuh storage
 │   │
 │   └── stats/
 │       ├── components/WpmChart.tsx      # SVG tulis tangan, tanpa library
@@ -89,7 +95,8 @@ src/
 │   │   ├── accumulators.ts     # Welford, metrik live O(1) (R-02)
 │   │   ├── metrics.ts          # computeResult (O(n), sekali per sesi)
 │   │   ├── wrap.ts             # wrapText() (R-07)
-│   │   ├── generator.ts
+│   │   ├── combine.ts          # gabungan hasil beberapa drill (ADR-024)
+│   │   ├── generator.ts        # drill berbobot (dok. 04 §8)
 │   │   └── types.ts
 │   ├── storage/
 │   │   ├── index.ts
@@ -158,6 +165,7 @@ wordlist, dan halaman statistik ke dalam satu bundel awal. Peta pemuatan sekaran
 | `main`      | React, router, tema, engine, layar sesi | awal                          |
 | `unit-1`    | data lesson Unit 0–1                    | awal (prefetch)               |
 | `unit-n`    | data lesson unit lain                   | saat unit dibuka              |
+| `curriculum-map` | peta lengkap 37 lesson (`data/curriculum/en/index.ts`) | saat `/learn` dibuka; **tidak pernah** dari layar sesi |
 | `wordlists` | daftar kata & kutipan                   | saat `/practice` atau Unit 4+ |
 | `stats`     | halaman statistik + chart SVG           | saat `/stats`                 |
 | `settings`  | halaman pengaturan                      | saat `/settings`              |

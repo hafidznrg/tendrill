@@ -188,11 +188,21 @@ sekali (ADR-021):
 Struktur data kurikulum, Unit 0 placement test, Unit 1 lengkap, halaman `/learn`,
 logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
 
-**DoD**
-- [ ] Placement test menghasilkan penempatan yang masuk akal untuk 3 profil uji
-- [ ] Logika unlock benar termasuk saat progres kosong, rusak, atau menunjuk lesson
-      yang sudah dihapus (R-22)
-- [ ] Assist ladder aktif dan terasa membantu, bukan menghina
+**DoD** — kode selesai 2026-09-12; satu item terakhir butuh manusia lain
+- [x] Placement test menghasilkan penempatan yang masuk akal untuk 3 profil uji —
+      `placement.test.ts`. Diuji sampai **akibatnya**, bukan hanya ambangnya: setelah
+      penempatan, lesson yang benar yang terbuka, dan unit yang dilewati tetap bisa
+      dibuka kembali. Termasuk kasus yang paling mudah salah: **90 WPM dengan 80%
+      akurasi tetap mulai dari Unit 1** — kecepatan tidak pernah menebus akurasi.
+- [x] Logika unlock benar termasuk saat progres kosong, rusak, atau menunjuk lesson
+      yang sudah dihapus (R-22) — `progress.test.ts`. Empat keadaan data nyata diuji:
+      kosong, entri rusak (`attempts: "banyak"`, `null`, string), id hantu, dan
+      **kurikulum yang menyusut** sesudah pengguna lulus di unit yang dihapus.
+- [x] Assist ladder aktif — `progress.test.ts` (tangganya) + `learnFlow.test.tsx`
+      (benar-benar **dirender** di layar hasil pada percobaan 3, 4, dan 6).
+      "Terasa membantu, bukan menghina" adalah penilaian manusia dan menunggu uji
+      pemula; yang bisa dijaga mesin sudah dijaga, termasuk bahwa **akurasi tidak
+      pernah diturunkan** di seluruh 37 lesson sampai percobaan ke-20.
 - [ ] **Uji ke satu pemula nyata (~hari 11).** Amati tanpa memberi instruksi.
       Kalau mereka tidak paham posisi jari setelah Lesson 1, kurikulumnya yang salah —
       perbaiki sekarang, selagi baru 11 hari kerja yang dipertaruhkan, bukan 25.
@@ -201,6 +211,27 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
       dan apakah ia menyadarinya.** Ini satu-satunya data yang bisa memutuskan kandidat
       ADR mode strict (dok. 10), dan hanya bisa diambil dari pemula sungguhan.
       Keputusannya diambil di sini; implementasinya di Fase 4.
+
+> **Catatan penutup Fase 3 (kode).** Tiga hal yang tidak terlihat selama kurikulum
+> masih berupa data, dan baru muncul saat ia dijalankan — semuanya sekarang ber-ADR
+> (dok. 04 §16): beberapa drill menjadi satu sesi (ADR-024), apa yang dihitung sebagai
+> percobaan (ADR-025), dan arti `Shift` di dalam generator (ADR-026).
+>
+> Pelajaran Fase 2 nomor 1 terbukti berguna dua kali di fase ini:
+>
+> | Yang ditemukan | Ditemukan oleh | Kalau lolos |
+> |---|---|---|
+> | Tangga bantuan bergeser satu tingkat lebih awal — `recordAttempt` sudah menaikkan `attempts` sebelum layar hasil dirender | `learnFlow.test.tsx` | "target diturunkan" muncul di percobaan yang targetnya belum diturunkan; "lanjut saja" muncul di percobaan ke-5 |
+> | Penjepit `latencyMultiplier` tidak pernah aktif di test pertamanya — dua tombol membuat mediannya di tengah keduanya | kontrol negatif atas test sendiri | rumus dok. 04 §8 dinyatakan terbukti padahal batas atasnya tidak pernah tersentuh |
+>
+> Keduanya berbentuk sama dan bentuknya layak dicurigai lagi di Fase 4: **angka yang
+> dibaca dari sumber yang sudah berubah di belakangnya.**
+>
+> Gerbang baru yang sekarang dijaga `npm run verify`: aturan kumulatif kurikulum
+> (dok. 04 §5 nomor 5) kini diperiksa juga untuk teks yang **dibangkitkan runtime**,
+> untuk ke-36 lesson non-placement, dengan dan tanpa statistik pengguna. Gerbangnya
+> sudah dibuktikan merah lewat kontrol negatif — satu huruf terlarang diselundupkan ke
+> kandidat generator, 36 test langsung gagal.
 
 ---
 

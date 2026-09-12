@@ -746,6 +746,133 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 
 ---
 
+## ADR-024 — Satu lesson = beberapa sesi engine, dinilai sebagai satu gabungan
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Dok. 04 §2 menetapkan satu lesson punya 3–6 drill yang "dikerjakan
+berurutan **dalam satu sesi**". Tetapi engine (dok. 03) hanya mengenal **satu
+`target` per sesi**: `createSession(target, cols)` mengalokasikan buffer log, sel
+karakter, dan `lineStarts` sekali, lalu tidak pernah menerima teks baru — justru
+itulah yang membuat janji "nol alokasi per keystroke" bisa ditepati.
+
+Dua dokumen ini tidak pernah dipertemukan sebelum Fase 3. Ada tiga jalan:
+
+1. **Sambungkan seluruh drill menjadi satu teks.** Paling sederhana, tapi untuk
+   u1-l4 hasilnya ~600 karakter = ~7 menit bagi pemula 16 WPM. Terlalu panjang,
+   dan drill kehilangan batasnya — padahal batas itu yang membuat lesson terasa
+   punya langkah.
+2. **Beri engine kemampuan mengganti target di tengah sesi.** Menyentuh bagian
+   paling sensitif Fase 1 demi kenyamanan lapisan UI.
+3. **Satu sesi engine per drill, hasil lesson = gabungannya.** Dipilih.
+
+**Keputusan.** Tiap drill dijalankan sebagai sesi engine sendiri, berurutan tanpa
+layar perantara. Di akhir drill terakhir, `combineResults()` (baru,
+`src/lib/engine/combine.ts`) menggabungkan semuanya menjadi satu `SessionResult`,
+dan **kriteria kelulusan dinilai terhadap gabungan itu** — bukan terhadap drill
+terakhir.
+
+Menilai drill terakhir saja adalah jebakan yang mudah tidak terlihat: pengguna bisa
+lulus lesson dengan mengabaikan empat drill pertama, dan angka yang tercatat di
+`/stats` tidak akan mewakili sesi yang benar-benar ia jalani.
+
+**Aturan penggabungan yang mengikat:**
+
+- Keystroke, keystroke benar, dan durasi **dijumlahkan**; WPM & akurasi dihitung
+  dari total. Bukan rata-rata dari rata-rata — itu memberi drill 12 karakter bobot
+  yang sama dengan drill 200 karakter.
+- `consistency` **adalah** rata-rata per drill, dan ini pengecualian yang sadar:
+  menghitungnya ulang dari gabungan interval akan menghukum jeda **antar** drill,
+  padahal jeda itu bukan ketidakkonsistenan mengetik.
+- Satu hasil dikembalikan apa adanya (identitas), daftar kosong → `null`.
+
+**Konsekuensi.**
+
+- (+) Engine tidak disentuh sama sekali; batas Fase 1 tetap utuh.
+- (+) Rumus WPM tetap hidup di satu tempat (folder engine), bukan bocor ke halaman.
+- (+) Satu `SessionRecord` per lesson, bukan enam — `sessions` tidak membengkak dan
+   riwayat tetap terbaca sebagai "satu kali mengerjakan u1-l4".
+- (−) Pengguna tidak bisa mengulang **satu** drill; `Tab` mengulang dari drill 1.
+   Diterima: unit latihannya adalah lesson, dan tangga bantuan (dok. 04 §9) sudah
+   menyediakan drill mikro untuk tombol yang gagal.
+- (−) Metrik live nol lagi di tiap perpindahan drill. Diterima — tiap drill memang
+   pengukuran tersendiri, dan angka akhirnya datang dari gabungan.
+
+---
+
+## ADR-025 — Apa yang dihitung sebagai "percobaan", dan tangga dibekukan ke percobaan yang baru selesai
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Seluruh assist ladder (dok. 04 §9) digerakkan satu angka:
+`progress.lessons[id].attempts`. Dok. 04 tidak pernah menyatakan apa yang menaikkan
+angka itu, dan Fase 3 menemukan tiga kejadian yang jawabannya tidak sama.
+
+**Keputusan.**
+
+1. **Sesi yang di-void tidak dihitung sebagai percobaan.** Jeda > 30 detik berarti
+   pengguna pergi, bukan kesulitan. Menghitungnya akan menyalakan tangga bantuan
+   karena seseorang mengambil minum.
+2. **Drill mikro tidak dihitung sebagai percobaan**, tidak disimpan sebagai hasil
+   lesson, dan tidak dinilai terhadap kriteria. Ia bantuan; bantuan yang menaikkan
+   hitungan percobaan akan mendorong pengguna ke tawaran "lanjut saja" justru karena
+   ia menerima bantuan.
+3. **Gagal sesudah pernah lulus tidak mencabut kelulusan.** Mengulang lesson lama
+   lalu jelek tidak boleh mengunci lesson-lesson sesudahnya — itu terbaca sebagai
+   progres yang hilang, bukan sebagai umpan balik.
+4. **Tingkat bantuan yang ditampilkan dibekukan ke percobaan yang baru saja selesai.**
+
+Poin 4 lahir dari bug nyata, dan bugnya sempat lolos dari penalaran: `recordAttempt`
+sudah menaikkan `attempts` **sebelum** layar hasil dirender, sehingga angka percobaan
+yang tersedia di sana sudah menunjuk percobaan **berikutnya**. Akibatnya seluruh
+tangga bergeser satu tingkat lebih awal — catatan "target diturunkan" muncul di
+percobaan yang targetnya belum diturunkan, dan tawaran "lanjut saja" muncul di
+percobaan ke-5. Ditemukan `learnFlow.test.tsx`, bukan oleh membaca kode.
+
+**Konsekuensi.**
+
+- (+) Tangga bantuan hanya bergerak karena kesulitan nyata.
+- (+) `attemptResult` menyimpan kriteria dan nomor percobaan yang dipakai, jadi layar
+  hasil tidak pernah menampilkan angka yang sudah berubah di belakangnya.
+- (−) Ada dua pengertian "percobaan" yang harus tetap dibedakan di kode: yang sedang
+  dikerjakan dan yang baru selesai. Diberi nama berbeda (`attempt` vs `shownAssist`)
+  dan diberi komentar, karena bug ini akan kembali kalau keduanya disamakan lagi.
+
+---
+
+## ADR-026 — `Shift` di generator berarti kapital berbobot separuh
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Dok. 04 §15 poin 3 menetapkan `Shift` adalah satu-satunya pseudo-key:
+ia membuka huruf kapital dari huruf kecil yang sudah diperkenalkan. Validator sudah
+patuh. Tetapi `u3-review` memuat `'Shift'` di `reviewKeys` **dan** punya drill
+`weighted-random` — dan dok. 04 §8 tidak pernah mengatakan apa yang harus dilakukan
+generator dengan tombol yang bukan karakter.
+
+Dibiarkan apa adanya, generator akan menulis huruf `S` (dari `'Shift'[0]`) atau
+menyisipkan teks "Shift" ke dalam drill. Keduanya salah, dan keduanya akan lolos
+validator karena validator hanya memeriksa isi statis.
+
+**Keputusan.** Di generator, `Shift` tidak pernah menjadi karakter. Kehadirannya
+menambahkan **varian kapital** dari huruf yang sudah ada di kandidat, dengan bobot
+**separuh** bobot huruf kecilnya.
+
+Separuh, bukan sama: dengan bobot sama, drill berubah menjadi mayoritas chord dua
+tangan, dan yang dilatih justru bukan ritme yang dimaksud unit itu. Separuh membuat
+kapital hadir di setiap drill tanpa mendominasinya.
+
+**Konsekuensi.**
+
+- (+) `u3-review` dan seluruh lesson sesudah Shift menghasilkan drill yang sah.
+- (+) Aturan kumulatif tetap terjaga untuk teks yang **dibangkitkan runtime** — dan
+  ini sekarang diuji untuk ketiga puluh tujuh lesson di `drills.test.ts`, dengan
+  kontrol negatif (menyelundupkan satu huruf terlarang membuat gerbangnya merah).
+- (−) Angka "separuh" adalah pilihan desain tanpa data. Kalau uji pemula menunjukkan
+  porsi kapital terasa salah, yang diubah satu konstanta di `charsFor()`.
+
+---
+
 ## Kandidat ADR — Mode input strict/non-strict bisa dipilih pengguna
 
 **Diusulkan:** 2026-09-11 · **Status:** *Kandidat — belum diputuskan, belum dikerjakan*

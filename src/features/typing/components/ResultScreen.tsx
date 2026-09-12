@@ -30,6 +30,17 @@ export interface ResultScreenProps {
   onRetry: () => void;
   onNext?: (() => void) | undefined;
   onExit?: (() => void) | undefined;
+
+  // --- cabang assist ladder (dok. 02 §5, dok. 04 §9) ------------------------
+  /** Percobaan ≥ 3: diagnosis diberi bobot visual lebih besar. */
+  prominentDiagnosis?: boolean;
+  /** Percobaan ≥ 4: catatan bahwa target WPM diturunkan. Akurasi tidak. */
+  relaxedNote?: string | null;
+  /** Percobaan ≥ 3: drill mikro untuk tombol yang gagal. */
+  onMicroDrill?: (() => void) | undefined;
+  microDrillLabel?: string;
+  /** Percobaan ≥ 6: "lanjut saja" → `passed-with-assist`. */
+  onAssistPass?: (() => void) | undefined;
 }
 
 export function ResultScreen({
@@ -40,6 +51,11 @@ export function ResultScreen({
   onRetry,
   onNext,
   onExit,
+  prominentDiagnosis = false,
+  relaxedNote = null,
+  onMicroDrill,
+  microDrillLabel = 'Drill 30 detik',
+  onAssistPass,
 }: ResultScreenProps) {
   // Pintasan layar hasil (dok. 07 §7).
   useEffect(() => {
@@ -94,7 +110,16 @@ export function ResultScreen({
         </p>
       )}
 
-      {diagnosis && <p className="rs-diagnosis">{diagnosis.text}</p>}
+      {diagnosis && (
+        <p className={`rs-diagnosis${prominentDiagnosis ? ' rs-diagnosis-strong' : ''}`}>
+          {diagnosis.text}
+        </p>
+      )}
+
+      {/* Percobaan 4–5: target WPM diturunkan 20%, akurasi TIDAK (dok. 04 §9).
+          Dikatakan terang-terangan — bantuan yang disembunyikan membuat pengguna
+          mengira ia tiba-tiba membaik, dan itu merusak arti angkanya. */}
+      {relaxedNote && <p className="rs-assist">{relaxedNote}</p>}
 
       <dl className="rs-stats">
         <Stat
@@ -123,6 +148,21 @@ export function ResultScreen({
       )}
 
       <Actions onRetry={onRetry} onNext={onNext} onExit={onExit} />
+
+      {(onMicroDrill || onAssistPass) && (
+        <div className="rs-actions rs-actions-assist">
+          {onMicroDrill && (
+            <button type="button" className="rs-btn" onClick={onMicroDrill}>
+              {microDrillLabel}
+            </button>
+          )}
+          {onAssistPass && (
+            <button type="button" className="rs-btn" onClick={onAssistPass}>
+              Lanjut saja
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

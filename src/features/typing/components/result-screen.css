@@ -145,3 +145,28 @@
   text-transform: uppercase;
   opacity: 0.75;
 }
+
+/* Cabang assist ladder (dok. 04 §9). Nadanya tetap dok. 07 §11: bantuan
+   dinyatakan, bukan dihibur. Tidak ada warna "semangat", tidak ada ikon. */
+.rs-diagnosis-strong {
+  font-size: 17px;
+  font-weight: 500;
+  border-left-width: 3px;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+.rs-assist {
+  margin: 0.7rem 0 0;
+  color: var(--fg-dim);
+  font-size: 13px;
+  max-width: 62ch;
+}
+
+/* Baris kedua: jalan keluar, sengaja dipisah dari aksi utama supaya "lanjut
+   saja" tidak pernah tertekan karena refleks mengejar tombol Ulangi. */
+.rs-actions-assist {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}

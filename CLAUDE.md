@@ -23,7 +23,9 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 2 — layar sesi lengkap.**
+Status sekarang: **Fase 3 — kurikulum Unit 0–1 + `/learn`. Kodenya selesai
+(2026-09-12); DoD-nya menunggu satu hal yang tidak bisa dikerjakan agent: uji ke satu
+pemula nyata.**
 
 Fase 1 kodenya selesai. Utang verifikasi performanya **sebagian besar sudah lunas**
 (2026-09-11):
@@ -46,6 +48,27 @@ pernah menggambar.
 **DoD Fase 2 terpenuhi (2026-09-12)**, kecuali satu pemeriksaan kecil yang belum
 diukur: `caretCheck()` sesudah zoom browser (Ctrl +/−) — sisa terakhir R-06. Layout
 shift sudah **CLS 0** dan caret **0 meleset** setelah font termuat dan setelah resize.
+
+**Fase 3 — yang sudah ada dan jangan ditulis ulang:**
+
+| Bagian | Di mana |
+|---|---|
+| unlock, assist ladder, pencatatan percobaan | `src/features/curriculum/progress.ts` (pure) |
+| ambang placement + saran gugus lemah | `src/features/curriculum/placement.ts` (pure) |
+| `Lesson` → teks target, drill mikro | `src/features/curriculum/drills.ts` |
+| generator berbobot (dok. 04 §8) | `src/lib/engine/generator.ts` (pure) |
+| gabungan hasil beberapa drill | `src/lib/engine/combine.ts` (ADR-024) |
+| panggung sesi, dipakai lesson & placement | `src/features/typing/components/TypingStage.tsx` |
+
+Tiga aturan Fase 3 yang mengikat dan mudah dirusak tanpa sadar:
+1. **Satu lesson = beberapa sesi engine, dinilai sebagai gabungan** (ADR-024). Jangan
+   menilai drill terakhir saja, dan jangan menyambung semua drill jadi satu target.
+2. **Yang dihitung sebagai percobaan** (ADR-025): sesi yang di-void **tidak**, drill
+   mikro **tidak**, dan gagal sesudah pernah lulus **tidak** mencabut kelulusan.
+   Tingkat bantuan di layar hasil selalu dibekukan ke percobaan yang baru selesai —
+   `attempt` yang sedang berjalan sudah bergeser satu.
+3. **Halaman sesi tidak boleh mengimpor `data/curriculum/en/index.ts`** — itu menarik
+   ketujuh unit. Pakai `loadLesson()`.
 
 Tiga pelajaran Fase 2 yang mengikat fase berikutnya (rinciannya di catatan penutup
 dok. 08):
