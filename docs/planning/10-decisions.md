@@ -1213,3 +1213,65 @@ baru kode. Yang tersentuh: `applyKey` (mode), `TypingArea` (umpan balik tertahan
 `VirtualKeyboard` (sorotan bertahan), pengaturan + storage, dan
 `src/lib/engine/__tests__/nonStrict.test.ts` — test karakterisasi yang sengaja dipasang
 supaya **berubah merah** saat perilaku ini diubah.
+
+---
+
+## ADR-030 — Tes kelulusan kursus ditandai di data, dinilai terpisah dari kelulusan lesson
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Dok. 04 §4a v3 menetapkan kelulusan akhir **40 WPM / 95%** diukur pada
+"**dua drill prosa terakhir**" `u6-review`, terpisah dari drill angka/simbol yang
+dinilai dengan kriteria unit (25 WPM / 93%). Alasannya kuat dan tidak berubah:
+mencampur `%` dan `&` ke dalam satu ambang menghukum kemampuan yang sudah terbentuk
+gara-gara karakter yang memang lambat untuk semua orang.
+
+Yang tidak pernah ada: cara mesin mengetahui drill mana itu. Sampai Fase 4, `u6-review`
+hanya data — dan data tidak menilai dirinya sendiri, jadi lubang ini tidak terlihat
+selama tiga fase. Halaman sesi menilai **gabungan seluruh drill** terhadap
+`passCriteria` (ADR-024), dan angka 40/95 tidak muncul satu kali pun di dalam `src/`.
+
+Tiga jalan:
+
+1. **Aturan posisi — "dua drill terakhir".** Nol perubahan data. Tapi ia diam-diam
+   salah begitu ada yang menambahkan satu drill di akhir, dan salahnya tidak
+   kelihatan: tes kelulusan berpindah ke drill lain tanpa satu pun test memerah.
+2. **Aturan tipe — "semua drill `type: 'sentences'`".** Juga nol perubahan data, dan
+   juga salah: drill `sentences` pertama di `u6-review` justru yang penuh angka dan
+   simbol (`#4021`, `$1,350`, `15%`) — persis yang dok. 04 minta **dikeluarkan**.
+3. **Penanda eksplisit `graduation: true` di drill-nya.** Dipilih.
+
+**Keputusan.** `Drill` bertambah field opsional `graduation?: true`. Dua drill prosa
+terakhir `u6-review` memakainya; 35 lesson lain tidak, jadi bagi mereka tidak ada yang
+berubah. Penilaian satu percobaan lesson pecah jadi dua yang tidak beririsan:
+
+| Dinilai | Dari drill | Terhadap | Akibatnya |
+|---|---|---|---|
+| Kelulusan lesson | yang **bukan** `graduation` | `passCriteria` (+ assist ladder) | membuka lesson berikutnya |
+| Kelulusan kursus | yang `graduation` | **tetap 40 WPM / 95%** | ditulis ke `meta.graduatedAt`, tidak menggerbangi apa pun |
+
+Tiga aturan yang ikut mengikat:
+
+- **Kelulusan kursus tidak pernah menggerbangi apa pun.** Gagal 40 WPM sambil lulus
+  25 WPM tetap lulus `u6-review`. Ia keterangan tentang di mana pengguna berada,
+  bukan pintu — dan menjadikannya pintu berarti kurikulum berakhir dengan tembok
+  yang tidak punya assist ladder.
+- **Ambangnya tidak pernah diturunkan**, termasuk oleh percobaan ke-4 yang menurunkan
+  WPM lesson 20% (dok. 04 §9). Ini satu-satunya angka yang dipakai pengguna untuk
+  menjawab "aku sudah bisa mengetik?", dan angka yang bisa ditawar berhenti berarti.
+- **`graduatedAt` ditulis sekali dan tidak dicabut** (dok. 05 §3). Gagal lagi besok
+  tidak menghapus hari itu.
+
+**Konsekuensi.**
+
+- (+) Angka 40/95 akhirnya hidup di kode, bukan hanya di dokumen — dan di satu tempat
+  (`GRADUATION_CRITERIA`), bukan tersebar.
+- (+) Validator bisa menegakkannya: `graduation` hanya di `u6-review`, tepat 2 drill,
+  dan lesson itu wajib masih punya drill non-`graduation` untuk dinilai.
+- (+) Menambah drill di akhir `u6-review` tidak lagi diam-diam memindahkan tes kelulusan.
+- (−) Satu field lagi di `Drill` yang hanya dipakai satu lesson. Diterima: alternatifnya
+  adalah aturan implisit yang benar hari ini dan salah diam-diam besok — bentuk bug yang
+  sudah dua kali memakan fase ini ("angka yang dibaca dari sumber yang sudah berubah di
+  belakangnya", catatan penutup Fase 3).
+- (−) Layar hasil `u6-review` menampilkan **dua** putusan. Diterima, dan memang itu yang
+  diminta dok. 04: kalimat pertamanya menyebutkan mana yang membuka lesson berikutnya.

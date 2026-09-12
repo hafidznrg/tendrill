@@ -151,6 +151,30 @@ lambat untuk semua orang. Karena itu `u6-review` punya dua bagian: drill angka/s
 dengan kriteria unit (25 WPM / 93%), sementara **dua drill prosa terakhir** di lesson itulah
 tes kelulusan 40 WPM / 95%.
 
+**Bagaimana "dua drill prosa terakhir" dikenali mesin** (ADR-030). Bukan dengan menghitung
+mundur dua drill dari ujung — aturan posisi seperti itu diam-diam salah begitu ada yang
+menambah satu drill di akhir. Drill yang menjadi tes kelulusan ditandai eksplisit di datanya:
+
+```ts
+{ type: 'sentences', generator: 'static', graduation: true, content: '…' }
+```
+
+Aturannya, dan ketiganya ditegakkan validator + test:
+
+1. **Dua penilaian, dua himpunan drill yang tidak beririsan.** Kelulusan *lesson*
+   (`passCriteria`, yang membuka lesson berikutnya) dinilai terhadap gabungan drill yang
+   **bukan** `graduation`. Kelulusan *kursus* dinilai terhadap gabungan drill yang
+   `graduation`, dengan ambang tetap **40 WPM / 95%**.
+2. **Kelulusan kursus tidak pernah menggerbangi apa pun.** Ia tidak mengunci `u6-review`,
+   tidak ikut assist ladder (§9), dan tidak bisa "dilewati". Ia keterangan tentang di mana
+   pengguna berada, bukan pintu. Gagal 40 WPM sambil lulus 25 WPM tetap **lulus `u6-review`**.
+3. **Ambang kelulusan kursus tidak pernah diturunkan** — tidak oleh percobaan ke-4, tidak
+   oleh apa pun. Angka yang bisa ditawar berhenti berarti apa-apa, dan inilah satu-satunya
+   angka di aplikasi ini yang dipakai pengguna untuk menjawab "aku sudah bisa mengetik?".
+
+Lesson lain tidak punya drill `graduation` sama sekali, jadi bagi 35 lesson lainnya
+himpunan kedua kosong dan perilakunya persis seperti sebelumnya.
+
 ## 5. Tabel lesson lengkap (R-17)
 
 v1 mengklaim "28 lesson" tanpa daftar yang bisa dicocokkan. Berikut daftar mengikatnya:
@@ -220,6 +244,8 @@ interface Drill {
   generator: 'static' | 'weighted-random';
   content?: string;
   length?: number;
+  pool?: string;            // wordlist, untuk generator berbasis kata (§15 poin 5)
+  graduation?: true;        // bagian tes kelulusan kursus, dinilai terpisah (§4a, ADR-030)
 }
 ```
 
@@ -423,6 +449,9 @@ Yang diperiksa:
 6. Kriteria lulus: review == kriteria unit, lesson <= kriteria unit, akurasi >= 90%.
 7. Jumlah lesson persis 1 + 30 + 6; tiap lesson punya `intro` dan minimal 3 drill.
 8. Seluruh 26 huruf benar-benar pernah diajarkan.
+9. `graduation: true` hanya boleh ada di lesson `kind: 'review'`, dan hanya di `u6-review`
+   (§4a) — tepat 2 drill, dan sisa drill lesson itu harus tetap ada, karena penilaian
+   lesson-nya dihitung dari drill yang **bukan** `graduation`.
 
 Pemeriksaan nomor 5 sudah menangkap empat bug nyata saat kurikulum ini ditulis
 (`u2-l1` memakai `t`, `u2-l2` memakai `n` dan `o`, `u3-l2` dan `u3-l4` memakai `n`
@@ -464,6 +493,11 @@ Ketiganya adalah lubang yang tidak terlihat selama kurikulum masih berupa data s
    di-void (> 30 detik diam) dan drill mikro. Gagal setelah pernah lulus juga tidak
    mencabut kelulusan.
 3. **`Shift` di generator** (ADR-026) — §8 di atas.
+4. **Tes kelulusan kursus butuh penandanya sendiri** (ADR-030). v3 menuliskan "dua drill
+   prosa terakhir" — kalimat yang bisa dibaca manusia tetapi tidak bisa dieksekusi tanpa
+   menebak. Sekarang drill-nya ditandai `graduation: true`, dan penilaian lesson memakai
+   drill selebihnya. Lubang ini tidak terlihat sampai `u6-review` benar-benar dijalankan:
+   selama Fase 3 ia hanya data, dan data tidak pernah menilai dirinya sendiri.
 
 Ditambah satu aturan uji yang sekarang mengikat: **aturan kumulatif §5 nomor 5 juga
 diperiksa untuk teks yang dibangkitkan runtime**, bukan hanya untuk isi statis dan

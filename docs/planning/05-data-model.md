@@ -167,9 +167,18 @@ non-strict di satu lesson memilihnya untuk cara ia belajar, bukan untuk satu dri
   lastActiveDate: string,   // "2026-09-10"
   streakDays: number,
   longestStreak: number,
-  postureSeenAt?: number    // ADR-027 — panduan postur sudah pernah tampil
+  postureSeenAt?: number,   // ADR-027 — panduan postur sudah pernah tampil
+  graduatedAt?: number      // ADR-030 — tes kelulusan 40 WPM / 95% pertama kali lulus
 }
 ```
+
+`graduatedAt` opsional & aditif, jadi **tanpa migrasi** — sama seperti `postureSeenAt`.
+Ditulis **sekali** saat tes kelulusan (dok. 04 §4a) pertama kali lulus dan tidak pernah
+dicabut: gagal lagi di percobaan berikutnya bukan alasan menghapus hari itu.
+
+Ia sengaja di `meta`, bukan di `progress.lessons['u6-review']`: kelulusan kursus adalah
+fakta tentang **pengguna**, bukan status sebuah lesson — `u6-review` bisa lulus tanpa
+kelulusan kursus, dan sebaliknya.
 
 ## 4. Lapisan akses penyimpanan
 
