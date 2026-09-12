@@ -44,6 +44,26 @@ function quantile(sorted, p) {
  * Tab HARUS terlihat di depan: requestAnimationFrame berhenti di tab tersembunyi,
  * dan hasilnya akan tampak "sempurna" karena tidak ada yang pernah dicat.
  */
+/**
+ * Ulangi drill dari layar hasil, lalu TUNGGU sampai teksnya benar-benar bersih.
+ *
+ * **Ini yang salah di versi pertama.** Skrip lama menekan `Tab` untuk mengulang.
+ * `Tab` memang me-restart sesi yang sedang BERJALAN, tetapi begitu drill habis
+ * sesi masuk `finished` dan layar hasil mengambil alih — di situ tombol ulangi
+ * adalah **Enter** (dok. 07 §7). Akibatnya skrip berhenti maju dan menunggu
+ * manusia menekan Enter, sementara loop pengukurannya jalan terus.
+ */
+async function restartFromResult(timeoutMs = 2000) {
+  press('Enter');
+  const deadline = performance.now() + timeoutMs;
+  while (performance.now() < deadline) {
+    await nextPaint();
+    const first = document.querySelector('.ta-text span');
+    if (first && first.className === 'ta-pending') return true;
+  }
+  return false;
+}
+
 async function autotype(durationMs = 60_000) {
   const spans = document.querySelectorAll('.ta-text span');
   if (spans.length === 0) {
@@ -67,26 +87,75 @@ async function autotype(durationMs = 60_000) {
     console.warn('longtask tidak didukung browser ini');
   }
 
-  press('Tab'); // mulai dari sesi bersih
+  if (target.length < 200) {
+    console.warn(
+      `Teks hanya ${target.length} karakter. Dok. 09 §5 meminta 500 — makin pendek ` +
+        'teksnya, makin sering drill selesai dan makin besar porsi frame yang dibuang.',
+    );
+  }
+
+  // Mulai dari sesi bersih, apa pun keadaan halaman saat skrip dijalankan.
+  if (document.querySelector('.rs-root')) await restartFromResult();
+  else press('Tab');
   await new Promise((r) => setTimeout(r, 100));
 
   const t0 = performance.now();
   let i = 0;
+  let restarts = 0;
+  let dibuangSelesai = 0;
+  let dibuangRestart = 0;
+  let skipBerikutnya = false;
+  let gagalRestart = false;
 
   while (performance.now() - t0 < durationMs) {
+    const posisi = i % target.length;
+    const terakhir = posisi === target.length - 1;
+
     const start = performance.now();
-    press(target[i % target.length]);
+    press(target[posisi]);
     await nextPaint();
-    samples.push(performance.now() - start);
+    const durasi = performance.now() - start;
+
+    // Dua jenis frame DIBUANG, karena keduanya bukan jalur keystroke:
+    //
+    // 1. Keystroke penutup drill — ia memicu MOUNT layar hasil. Yang terukur di
+    //    situ adalah render satu layar penuh, bukan biaya menekan satu tombol.
+    // 2. Keystroke pertama sesudah restart — restart membangun ulang SELURUH
+    //    span (perubahan struktural, dok. 03 §6).
+    //
+    // Versi pertama skrip ini memasukkan keduanya. Pada drill 35 karakter itu
+    // berarti ~5,6% sampel teratas adalah frame restart — dan p95 jatuh persis
+    // di sana. Yang terbaca sebagai "p95 8,6 ms" sebagian besar adalah biaya
+    // mengganti layar, bukan biaya mengetik.
+    if (terakhir) dibuangSelesai += 1;
+    else if (skipBerikutnya) {
+      dibuangRestart += 1;
+      skipBerikutnya = false;
+    } else samples.push(durasi);
 
     i += 1;
-    if (i % target.length === 0) press('Tab'); // ulangi teks yang sama
+
+    if (i % target.length === 0) {
+      restarts += 1;
+      if (!(await restartFromResult())) {
+        gagalRestart = true;
+        break;
+      }
+      skipBerikutnya = true;
+    }
 
     const rest = INTERVAL_MS - (performance.now() - start);
     if (rest > 0) await new Promise((r) => setTimeout(r, rest));
   }
 
   po.disconnect();
+
+  if (gagalRestart) {
+    console.error('Gagal mengulang drill dari layar hasil — pengukuran dihentikan.');
+    console.error('Jangan pakai angka apa pun dari jalan ini.');
+    return null;
+  }
+
   samples.sort((a, b) => a - b);
 
   const hasil = {
@@ -97,6 +166,8 @@ async function autotype(durationMs = 60_000) {
     p99: quantile(samples, 0.99),
     maks: +samples.at(-1).toFixed(2),
     longTasks,
+    restarts,
+    dibuang: `${dibuangSelesai} selesai + ${dibuangRestart} restart`,
     lulus:
       quantile(samples, 0.95) <= 8 && quantile(samples, 0.99) <= 16 && longTasks.length === 0,
   };

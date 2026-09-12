@@ -139,23 +139,47 @@ paling murah terhadap regresi diam-diam.
 >    `requestAnimationFrame` berhenti di tab tersembunyi, dan hasilnya akan tampak
 >    sempurna justru karena tidak ada yang pernah dicat.
 
-- [x] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
+- [ ] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
       (`autotype()`): tiap keystroke diikuti satu `requestAnimationFrame`, jadi yang
       terukur adalah keystroke sampai frame berikutnya benar-benar dicat.
+      **Jalan 2026-09-11 TIDAK SAH** — lihat catatan di bawah. Ulangi setelah
+      skripnya diperbaiki.
 - [x] **Event Timing API sebagai gerbang lulus/gagal, bukan sumber p95** (lihat ADR-020):
       ketik SUNGGUHAN selama 60 detik dengan `watchRealInput()` — **nol entri = lulus**,
       karena entri hanya muncul untuk interaksi yang melewati ambang. Satu entri saja
       berarti ada interaksi yang tersendat dan harus dikejar.
-- [x] Chrome Performance: nol long task (> 50 ms) selama sesi — ikut diukur `autotype()`,
-      yang menolak lulus kalau ada satu pun entri `longtask`
+- [ ] Chrome Performance: nol long task (> 50 ms) selama sesi — ikut diukur `autotype()`,
+      yang menolak lulus kalau ada satu pun entri `longtask`. Jalan 2026-09-11 memang
+      melaporkan nol, tetapi dari jalan yang tidak sah; ulangi bersama p95
 - [ ] Nol "forced reflow" di panel Performance (R-06)
 - [ ] Waktu ke keystroke pertama < 3 detik pada Fast 3G ter-throttle,
       diukur dengan `performance.mark` (R-24)
 
-> **Dijalankan pemilik 2026-09-11, dengan virtual keyboard menyala** — kasus terburuk
-> yang di Fase 1 belum bisa diuji karena keyboardnya belum ada. `autotype()` dan
-> `watchRealInput()` keduanya **lulus**. Dua item yang belum dicentang di bawah adalah
-> pemeriksaan DevTools terpisah yang tidak dicakup kedua perintah itu.
+> **Dijalankan pemilik 2026-09-11 dengan virtual keyboard menyala.**
+> `watchRealInput()` **lulus** (nol entri). `autotype()` **belum** — dan jalannya
+> ternyata **tidak sah**.
+>
+> **Cacat pengukuran kedua di skrip yang sama (lihat juga `e3ac561`).** `autotype()`
+> mengulang drill dengan menekan `Tab`. `Tab` me-restart sesi yang sedang BERJALAN,
+> tetapi begitu drill habis sesi masuk `finished` dan layar hasil mengambil alih —
+> di situ tombol ulangi adalah **Enter** (dok. 07 §7). Jadi skripnya berhenti maju
+> dan menunggu manusia menekan Enter, sementara loop pengukurannya jalan terus.
+>
+> Hasilnya: p95 **8,6 ms** (anggaran 8), p99 9,8, maks 11,2, nol long task,
+> `lulus: false`. Tapi angka itu tidak mengukur jalur keystroke. Pada drill 35
+> karakter, 677 keystroke berarti ~19 kali drill selesai; tiap kali, satu frame
+> me-*mount* layar hasil dan satu frame membangun ulang seluruh span. **~38 frame
+> dari 677 = 5,6% teratas — dan p95 jatuh persis di sana.** Yang terbaca sebagian
+> besar adalah biaya mengganti layar, bukan biaya mengetik.
+>
+> Sudah diperbaiki: skrip mengulang lewat `Enter` dan menunggu teks benar-benar
+> bersih, lalu **membuang** frame penutup drill dan frame pertama sesudah restart,
+> serta melaporkan berapa yang dibuang. Ia juga memperingatkan kalau teksnya jauh
+> di bawah 500 karakter.
+>
+> **Pelajarannya sama dengan `perf:heap`:** harness pengukuran bisa menghasilkan
+> angka yang tampak masuk akal dan tetap salah. Sebelum memakai angka dari harness
+> baru, buktikan dulu ia mengukur yang benar.
 
 Jalankan uji ini di akhir Fase 1 dan ulangi di akhir Fase 8.
 

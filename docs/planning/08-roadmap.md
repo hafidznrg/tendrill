@@ -125,13 +125,18 @@ sekali (ADR-021):
 - [x] Nol re-render per keystroke — `rerender.test.tsx`, memakai `<Profiler>` dari
       paket `react` (bukan ekstensi DevTools), dengan virtual keyboard menyala.
       Tepat 2 commit per sesi, keduanya transisi status.
-- [x] `autotype()` + `watchRealInput()` **dengan virtual keyboard menyala** —
-      kasus terburuk dok. 09 §5, **dijalankan pemilik 2026-09-11 dan lulus**
-      (p95/p99 dispatch→paint di dalam anggaran, nol long task, nol entri Event
-      Timing dari ketikan sungguhan). Tetap manual dan memang tidak bisa
-      dihindari: selain Event Timing yang menolak input non-manusia (ADR-020),
-      panel browser yang dikendalikan agent tidak pernah memanggil
-      `requestAnimationFrame` meski `visibilityState` "visible" — diuji
+- [x] `watchRealInput()` **dengan virtual keyboard menyala** — dijalankan pemilik
+      2026-09-11, **lulus**: nol entri Event Timing dari ketikan sungguhan.
+- [ ] `autotype()` **dengan virtual keyboard menyala** — kasus terburuk dok. 09 §5.
+      **Jalan 2026-09-11 tidak sah**: skripnya mengulang drill dengan `Tab`, padahal
+      sesudah drill habis tombol ulangi adalah `Enter` di layar hasil — jadi ia
+      berhenti maju dan menunggu manusia, sementara loop pengukurannya jalan terus.
+      Angkanya (p95 8,6 ms) sebagian besar mengukur biaya mengganti layar: ~38 dari
+      677 frame adalah mount layar hasil dan rebuild span, tepat 5,6% teratas tempat
+      p95 jatuh. Skrip sudah diperbaiki — **ulangi pengukurannya**.
+      Tetap manual dan memang tidak bisa dihindari: selain Event Timing yang menolak
+      input non-manusia (ADR-020), panel browser yang dikendalikan agent tidak pernah
+      memanggil `requestAnimationFrame` meski `visibilityState` "visible" — diuji
       2026-09-11, 36 keydown tiba, nol rAF. Tanpa paint, tidak ada p95.
 - [x] 15 menit memakai sendiri — **dijalankan 2026-09-11.** Menemukan satu hal yang
       lolos dari 150 test: halaman bergeser saat layar hasil memunculkan scrollbar.
