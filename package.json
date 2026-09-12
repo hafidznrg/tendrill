@@ -14,8 +14,9 @@
     "typecheck": "tsc -b",
     "budget": "node --experimental-strip-types scripts/check-bundle-budget.ts",
     "validate:curriculum": "node --experimental-strip-types scripts/validate-curriculum.ts",
+    "chunkgraph": "node --experimental-strip-types scripts/check-chunk-graph.ts",
     "perf:heap": "node --expose-gc --experimental-strip-types scripts/perf-heap.ts",
-    "verify": "npm run lint && npm run test && npm run perf:heap && npm run build && npm run budget"
+    "verify": "npm run lint && npm run test && npm run perf:heap && npm run build && npm run budget && npm run chunkgraph"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",

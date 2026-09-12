@@ -29,6 +29,14 @@ export default defineConfig({
           if (id.includes('/src/data/curriculum/')) {
             const m = /\/lessons\/unit-(\d)\./.exec(id);
             if (m) return `unit-${m[1]}`;
+            // `units.ts` HARUS terpisah dari `index.ts`. Keduanya ada di folder
+            // yang sama, tetapi beratnya berbeda jauh: `units.ts` 7 objek kecil
+            // yang dibutuhkan layar sesi, sedangkan `index.ts` mengimpor STATIS
+            // ketujuh unit. Menggabungkan keduanya membuat `loadLesson.ts` —
+            // yang di sumber sengaja hanya mengimpor `units.ts` — ikut menarik
+            // seluruh kurikulum di keluaran build. Dijaga
+            // scripts/check-chunk-graph.ts.
+            if (id.includes('/units.') || id.includes('/types.')) return 'curriculum-units';
             return 'curriculum-map';
           }
           if (id.includes('/src/data/wordlists/') || id.includes('/src/data/quotes/')) {
