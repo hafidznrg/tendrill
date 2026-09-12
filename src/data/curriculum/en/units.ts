@@ -1,4 +1,14 @@
-import type { Unit } from './types.ts';
+import type { PassCriteria, Unit } from './types.ts';
+
+/**
+ * Tes kelulusan kursus (dok. 04 §4, §4a · ADR-030).
+ *
+ * Dinilai HANYA pada drill ber-`graduation: true` — dua drill prosa terakhir
+ * `u6-review` — dan **tidak pernah diturunkan** oleh assist ladder. Ini
+ * satu-satunya angka yang dipakai pengguna untuk menjawab "aku sudah bisa
+ * mengetik?"; angka yang bisa ditawar berhenti berarti apa-apa.
+ */
+export const GRADUATION_CRITERIA: PassCriteria = { minWpm: 40, minAccuracy: 95 };
 
 /**
  * Kriteria lulus unit mengikat dok. 04 §4.

@@ -157,6 +157,30 @@ for (const lesson of lessons) {
   });
 }
 
+// 5b. tes kelulusan kursus (dok. 04 §4a, ADR-030)
+//
+// Ditandai eksplisit supaya "dua drill prosa terakhir" tidak lagi berarti
+// "hitung mundur dua dari ujung" — aturan posisi yang berpindah diam-diam
+// begitu ada yang menambah satu drill di akhir.
+const GRADUATION_LESSON = 'u6-review';
+for (const lesson of lessons) {
+  const graduation = lesson.drills.filter((d) => d.graduation === true);
+  if (lesson.id !== GRADUATION_LESSON) {
+    if (graduation.length > 0)
+      fail(lesson.id, `graduation hanya boleh di ${GRADUATION_LESSON}`);
+    continue;
+  }
+  if (graduation.length !== 2)
+    fail(lesson.id, `${graduation.length} drill graduation, harusnya tepat 2`);
+  // Tanpa ini, kelulusan lesson-nya tidak punya satu pun drill untuk dinilai.
+  if (graduation.length === lesson.drills.length)
+    fail(lesson.id, 'seluruh drill bertanda graduation — kelulusan unit tidak bisa dinilai');
+  for (const drill of graduation) {
+    if (drill.generator !== 'static')
+      fail(lesson.id, 'drill graduation harus static — tes kelulusan tidak boleh berubah isi');
+  }
+}
+
 // 6. kriteria lulus
 for (const unit of curriculum.units) {
   if (unit.id === 'u0') continue;

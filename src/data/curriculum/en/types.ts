@@ -30,6 +30,15 @@ export interface Drill {
   length?: number;
   /** Id wordlist di src/data/wordlists/en/. Hanya untuk generator berbasis kata. */
   pool?: string;
+  /**
+   * Drill ini bagian dari **tes kelulusan kursus** (dok. 04 §4a, ADR-030), bukan
+   * bagian dari penilaian lesson-nya.
+   *
+   * Ditandai eksplisit, bukan disimpulkan dari posisi ("dua drill terakhir") atau
+   * dari `type` — keduanya benar hari ini dan salah diam-diam begitu ada yang
+   * menambah satu drill. Hanya `u6-review` yang memakainya; validator menjaga itu.
+   */
+  graduation?: true;
 }
 
 export interface PassCriteria {

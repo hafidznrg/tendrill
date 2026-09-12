@@ -266,12 +266,14 @@ export const unit6Lessons: Lesson[] = [
       {
         type: 'sentences',
         generator: 'static',
+        graduation: true,
         content:
           'Nobody learns to type in a week. What actually happens is quieter than that: a few weeks of short, honest sessions, one row at a time, until the day you notice that you have not looked down in an hour.',
       },
       {
         type: 'sentences',
         generator: 'static',
+        graduation: true,
         content:
           'You are at the end of the course, which mostly means the course is done teaching you. The rest is ordinary use - letters, notes, code, whatever you write anyway - and the habit will keep improving on its own now, as long as you keep your eyes on the screen.',
       },
