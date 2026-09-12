@@ -19,6 +19,14 @@ export interface VirtualKeyboardProps {
   /** Dipanggil dengan fungsi pelukis; pemanggil menyimpannya untuk jalur keystroke. */
   onReady: (paint: (char: string | null) => void) => void;
   showFingerColors?: boolean;
+  /**
+   * 'home' meredupkan tombol non-home row supaya baris awal menonjol (ADR-027).
+   *
+   * Satu class di elemen akar, disetel sekali saat render — ia TIDAK menyentuh
+   * jalur keystroke, dan memang tidak boleh: pelukis sorotan tetap satu-satunya
+   * yang berjalan per ketukan.
+   */
+  emphasis?: 'home' | null;
 }
 
 /**
@@ -35,7 +43,11 @@ function hintForCached(char: string): KeyHint | null {
   return hit;
 }
 
-export function VirtualKeyboard({ onReady, showFingerColors = true }: VirtualKeyboardProps) {
+export function VirtualKeyboard({
+  onReady,
+  showFingerColors = true,
+  emphasis = null,
+}: VirtualKeyboardProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -85,7 +97,9 @@ export function VirtualKeyboard({ onReady, showFingerColors = true }: VirtualKey
 
   return (
     <div
-      className={`vk-root${showFingerColors ? '' : ' vk-mono'}`}
+      className={`vk-root${showFingerColors ? '' : ' vk-mono'}${
+        emphasis === 'home' ? ' vk-emphasis-home' : ''
+      }`}
       ref={hostRef}
       aria-hidden="true"
     >

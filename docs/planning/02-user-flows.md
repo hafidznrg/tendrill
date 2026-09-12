@@ -12,6 +12,8 @@
 /learn            → Daftar kurikulum (semua unit & lesson, status terkunci/selesai)
 /learn/[lessonId] → Sesi latihan terstruktur (termasuk review session)
 /placement        → Placement test 60 detik (R-14), selalu bisa dilewati
+/posture          → Panduan postur & anchoring, sekali tampil, selalu bisa dilewati
+                    (ADR-027 — ditambahkan setelah uji pemula 2026-09-12)
 /practice         → Latihan bebas (pilih durasi & sumber teks)
 /stats            → Statistik & heatmap kelemahan
 /settings         → Tema, suara, layout keyboard, reset/ekspor data
@@ -25,7 +27,7 @@ Semua halaman client-side. Tidak ada halaman yang butuh network setelah load per
 Buka "/"
   └─ Tidak ada progres tersimpan
        └─ Hero dengan dua CTA:
-            ├─ [Mulai dari nol]          → panduan postur (bisa dilewati) → /learn/u1-l1
+            ├─ [Mulai dari nol]          → /posture (bisa dilewati) → /learn/u1-l1
             └─ [Sudah bisa mengetik?]    → /placement
                   └─ Tes 60 detik, teks campuran seluruh keyboard
                        └─ Hasil menempatkan pengguna (dok. 04 §3):
@@ -40,9 +42,20 @@ Buka "/"
 **Penempatan adalah saran, bukan vonis.** Pengguna selalu boleh membuka unit mana pun yang
 sudah dilewati, dan selalu boleh melewatkan placement untuk mulai dari nol.
 
+> **Kenapa panduan postur tidak boleh dilewat begitu saja (ADR-027).** Uji pemula
+> 2026-09-12 menemukan tangan kanan mendarat dengan telunjuk di `h`, bukan `j` —
+> seluruh tangan bergeser satu tombol, sebelum lesson pertama dimulai. Tidak ada satu
+> pun titik di aplikasi yang pernah mengatakan di mana tangan diletakkan, dan warna
+> jari di virtual keyboard **tidak bisa** mengatakannya: `h` dan `j` satu jari, jadi
+> warnanya memang sama.
+
 **Aturan penting:** tidak ada modal, tidak ada tur produk, tidak ada permintaan izin apa pun
 sebelum keystroke pertama. Placement test sendiri adalah sesi mengetik — bukan formulir,
 bukan kuesioner. Pengguna mulai mengetik dalam tiga detik di jalur mana pun.
+
+`/posture` adalah satu-satunya layar yang berdiri di antara CTA dan keystroke pertama,
+dan ia tunduk pada aturan yang sama: **satu layar, bukan tur; tombol lewati ada sejak
+paint pertama**, bukan di balik gulir; dan ia hanya muncul sekali seumur perangkat.
 
 ## 3. Flow utama — pengguna kembali
 

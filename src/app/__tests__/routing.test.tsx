@@ -11,6 +11,7 @@ const CASES: Array<[string, string]> = [
   // memuat lesson sungguhan lewat :lessonId.
   ['/learn/u1-l1', 'Unit 1 · Keys F and J'],
   ['/placement', 'Placement test'],
+  ['/posture', 'Sebelum ketukan pertama'],
   ['/practice', 'Latihan bebas'],
   ['/stats', 'Statistik'],
   ['/settings', 'Pengaturan'],

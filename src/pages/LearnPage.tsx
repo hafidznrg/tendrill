@@ -41,6 +41,12 @@ export default function LearnPage() {
             Sudah bisa mengetik? Ikut placement
           </Link>
         )}
+        {/* Panduan anchoring tetap bisa dibuka kapan pun, bukan hanya sekali di
+            awal (ADR-027) — posisi tangan adalah hal yang justru perlu ditengok
+            lagi setelah beberapa hari. */}
+        <Link to="/posture" className="ul-cta">
+          Panduan posisi tangan
+        </Link>
       </div>
 
       {isMemoryMode() && (

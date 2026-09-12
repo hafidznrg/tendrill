@@ -1,0 +1,96 @@
+/* Panduan postur & anchoring (ADR-027).
+
+   Aturan Fase 2 yang tetap berlaku di sini: **setiap ruang dipesan sejak paint
+   pertama**. Tidak ada tinggi yang diturunkan dari metrik font, tidak ada gambar
+   yang datang belakangan lalu mendorong teks. Satu-satunya elemen yang bisa
+   berubah ukuran adalah virtual keyboard, dan ia memakai sizing yang sama
+   dengan layar sesi. */
+
+.pg-root {
+  max-width: 68ch;
+}
+
+.pg-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pg-lead {
+  margin: 0.5rem 0 0;
+  color: var(--fg-dim);
+}
+
+.pg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.pg-steps {
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: pg;
+}
+
+.pg-step {
+  counter-increment: pg;
+  position: relative;
+  padding: 0 0 0 2.4rem;
+  margin-top: 1.5rem;
+}
+
+/* Nomor langkah memakai lebar tetap (2,4rem padding di atas), jadi teksnya
+   tidak bergeser saat nomor 1 berganti jadi nomor 10. */
+.pg-step::before {
+  content: counter(pg);
+  position: absolute;
+  left: 0;
+  top: 0.05rem;
+  width: 1.6rem;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-step-title {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pg-step p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* Butir yang lahir dari kegagalan nyata (telunjuk kanan di h). Ditandai garis,
+   bukan warna latar menyala — dok. 07 §11: memberi tahu, bukan menakut-nakuti. */
+.pg-step-warn {
+  border-left: 2px solid var(--accent);
+  margin-left: -0.75rem;
+  padding-left: 3.15rem;
+}
+
+.pg-step-warn::before {
+  left: 0.75rem;
+}
+
+.pg-keys {
+  margin-top: 2rem;
+}
+
+.pg-caption {
+  margin: 0.7rem 0 0;
+  color: var(--fg-dim);
+  font-size: 13px;
+}

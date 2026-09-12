@@ -885,6 +885,75 @@ kapital hadir di setiap drill tanpa mendominasinya.
 
 ---
 
+## ADR-027 — `/posture`: satu layar anchoring sebelum lesson pertama
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Uji pemula 2026-09-12 (DoD Fase 3) menemukan satu kegagalan yang tidak
+tertangkap 286 test: **tangan kanan mendarat dengan telunjuk di `h`, bukan `j`.**
+Seluruh tangan kanan bergeser satu tombol ke kiri, sebelum keystroke pertama. Yang
+diajarkan `u1-l1` sendiri melekat — `f` dan `j` keduanya ditekan dengan telunjuk —
+jadi yang salah bukan lesson-nya, melainkan yang terjadi **sebelum** lesson dimulai.
+
+Konsekuensinya melampaui Lesson 1: dengan telunjuk kanan di `h`, jari tengah jatuh di
+`j`, manis di `k`, kelingking di `l`. `u1-l2` (`d k`) dan `u1-l3` (`s l`) akan dilatih
+dengan jari yang salah sejak ketukan pertama, dan `u1-l5` yang mengajarkan `g h`
+sebagai **julur telunjuk** bertabrakan dengan tangan yang justru beristirahat di sana.
+
+Tiga hal yang seharusnya mencegahnya, dan kenapa ketiganya tidak:
+
+| Yang ada | Kenapa tidak cukup |
+|---|---|
+| Warna jari di virtual keyboard (dok. 07 §4) | **Secara struktural tidak bisa.** `h` dan `j` sama-sama telunjuk kanan, jadi warnanya memang identik. Warna menjawab "jari mana yang bertanggung jawab", bukan "di mana jari beristirahat" |
+| Penanda tonjolan home row di kedelapan tombol | Ada, dan terlewat. Ia penanda, bukan instruksi |
+| `intro` `u1-l1` ("Telunjuk kiri di F, telunjuk kanan di J — raba dulu tanpa melihat") | Terbaca **sesudah** tangan sudah terlanjur mendarat. Teks yang benar di saat yang salah |
+
+Dan yang paling menentukan: **panduan postur memang belum pernah dibuat.** Dok. 02 §2
+sudah menetapkan alurnya sejak v2 (`[Mulai dari nol] → panduan postur → /learn/u1-l1`)
+dan dok. 04 §13 masih mencatatnya belum ditulis. Fase 3 menyambungkan CTA langsung ke
+`u1-l1` — jadi tidak ada satu titik pun di aplikasi yang pernah mengatakan di mana
+tangan diletakkan.
+
+**Keputusan.** Tambahkan **satu halaman**, `/posture`, di antara CTA "Mulai dari nol"
+dan `u1-l1`. Sekali tampil per perangkat (`meta.postureSeenAt`), **selalu bisa
+dilewati**, dan tetap bisa dibuka lagi dari `/learn`.
+
+Isinya diikat oleh apa yang gagal, bukan oleh apa yang enak ditulis:
+
+1. Delapan jari di `asdf jkl;`, **raba tonjolan F dan J tanpa melihat**.
+2. **Periksa telunjuk kanan: `j`, bukan `h`** — disebut eksplisit, karena persis ini
+   yang meleset.
+3. Jempol di spasi dan tidak pernah pindah.
+4. Kalau posisi hilang: angkat tangan, letakkan ulang dengan meraba — bukan mengintip.
+5. **Backspace disebutkan letaknya** (ujung kanan atas, kelingking kanan). Uji yang
+   sama menemukan pemula berhenti dan melihat keyboard untuk mencarinya, sehingga
+   satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard".
+
+**Kenapa halaman, bukan modal.** Dok. 02 §2 melarang modal sebelum keystroke pertama.
+Halaman punya URL, bisa dibuka ulang, bisa ditutup dengan tombol yang terlihat sejak
+paint pertama, dan tidak menjebak siapa pun di belakang lapisan gelap.
+
+**Kenapa bukan siluet jari** (usul pemula di uji yang sama). Siluet mengobati layar
+keyboard; yang hilang adalah instruksi sebelum tangan menyentuh keyboard. Perbaikan
+termurah dicoba dulu — kalau uji pemula berikutnya masih menemukan anchoring meleset,
+siluet naik dari Backlog ide menjadi kandidat berikutnya.
+
+**Konsekuensi.**
+
+- (+) Kegagalan yang teramati punya penawar langsung, dikerjakan di fase yang sama
+  saat ia ditemukan — persis yang diminta kalimat DoD Fase 3.
+- (+) Peta halaman tetap kecil: 8 rute, dan yang baru ini nol biaya di bundel awal
+  (chunk rute sendiri, hanya dimuat kalau dibuka).
+- (−) Satu layar berdiri di antara CTA dan keystroke pertama — bertentangan dengan
+  semangat "mulai mengetik dalam tiga detik". Dimitigasi: tombol lewati terlihat sejak
+  paint pertama, dan layarnya tidak pernah muncul dua kali.
+- (−) `meta` bertambah satu field. Aditif dan opsional, jadi tanpa migrasi (dok. 05 §4).
+- (−) **Belum diuji ke pemula.** Halaman ini lahir dari satu pengamatan, dan belum ada
+  bukti ia memperbaikinya. Itu pertanyaan pertama untuk uji pemula berikutnya: dengan
+  panduan ini, apakah tangan kanannya mendarat di `j`?
+
+---
+
 ## Kandidat ADR — Mode input strict/non-strict bisa dipilih pengguna
 
 **Diusulkan:** 2026-09-11 · **Status:** *Kandidat — belum diputuskan, belum dikerjakan*
@@ -951,6 +1020,22 @@ Tiga syarat yang mengikat usulan ini:
   sedang tidak melihat. Ini yang belum bisa dijawab dokumen mana pun.
 - Persona "menengah tersendat" (prioritas v1, ADR-010) akan jengkel kalau tertahan tiap
   typo. Dimitigasi oleh default non-strict di `/practice` dan `passed-by-placement`.
+
+### Data uji pertama (2026-09-12) — dan kenapa ia belum memutuskan apa pun
+
+| Yang diamati | Bacaannya untuk kandidat ini |
+|---|---|
+| Salah ketik **disadari** dan langsung dikoreksi sendiri | Keberatan terkuat terhadap strict ("pengguna menabrak tembok tanpa sadar") tidak terlihat — tapi pada pemula yang memang sedang melihat layar |
+| **Nol** ketukan berlebih teramati | **Bukan bukti.** Kecepatannya masih pelan; pergeseran adalah gejala kecepatan, dan pemula 15 WPM mengetik satu tombol pada satu waktu |
+| Berhenti dan **melihat keyboard untuk mencari Backspace** | Menguatkan argumen pendukung yang sudah tertulis di atas ("backspace tidak lagi wajib") — dari butir teoretis menjadi biaya yang terlihat |
+
+Jadi uji pertama menggeser satu argumen **mendukung** menjadi lebih kuat, dan tidak
+menghasilkan satu pun angka yang bisa menolak. Menutup kandidat ini sekarang berarti
+menyimpulkan dari kondisi yang tidak pernah menguji hal yang dimaksud.
+
+**Pemicu keputusan** (ditulis sekarang supaya tidak menggantung): uji pemula kedua —
+sesudah `/posture` ada, idealnya pada orang yang sudah sampai Unit 2–3 — atau pengguna
+mana pun yang mencapai ~30 WPM di `/learn`, mana yang lebih dulu.
 
 ### Kenapa belum diputuskan sekarang
 

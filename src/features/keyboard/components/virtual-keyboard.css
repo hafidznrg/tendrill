@@ -103,3 +103,14 @@
     transition: none;
   }
 }
+
+/* Penekanan home row untuk panduan anchoring (ADR-027).
+   Dipakai di /posture, tidak pernah di layar sesi: meredupkan 48 tombol saat
+   mengetik akan menyembunyikan justru tombol yang sedang dituju. */
+.vk-emphasis-home .vk-key:not(.vk-home) {
+  opacity: 0.35;
+}
+
+.vk-emphasis-home .vk-home {
+  border-color: var(--accent);
+}

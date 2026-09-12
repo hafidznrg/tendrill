@@ -369,8 +369,12 @@ dicicil sejak hari pertama, di sela fase koding (R-23).
 - [x] Kurasi daftar kata per gugus huruf (Unit 1–3)
 - [ ] Tulis / kumpulkan 100+ kalimat latihan untuk Unit 4–5
 - [x] Tulis teks intro posisi jari untuk tiap lesson
-- [ ] Tulis **panduan postur & anchoring awal** (tonjolan F/J, posisi pergelangan,
-      "jangan melihat keyboard") — ditampilkan sekali sebelum `u1-l1`, bisa dilewati
+- [x] Tulis **panduan postur & anchoring awal** (tonjolan F/J, posisi pergelangan,
+      "jangan melihat keyboard") — ditampilkan sekali sebelum `u1-l1`, bisa dilewati.
+      Ditulis 2026-09-12 **sesudah** uji pemula, bukan sebelumnya, dan itu terlihat di
+      isinya: dua butirnya (periksa telunjuk kanan di `j` bukan `h`; letak Backspace
+      disebutkan supaya tidak dicari dengan mata) lahir langsung dari kegagalan yang
+      teramati (ADR-027)
 - [ ] Uji sendiri seluruh kurikulum dari awal sampai akhir sebelum rilis
 
 ---

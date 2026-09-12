@@ -225,15 +225,32 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
       bisa** membedakan "jangkau ke sini" dari "diam di sini". Penanda tonjolan home
       row ada di kedelapan tombolnya, dan terlewat.
 
-      Perbaikannya dikerjakan **sekarang**, sesuai kalimat DoD ini sendiri.
+      **Perbaikannya sudah dikerjakan** (ADR-027): halaman `/posture` disisipkan di
+      antara "Mulai dari nol" dan `u1-l1`, sekali tampil, selalu bisa dilewati, dan
+      tetap bisa dibuka lagi dari `/learn`. Dua butirnya lahir langsung dari yang
+      gagal — periksa telunjuk kanan di `j` bukan `h`, dan letak Backspace supaya
+      tidak dicari dengan mata. **Belum diuji balik ke pemula**; itu pertanyaan
+      pertama uji berikutnya.
 - [~] **Butir pengamatan khusus di uji itu: pergeseran mode non-strict.**
       *Separuh terjawab.* Yang sudah pasti: pemula ini **menyadari** salah ketiknya dan
       mengoreksinya sendiri — jadi ketakutan terbesar kandidat ADR ("pengguna menabrak
       tembok tanpa sadar") tidak terlihat di sesi ini. Yang belum terhitung: **berapa
       kali ia menekan satu tombol BERLEBIH** (pergeseran, bukan salah tekan biasa).
       Keduanya berbeda dan hanya yang kedua yang memutuskan kandidat ADR — salah tekan
-      biasa memang sudah ditangani non-strict dengan baik. Keputusan ditahan sampai
-      angka itu ada; jangan diputuskan dari data yang tidak tegas.
+      biasa memang sudah ditangani non-strict dengan baik.
+
+      **Hitungannya nol pada uji ini**, dan pemiliknya menyebut alasannya sendiri:
+      kecepatannya masih pelan. Itu penjelasan yang masuk akal, dan justru karena itu
+      **nol di sini bukan bukti untuk menolak** — pergeseran adalah gejala kecepatan,
+      dan pemula 15 WPM mengetik satu tombol pada satu waktu. Menutup kandidat ADR
+      dengan data ini akan mengulang persis pola yang sudah tiga kali menipu proyek
+      ini: angka yang terlihat masuk akal, diambil dari kondisi yang tidak pernah
+      menguji hal yang dimaksud.
+
+      Keputusan tetap **ditahan**, dengan pemicu yang ditulis sekarang supaya tidak
+      menggantung selamanya: diputuskan pada **uji pemula kedua** (sesudah `/posture`,
+      dan idealnya pada orang yang sudah sampai Unit 2–3) atau saat ada pengguna mana
+      pun yang mencapai ~30 WPM di `/learn` — mana yang lebih dulu.
       Bukan sekadar "amati" — **hitung berapa kali ia menekan satu tombol berlebih,
       dan apakah ia menyadarinya.** Ini satu-satunya data yang bisa memutuskan kandidat
       ADR mode strict (dok. 10), dan hanya bisa diambil dari pemula sungguhan.

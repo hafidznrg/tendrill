@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { nextLessonId, useProgress } from '@/features/curriculum';
+import { hasSeenPosture } from '@/lib/storage/flags.ts';
 import { prefetchSessionPath } from '@/app/prefetch.ts';
 
 /**
@@ -31,6 +32,10 @@ export default function HomePage() {
 
   const started = Object.keys(progress.lessons).length > 0;
 
+  // Pengguna baru lewat panduan anchoring dulu (dok. 02 §2, ADR-027). Yang sudah
+  // pernah melihatnya tidak pernah disodori lagi — termasuk kalau ia melewatinya.
+  const startHref = started || hasSeenPosture() ? (nextId ? `/learn/${nextId}` : '/learn') : '/posture';
+
   return (
     <section>
       <h1 className="font-mono text-[19px] font-bold tracking-[-0.02em]">tendrill</h1>
@@ -39,10 +44,7 @@ export default function HomePage() {
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Link
-          to={nextId ? `/learn/${nextId}` : '/learn'}
-          className="ul-cta ul-cta-primary"
-        >
+        <Link to={startHref} className="ul-cta ul-cta-primary">
           {started ? 'Lanjutkan' : 'Mulai dari nol'}
         </Link>
         {!started && (

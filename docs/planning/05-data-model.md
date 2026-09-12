@@ -157,7 +157,8 @@ generator adaptif (dok. 04 §8).
   createdAt: number,
   lastActiveDate: string,   // "2026-09-10"
   streakDays: number,
-  longestStreak: number
+  longestStreak: number,
+  postureSeenAt?: number    // ADR-027 — panduan postur sudah pernah tampil
 }
 ```
 
@@ -192,6 +193,14 @@ dicoba berurutan sampai penulisan berhasil:
    "Penyimpanan browser penuh. Ekspor progresmu sebelum menutup tab."
 
 Setiap tingkat yang terpakai dicatat di `typing:meta` supaya bisa diketahui saat debugging.
+
+### Field opsional di `typing:meta` (tanpa naik versi)
+
+`lastQuotaTrimLevel` dan `postureSeenAt` keduanya **opsional**, jadi menambahkannya
+tidak membutuhkan migrasi: data lama yang tidak memilikinya tetap sah, dan validator
+`typing:meta` memang hanya memeriksa field kritikal (`createdAt`). Aturannya: field
+baru yang murni aditif dan boleh kosong **tidak** menaikkan `version`; yang mengubah
+arti atau bentuk field lama **wajib** menaikkannya berikut migrasinya (§5).
 
 ## 5. Strategi migrasi
 

@@ -138,6 +138,14 @@ export interface MetaData {
   longestStreak: number;
   /** Tingkat tangga pemangkasan terakhir yang terpakai (dok. 05 §4). */
   lastQuotaTrimLevel?: number;
+  /**
+   * Kapan panduan postur & anchoring terakhir ditampilkan (ADR-027).
+   *
+   * Opsional dan murni aditif, jadi TANPA migrasi: data lama yang tidak punya
+   * field ini tetap sah (dok. 05 §4). Field baru yang mengubah arti atau bentuk
+   * field lama tetap wajib menaikkan versi.
+   */
+  postureSeenAt?: number;
 }
 
 export interface StorageShape {
