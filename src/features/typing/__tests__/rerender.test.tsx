@@ -36,7 +36,6 @@ function Harness({ onRender }: { onRender: ProfilerOnRenderCallback }) {
       <TypingArea
         session={session}
         charWidth={10}
-        lineHeight={20}
         onMeasureEl={(node) => setEl(node)}
         key={el ? 'ready' : 'init'}
       />

@@ -155,6 +155,24 @@ paling murah terhadap regresi diam-diam.
       yang menolak lulus kalau ada satu pun entri `longtask`. **Nol, 2026-09-12**
       (maks frame 11,1 ms, jauh di bawah 50)
 - [ ] Nol "forced reflow" di panel Performance (R-06)
+- [ ] **Nol layout shift**, diukur `scripts/perf-layout.js` (`watchCLS()`): jalankan,
+      lalu **refresh keras** supaya pemuatan webfont dari nol ikut terekam.
+      **Terukur 2026-09-12: CLS 0,0501 — GAGAL.** Dua sumber: (a) 0,0497 dari
+      `.ta-root` yang lahir setinggi **0 px** karena tingginya diturunkan dari
+      `lineHeight` hasil pengukuran, dan angka itu 0 sampai `document.fonts.ready`
+      selesai — virtual keyboard di bawahnya ikut melompat 129,6 px; (b) 0,00035
+      dari nav saat webfont menggantikan fallback (`font-display: swap`).
+      (a) **sudah diperbaiki**: tinggi kini dari CSS (`calc(var(--ta-lines) * 1.8em)`),
+      identik angkanya tapi ada sejak paint pertama — dan prop `lineHeight` dicabut
+      dari `TypingArea` supaya bug itu tidak bisa kembali. **Ukur ulang.**
+      (b) **belum diputuskan** — butuh `font-display: optional` atau fallback
+      ber-`size-adjust`. Kecil, tapi dok. 07 §1 poin 2 menuntut nol.
+- [ ] **Caret presisi** (R-06), diukur `scripts/perf-layout.js` (`caretCheck()`).
+      Yang diperiksa bukan posisi caret sekarang melainkan **kolom terjauh di tiap
+      baris** — posisi caret aritmetika, jadi error `charWidth` MENUMPUK ke kanan.
+      Sebagian terukur 2026-09-12: setelah `fonts.ready` dan setelah resize,
+      `charWidth` 14,4 px dan **0 meleset di 35 kolom**. **Zoom browser (Ctrl +/-)
+      belum diuji** — belum bisa dikendalikan dari panel otomasi.
 - [ ] Waktu ke keystroke pertama < 3 detik pada Fast 3G ter-throttle,
       diukur dengan `performance.mark` (R-24)
 

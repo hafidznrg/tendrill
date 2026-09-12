@@ -19,7 +19,6 @@ import './typing-area.css';
 export interface TypingAreaProps {
   session: TypingSessionApi;
   charWidth: number;
-  lineHeight: number;
   /** Jumlah baris yang terlihat sebelum teks bergulir. */
   visibleLines?: number;
   /** Dipanggil dengan elemen teks supaya induk bisa mengukur charWidth. */
@@ -29,7 +28,6 @@ export interface TypingAreaProps {
 export function TypingArea({
   session,
   charWidth,
-  lineHeight,
   visibleLines = 3,
   onMeasureEl,
 }: TypingAreaProps) {
@@ -72,7 +70,12 @@ export function TypingArea({
   return (
     <div
       className="ta-root"
-      style={{ height: `${visibleLines * lineHeight}px` }}
+      // Tinggi datang dari CSS (`--ta-lines`), BUKAN dari pengukuran — lihat
+      // komentar di typing-area.css. Komponen ini sengaja TIDAK lagi menerima
+      // `lineHeight`: selama ia ada, selalu ada godaan menurunkan ukuran dari
+      // angka yang bernilai 0 sampai font siap. Pergeseran caret vertikal
+      // memakai lineHeight, tapi itu milik useTypingSession, bukan di sini.
+      style={{ ['--ta-lines' as string]: visibleLines }}
       aria-label="Area latihan mengetik"
     >
       <div className="ta-viewport" ref={registerViewport}>
@@ -89,7 +92,7 @@ export function TypingArea({
         <span
           className="ta-caret"
           ref={registerCaret}
-          style={{ width: `${Math.max(2, charWidth * 0.08)}px`, height: `${lineHeight}px` }}
+          style={{ width: `${Math.max(2, charWidth * 0.08)}px` }}
           aria-hidden="true"
         />
       </div>

@@ -87,7 +87,6 @@ export default function LessonPage() {
         <TypingArea
           session={session}
           charWidth={charWidth}
-          lineHeight={lineHeight}
           onMeasureEl={setTextEl}
         />
 

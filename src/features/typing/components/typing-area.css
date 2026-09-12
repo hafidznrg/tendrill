@@ -9,6 +9,18 @@
   font-family: var(--font-mono);
   font-size: 24px;
   line-height: 1.8;
+
+  /* Tinggi ditentukan DI SINI, bukan dari hasil pengukuran.
+     Versi sebelumnya memakai `visibleLines * lineHeight` dari `useCharMetrics`,
+     dan angka itu **0 sampai `document.fonts.ready` selesai** (R-06 memang
+     melarang mengukur sebelum font siap). Akibatnya area ketik lahir setinggi
+     0 px lalu melompat ke 129,6 px, dan virtual keyboard beserta baris pintasan
+     di bawahnya ikut turun — **CLS 0,0497**, terukur 2026-09-12.
+
+     `1.8em` di sini identik dengan `lineHeight` yang diukur (font-size 24px ×
+     line-height 1.8 = 43,2 px), bedanya ia sudah ada sejak paint PERTAMA.
+     Tingginya memang tidak pernah perlu diukur — hanya `charWidth` yang perlu. */
+  height: calc(var(--ta-lines, 3) * 1.8em);
 }
 
 .ta-viewport {
@@ -53,6 +65,10 @@
   position: absolute;
   top: 0;
   left: 0;
+  /* Alasan yang sama: tinggi caret tidak menunggu pengukuran. Lebarnya tetap
+     dari JS karena ia diturunkan dari `charWidth`, dan caret absolut sehingga
+     lebar berapa pun tidak menggeser apa-apa. */
+  height: 1.8em;
   background: var(--caret);
   border-radius: 1px;
   will-change: transform;
