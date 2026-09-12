@@ -43,12 +43,18 @@ pernah memanggil `requestAnimationFrame` — tanpa paint, tidak ada p95 input→
 Jangan mencoba mengotomasinya lagi lalu menyimpulkan lulus dari panel yang tidak
 pernah menggambar.
 
-**Sisa DoD Fase 2 — dua item, keduanya butuh manusia:**
-1. `caretCheck()` sesudah zoom browser (Ctrl +/−) — sisa terakhir R-06; layout shift
-   sudah **CLS 0** dan caret **0 meleset** setelah font termuat & resize (2026-09-12).
-2. Diagnosis layar hasil terasa bermakna — penilaian yang tidak bisa digantikan test.
+**DoD Fase 2 terpenuhi (2026-09-12)**, kecuali satu pemeriksaan kecil yang belum
+diukur: `caretCheck()` sesudah zoom browser (Ctrl +/−) — sisa terakhir R-06. Layout
+shift sudah **CLS 0** dan caret **0 meleset** setelah font termuat dan setelah resize.
 
-Fase 3 belum boleh dimulai sebelum keduanya beres.
+Tiga pelajaran Fase 2 yang mengikat fase berikutnya (rinciannya di catatan penutup
+dok. 08):
+1. **Tiap gerbang performa wajib diuji dengan kontrol negatif.** Gerbang yang belum
+   pernah merah belum terbukti menjaga apa pun. Alat ukur di fase ini tiga kali
+   salah, dan tiap kali angkanya terlihat masuk akal.
+2. **Penalaran tentang spec tidak menggantikan pengukuran.**
+3. **Curigai "ruang yang tidak dipesan sejak paint pertama".** Ketiga layout shift
+   yang ditemukan berbentuk itu, dan nol di antaranya tertangkap 156 test.
 
 **Jangan mulai fase berikutnya sebelum DoD fase berjalan terpenuhi** (dok. 08).
 Jangan mengerjakan fitur dari fase yang jauh di depan hanya karena "sekalian".

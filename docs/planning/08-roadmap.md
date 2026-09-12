@@ -103,8 +103,9 @@ penyimpanan hasil saat idle.
 
 **DoD**
 - [x] Metrik live akurat dibanding hitungan manual — `sessionFlow.test.tsx`
-- [ ] Layar hasil menampilkan kalimat diagnosis yang bermakna — *penilaian manusia,
-      tidak bisa diotomasi; `diagnosis.test.ts` hanya menjaga ia tidak kosong/salah*
+- [x] Layar hasil menampilkan kalimat diagnosis yang bermakna — **dinilai pemilik
+      2026-09-12: bermakna.** Ini penilaian manusia dan memang tidak bisa diotomasi;
+      `diagnosis.test.ts` hanya menjaga ia tidak kosong/salah cabang.
 - [x] Virtual keyboard menyorot tombol berikutnya termasuk Shift sisi berlawanan —
       `fingerMap.test.ts` + `VirtualKeyboard.test.tsx`
 - [ ] Nol layout shift saat mengetik; caret tetap presisi setelah webfont termuat
@@ -153,6 +154,32 @@ sekali (ADR-021):
 - [x] 15 menit memakai sendiri — **dijalankan 2026-09-11.** Menemukan satu hal yang
       lolos dari 150 test: halaman bergeser saat layar hasil memunculkan scrollbar.
       Diperbaiki di hari yang sama. Sisanya memuaskan.
+
+
+> **Catatan penutup Fase 2.** Fase ini menghasilkan satu pelajaran yang lebih mahal
+> daripada fiturnya sendiri: **alat ukurnya sendiri tiga kali salah**, dan tiap kali
+> angkanya terlihat masuk akal.
+>
+> | Alat | Cacatnya | Akibat kalau lolos |
+> |---|---|---|
+> | `perf:heap` v1 | `gc()` sebelum pengukuran akhir menghapus sampah transien yang justru dicari | alokasi 152 byte/keystroke dinyatakan nol |
+> | `autotype()` | mengulang drill dengan `Tab`, padahal sesudah selesai tombolnya `Enter` | ~38 frame ganti-layar terhitung sebagai biaya mengetik |
+> | `optional` (ADR-023) | dipilih dari penalaran spec, tanpa mengukur siapa menang balapan 100 ms | pengguna melihat Consolas, bukan JetBrains Mono |
+>
+> Aturan yang lahir dan sekarang mengikat: **tiap gerbang performa wajib diuji dengan
+> kontrol negatif** — suntikkan pelanggaran, pastikan gerbangnya merah. Gerbang yang
+> belum pernah merah belum terbukti menjaga apa pun. Dan **penalaran tentang spec
+> tidak menggantikan pengukuran.**
+>
+> Pelajaran kedua, dari arah berlawanan: **tiga sumber layout shift dan satu bug
+> alokasi tidak ditemukan oleh 156 test.** Semuanya ditemukan karena ada manusia yang
+> membuka halaman, memakainya, dan mengukurnya. Ketiga layout shift itu berbentuk
+> identik — **ruang yang tidak dipesan sejak paint pertama** — jadi curigai bentuk itu
+> lebih dulu kalau ia muncul lagi di fase berikutnya.
+>
+> Yang berubah permanen: 6 item DoD yang dulu "periksa sendiri" kini dijaga
+> `npm run verify` (ADR-021), dan dua ADR baru mengoreksi ambang yang tidak bisa
+> dipenuhi siapa pun (ADR-022) serta pilihan `font-display` (ADR-023).
 
 ---
 
