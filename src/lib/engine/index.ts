@@ -9,6 +9,7 @@
 export {
   createSession,
   restartSession,
+  rewrapSession,
   applyKey,
   applyBackspace,
   pause,

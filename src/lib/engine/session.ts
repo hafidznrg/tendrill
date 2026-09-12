@@ -67,6 +67,25 @@ export function createSession(target: string, cols: number): SessionState {
 }
 
 /** Kembalikan sesi ke `idle` bersih tanpa mengalokasikan buffer baru. */
+/**
+ * Hitung ulang pembungkusan baris untuk lebar baru (ADR-028).
+ *
+ * Dipanggil saat lebar area teks berubah — jendela diubah ukurannya, zoom
+ * browser, atau font akhirnya termuat. Ia **hanya** menyentuh `lineStarts`:
+ * sel, log, akumulator, kursor, dan status tidak ikut berubah.
+ *
+ * Kenapa ini ada sama sekali: sebelum ADR-028, satu-satunya cara mengubah `cols`
+ * adalah membuat sesi baru — sehingga mengubah ukuran jendela di tengah drill
+ * akan **menghapus ketikan pengguna**. Membungkus ulang bukan memulai ulang.
+ *
+ * Bukan jalur input, jadi alokasi array baru di sini tidak melanggar apa pun
+ * (dok. 03 §6 mengikat jalur keystroke, bukan perubahan geometri).
+ */
+export function rewrapSession(s: SessionState, cols: number): void {
+  if (cols <= 0) return;
+  s.lineStarts = wrapText(s.target, cols);
+}
+
 export function restartSession(s: SessionState): void {
   const st = s as InternalSessionState;
   for (let i = 0; i < s.cells.length; i++) {

@@ -21,13 +21,22 @@ import { useEffect, useState } from 'react';
 export interface CharMetrics {
   charWidth: number;
   lineHeight: number;
+  /**
+   * Lebar kotak teks dalam piksel (ADR-028).
+   *
+   * Dari sinilah jumlah kolom diturunkan. Sebelum ADR-028 jumlah kolom adalah
+   * konstanta 52 yang tidak pernah diperiksa terhadap kotaknya — dan kotak
+   * default aplikasi hanya memuat 50, sehingga browser memotong sisanya dan
+   * caret meleset satu baris.
+   */
+  width: number;
   /** false sampai webfont termuat DAN pengukuran pertama berhasil */
   ready: boolean;
 }
 
 const SAMPLE = 'M'.repeat(50);
 
-function measure(el: HTMLElement): { charWidth: number; lineHeight: number } {
+function measure(el: HTMLElement): { charWidth: number; lineHeight: number; width: number } {
   const probe = document.createElement('span');
   probe.textContent = SAMPLE;
   probe.style.position = 'absolute';
@@ -47,6 +56,9 @@ function measure(el: HTMLElement): { charWidth: number; lineHeight: number } {
     charWidth,
     // `line-height: normal` tidak bisa diparse; 1.8 mengikuti dok. 07 §6.
     lineHeight: Number.isFinite(parsedLineHeight) ? parsedLineHeight : fontSize * 1.8,
+    // Diukur dari elemen yang SAMA dengan charWidth: lebar dan lebar karakter
+    // harus berasal dari kotak yang sama, kalau tidak pembaginya berbohong.
+    width: el.clientWidth,
   };
 }
 
@@ -54,6 +66,7 @@ export function useCharMetrics(el: HTMLElement | null): CharMetrics {
   const [metrics, setMetrics] = useState<CharMetrics>({
     charWidth: 0,
     lineHeight: 0,
+    width: 0,
     ready: false,
   });
 
@@ -69,7 +82,10 @@ export function useCharMetrics(el: HTMLElement | null): CharMetrics {
       // "ready", karena seluruh posisi caret diturunkan dari angka ini.
       if (next.charWidth <= 0) return;
       setMetrics((prev) =>
-        prev.ready && prev.charWidth === next.charWidth && prev.lineHeight === next.lineHeight
+        prev.ready &&
+        prev.charWidth === next.charWidth &&
+        prev.lineHeight === next.lineHeight &&
+        prev.width === next.width
           ? prev
           : { ...next, ready: true },
       );

@@ -954,6 +954,97 @@ siluet naik dari Backlog ide menjadi kandidat berikutnya.
 
 ---
 
+## ADR-028 — Lebar baris diukur, bukan dikonstankan; dan CSS tidak boleh ikut membungkus
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Dilaporkan 2026-09-12: teks sudah berpindah ke baris berikutnya, tetapi
+caret tertinggal di baris sebelumnya. Diukur langsung di build produksi, bukan
+disimpulkan dari kode:
+
+| Yang diukur | Nilai |
+|---|---|
+| `charWidth` | 14,4 px |
+| Lebar `.ta-text` | **720 px** (`max-w-3xl` 768 − `px-6` 2×24) |
+| Kolom yang **muat** | **50** |
+| `COLS` yang dipakai engine | **52** |
+| Baris logis drill | 3 baris: 52, 48, 20 karakter |
+| Baris **visual** di layar | **4** — mulai di indeks 0, **47**, 52, 100 |
+
+Baris logis pertama (52 karakter) dipotong browser di indeks 47. Sejak titik itu setiap
+baris logis berikutnya tergambar satu baris visual lebih bawah daripada yang dihitung
+caret — dan caret dihitung aritmetika dari `lineStarts` (dok. 03 §8), yang tidak tahu
+apa-apa soal potongan tambahan itu.
+
+Dua kesalahan bertemu, dan keduanya perlu diperbaiki:
+
+1. **`COLS = 52` adalah angka yang tidak pernah diperiksa terhadap kotaknya.** Ia
+   diambil dari rentang "50–60 karakter" dok. 07 §2 dan diperlakukan sebagai fakta.
+   Lebar default aplikasi sendiri hanya memuat 50 — jadi ini **bukan** kasus jendela
+   sempit, melainkan **setiap pengguna, pada zoom normal**.
+2. **`white-space: pre-wrap` membuat kegagalannya senyap.** CSS-nya sudah diberi
+   komentar "teks dibungkus engine, bukan CSS", tetapi `pre-wrap` tetap mengizinkan
+   browser memotong baris ketika kotaknya kurang lebar. Yang seharusnya menjadi
+   luberan yang kelihatan, berubah menjadi caret yang salah tanpa satu pun pesan.
+
+Kenapa baru terlihat sekarang: sampai Fase 2, layar sesi hanya pernah menampilkan drill
+statis `u1-l1` yang panjangnya 35 karakter — tidak pernah ada baris yang cukup panjang
+untuk menyentuh batas. Drill dinamis Fase 3 (120–200 karakter) adalah yang pertama
+menghasilkan baris logis 52 karakter.
+
+**Keputusan.**
+
+1. **`cols` diturunkan dari pengukuran**, bukan dari konstanta:
+   `cols = clamp(floor(lebarTeks / charWidth), 20, 60)`. Diukur di tempat yang sama
+   dengan `charWidth` (`useCharMetrics`, setelah `document.fonts.ready`), jadi ia tidak
+   menambah satu pun pengukuran DOM di jalur input (dok. 06 §2 batasan 7 tetap utuh).
+2. **`white-space: pre`**, bukan `pre-wrap`. Kalau suatu saat angkanya meleset lagi,
+   yang terjadi adalah teks terpotong di tepi — kelihatan, dan caretnya tetap jujur.
+   Kegagalan senyap ditukar dengan kegagalan berisik, sengaja.
+3. **Perubahan lebar me-*rewrap*, bukan me-*restart*.** `useTypingSession` membuat sesi
+   baru setiap `cols` berubah; dengan `cols` yang kini ikut berubah saat jendela
+   diubah ukurannya, itu berarti mengubah ukuran jendela di tengah drill akan
+   **menghapus ketikan pengguna**. Ditambahkan `rewrapSession(session, cols)` di engine:
+   ia menghitung ulang `lineStarts` saja dan tidak menyentuh sel, log, maupun
+   akumulator.
+
+**Konsekuensi.**
+
+- (+) Caret benar pada lebar jendela dan tingkat zoom mana pun, karena angkanya berasal
+  dari kotak yang sebenarnya. Ini sekaligus menutup sisa utang R-06 soal zoom: zoom
+  mengubah `charWidth`, dan `cols` kini ikut.
+- (+) Mengubah ukuran jendela di tengah drill tidak lagi berbahaya — ia hanya membungkus
+  ulang.
+- (−) Lebar baris tidak lagi selalu 50–60 karakter seperti dok. 07 §2. Pada jendela
+  sempit ia turun sampai 20. Diterima **dengan sadar**: baris 35 karakter yang caretnya
+  benar lebih baik daripada baris 52 karakter yang caretnya meleset, dan aplikasi ini
+  desktop-first sehingga kasus itu jarang. Dok. 07 §2 diperbarui, bukan dilanggar
+  diam-diam.
+- (−) Satu pengukuran DOM tambahan (`clientWidth`) per perubahan geometri. Ia terjadi
+  bersama pengukuran `charWidth` yang memang sudah ada, jadi tidak menambah reflow baru.
+
+**Terukur sesudah perbaikan** (build produksi, 2026-09-12):
+
+| | Sebelum | Sesudah |
+|---|---|---|
+| Baris logis vs visual (drill 120 karakter) | 3 vs **4** | **3 vs 3**, indeks awal identik: 0, 50, 100 |
+| Selisih caret ↔ span di posisi kursor | satu baris (43,2 px) | **≤ 0,31 px** mendatar; tegak konstan −6 px di **setiap** baris (offset kotak-baris vs kotak-glif, bukan salah baris) |
+| Mengubah lebar di tengah drill | sesi dibuat ulang, ketikan hilang | 101 karakter yang sudah diketik **tetap utuh**, baris dibungkus ulang 50/50/20 → 28/32/30/30 |
+
+Satu catatan kejujuran soal pengukuran terakhir: panel browser otomasi **tidak
+mengirim event `resize`** saat viewport-nya diemulasi, jadi jalur itu diuji dengan
+membangkitkan `resize` secara manual di halaman yang sama. Yang terbukti: efeknya benar
+begitu event-nya tiba. Yang belum terbukti lewat panel: bahwa event-nya tiba saat
+jendela sungguhan diseret. Itu satu tarikan mouse untuk diperiksa sendiri.
+
+**Pelajaran yang sama, ketiga kalinya.** Dok. 08 mencatat "curigai ruang yang tidak
+dipesan sejak paint pertama"; ini varian keempatnya — **angka yang diasumsikan muat,
+tanpa pernah diukur terhadap kotaknya.** Dan seperti tiga sebelumnya, ia tidak
+tertangkap satu pun dari 289 test, karena jsdom tidak punya layout. Yang menemukannya
+manusia yang memakai aplikasinya.
+
+---
+
 ## Kandidat ADR — Mode input strict/non-strict bisa dipilih pengguna
 
 **Diusulkan:** 2026-09-11 · **Status:** *Kandidat — belum diputuskan, belum dikerjakan*

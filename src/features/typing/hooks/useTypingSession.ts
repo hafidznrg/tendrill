@@ -5,6 +5,7 @@ import {
   computeLiveMetrics,
   createSession,
   finishSession,
+  rewrapSession,
   pause,
   restartSession,
   resume,
@@ -99,14 +100,32 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   const [voided, setVoided] = useState(false);
   const [structuralTick, setStructuralTick] = useState(0);
 
-  // Sesi baru saat target berubah: bangun ulang struktur, bukan tambal.
+  // Sesi baru saat TARGET berubah: bangun ulang struktur, bukan tambal.
+  //
+  // `cols` sengaja TIDAK ada di daftar dependensi (ADR-028). Sejak lebar baris
+  // diturunkan dari pengukuran, `cols` ikut berubah saat jendela diubah
+  // ukurannya atau di-zoom — dan membuat sesi baru di situ berarti menghapus
+  // ketikan pengguna di tengah drill. Perubahan lebar ditangani efek di bawah.
+  const colsRef = useRef(cols);
   useEffect(() => {
+    colsRef.current = cols;
     sessionRef.current = createSession(target, cols);
     setStatus(sessionRef.current.status);
     setMetrics(EMPTY_METRICS);
     setVoided(false);
     setStructuralTick((t) => t + 1);
-  }, [target, cols]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- lihat komentar di atas
+  }, [target]);
+
+  // Lebar berubah → bungkus ulang, jangan mulai ulang (ADR-028).
+  useEffect(() => {
+    if (colsRef.current === cols) return;
+    colsRef.current = cols;
+    rewrapSession(sessionRef.current, cols);
+    // Perubahan struktural: `TypingArea` memasang ulang <br> di posisi baru.
+    // Status ketikan tidak ikut hilang — ia hidup di `cells`, bukan di DOM.
+    setStructuralTick((t) => t + 1);
+  }, [cols]);
 
   // --- lapisan imperatif (dok. 03 §7, R-08) ---------------------------------
 

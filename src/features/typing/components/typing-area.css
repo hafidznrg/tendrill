@@ -29,7 +29,18 @@
 }
 
 .ta-text {
-  white-space: pre-wrap;
+  /* `pre`, BUKAN `pre-wrap` (ADR-028).
+
+     Keduanya sama-sama mempertahankan spasi, dan hanya satu yang benar di sini.
+     `pre-wrap` tetap mengizinkan browser memotong baris kalau kotaknya kurang
+     lebar — dan potongan itu tidak diketahui `lineStarts`, sehingga caret
+     tergambar satu baris di atas posisi sebenarnya TANPA satu pun tanda.
+     Terjadi sungguhan: `COLS` 52 pada kotak 720 px yang hanya memuat 50.
+
+     Dengan `pre`, ketidakcocokan yang sama berubah menjadi teks terpotong di
+     tepi — kelihatan, dan caretnya tetap jujur. Kegagalan senyap ditukar dengan
+     kegagalan berisik, dengan sengaja. */
+  white-space: pre;
   word-break: normal;
   /* Teks dibungkus engine (wrapText), bukan CSS — lihat dok. 03 §8. */
 }

@@ -38,13 +38,23 @@
 Aturan:
 - Teks target maksimal **3 baris terlihat**; saat baris pertama selesai, teks bergulir naik
   satu baris (bukan per karakter).
-- Lebar baris **50–60 karakter**. Lebih panjang membuat mata kesulitan kembali ke awal baris.
+- Lebar baris **50–60 karakter**, *selama kotaknya memang memuat sebanyak itu*. Angkanya
+  **diturunkan dari pengukuran**, bukan dikonstankan (ADR-028):
+  `cols = clamp(floor(lebarTeks / charWidth), 20, 60)`. Pada lebar default aplikasi
+  (`max-w-3xl` − `px-6` = 720 px, `charWidth` 14,4 px) hasilnya **50**. Konstanta 52 yang
+  dipakai sampai 2026-09-12 tidak pernah muat, dan caret meleset satu baris karenanya.
+  Lebih panjang dari 60 membuat mata kesulitan kembali ke awal baris; lebih pendek dari
+  50 hanya terjadi di jendela sempit, dan itu lebih baik daripada caret yang salah.
 - Metrik live diletakkan **jauh dari teks** supaya tidak mencuri perhatian saat mengetik.
 
 ### Pembungkusan baris bersifat deterministik, bukan CSS (R-07)
 
 Baris ditentukan oleh `wrapText(target, cols)` di engine (dok. 03 §8), **bukan** oleh
-pembungkusan otomatis browser. Alasannya bukan estetika melainkan mekanis: kalau CSS yang
+pembungkusan otomatis browser. Karena itu `.ta-text` memakai `white-space: pre` — bukan
+`pre-wrap` (ADR-028): `pre-wrap` tetap mengizinkan browser memotong baris saat kotaknya
+kurang lebar, dan potongan yang tidak diketahui engine membuat caret meleset **tanpa satu
+pun tanda**. Dengan `pre`, ketidakcocokan berubah menjadi teks yang terpotong di tepi —
+kelihatan, dan caretnya tetap benar. Alasannya bukan estetika melainkan mekanis: kalau CSS yang
 membungkus, aplikasi tidak tahu `row`/`col`, dan posisi caret hanya bisa didapat lewat
 `getBoundingClientRect()` — yang memaksa reflow sinkron di jalur input, biaya paling mahal
 yang mungkin ada di sana.

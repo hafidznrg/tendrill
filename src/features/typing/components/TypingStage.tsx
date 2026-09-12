@@ -4,6 +4,7 @@ import { VirtualKeyboard } from '@/features/keyboard';
 import { LiveMetrics } from './LiveMetrics.tsx';
 import { TypingArea } from './TypingArea.tsx';
 import { useCharMetrics } from '../hooks/useCharMetrics.ts';
+import { colsFor } from '../cols.ts';
 import { useTypingSession } from '../hooks/useTypingSession.ts';
 
 /**
@@ -18,8 +19,6 @@ import { useTypingSession } from '../hooks/useTypingSession.ts';
  * `useTypingSession` dan `TypingArea`: nol re-render dan nol alokasi per
  * keystroke. Komponen ini hanya menyusun, tidak menyentuh jalur input.
  */
-
-const COLS = 52; // dok. 07 §2: 50–60 karakter per baris
 
 export interface TypingStageProps {
   target: string;
@@ -48,11 +47,12 @@ export function TypingStage({
   active = true,
 }: TypingStageProps) {
   const [textEl, setTextEl] = useState<HTMLElement | null>(null);
-  const { charWidth, lineHeight, ready } = useCharMetrics(textEl);
+  const { charWidth, lineHeight, width, ready } = useCharMetrics(textEl);
+  const cols = colsFor(width, charWidth);
 
   const session = useTypingSession({
     target,
-    cols: COLS,
+    cols,
     charWidth,
     lineHeight,
     onFinish,
