@@ -1033,9 +1033,13 @@ menghasilkan baris logis 52 karakter.
 
 Satu catatan kejujuran soal pengukuran terakhir: panel browser otomasi **tidak
 mengirim event `resize`** saat viewport-nya diemulasi, jadi jalur itu diuji dengan
-membangkitkan `resize` secara manual di halaman yang sama. Yang terbukti: efeknya benar
-begitu event-nya tiba. Yang belum terbukti lewat panel: bahwa event-nya tiba saat
-jendela sungguhan diseret. Itu satu tarikan mouse untuk diperiksa sendiri.
+membangkitkan `resize` secara manual di halaman yang sama. Yang terbukti lewat panel:
+efeknya benar begitu event-nya tiba.
+
+**Ditutup 2026-09-12:** pemilik memeriksanya di jendela sungguhan — `resize` tiba dan
+pembungkusan ulang berjalan. Di sesi yang sama `caretCheck()` juga lulus sesudah zoom
+(`selisihCaret` 0, `kolomTerjauhMeleset` 0) dan `watchCLS()` memberi `cls` 0 dengan nol
+shift. Dengan itu sisa terakhir R-06 ikut lunas (dok. 08 Fase 2).
 
 **Pelajaran yang sama, ketiga kalinya.** Dok. 08 mencatat "curigai ruang yang tidak
 dipesan sejak paint pertama"; ini varian keempatnya — **angka yang diasumsikan muat,

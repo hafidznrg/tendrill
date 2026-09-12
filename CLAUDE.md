@@ -46,9 +46,11 @@ pernah memanggil `requestAnimationFrame` — tanpa paint, tidak ada p95 input→
 Jangan mencoba mengotomasinya lagi lalu menyimpulkan lulus dari panel yang tidak
 pernah menggambar.
 
-**DoD Fase 2 terpenuhi (2026-09-12)**, kecuali satu pemeriksaan kecil yang belum
-diukur: `caretCheck()` sesudah zoom browser (Ctrl +/−) — sisa terakhir R-06. Layout
-shift sudah **CLS 0** dan caret **0 meleset** setelah font termuat dan setelah resize.
+**DoD Fase 2 terpenuhi seluruhnya (2026-09-12).** Sisa terakhir R-06 — `caretCheck()`
+sesudah zoom browser — ikut lunas di hari yang sama: `selisihCaret` **0**,
+`kolomTerjauhMeleset` **0**, `watchCLS()` **cls 0 / nol shift**, dan `resize` jendela
+sungguhan membungkus ulang tanpa menghapus ketikan (ADR-028). Tidak ada lagi utang
+pengukuran manual yang menggantung.
 
 **Fase 3 — yang sudah ada dan jangan ditulis ulang:**
 

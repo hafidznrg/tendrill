@@ -108,10 +108,11 @@ penyimpanan hasil saat idle.
       `diagnosis.test.ts` hanya menjaga ia tidak kosong/salah cabang.
 - [x] Virtual keyboard menyorot tombol berikutnya termasuk Shift sisi berlawanan —
       `fingerMap.test.ts` + `VirtualKeyboard.test.tsx`
-- [ ] Nol layout shift saat mengetik; caret tetap presisi setelah webfont termuat
-      dan setelah resize/zoom (R-06) — *manual: `layout-shift` butuh paint, dan panel
+- [x] Nol layout shift saat mengetik; caret tetap presisi setelah webfont termuat
+      dan setelah resize/zoom (R-06) — **lunas 2026-09-12** — *manual: `layout-shift` butuh paint, dan panel
       otomasi tidak menggambar.* Diukur `scripts/perf-layout.js`.
-      **CLS 0 dan caret 0 meleset (2026-09-12). Tersisa satu: uji zoom.**
+      **CLS 0 dan caret 0 meleset (2026-09-12). Uji zoom menyusul di hari yang sama:
+      juga lulus.**
       Tiga sumber pergeseran ditemukan dan ditutup semuanya:
       - ✅ scrollbar lahir saat layar hasil muncul, menggeser halaman **−7,6 px** —
         `scrollbar-gutter: stable`
@@ -123,7 +124,19 @@ penyimpanan hasil saat idle.
         JetBrains Mono (ADR-023); selisih sisa 0,2 px di baris penuh 52 kolom
       - ✅ caret: `charWidth` **14,4 px**, **0 meleset**, `selisihCaret` **0** setelah
         `fonts.ready` dan setelah resize
-      - ⬜ **caret setelah zoom browser (Ctrl +/-)** — satu-satunya yang belum diuji
+      - ✅ **caret setelah zoom browser (Ctrl +/−)** — diukur pemilik 2026-09-12 dengan
+        `caretCheck()`: `charWidth` **14,4**, `fonts` **loaded**, `kolomTerjauhMeleset`
+        **0**, `selisihCaret` **0**, lulus. Dan `watchCLS()` di sesi yang sama: `cls`
+        **0**, `jumlahShift` **0**.
+
+        Zoom halaman menskalakan kotak DAN font dengan faktor yang sama, jadi
+        `charWidth` dalam piksel CSS memang tidak berubah — tetapi itu penalaran, dan
+        yang menutup butir ini adalah angkanya. Sejak ADR-028 jumlah kolom juga
+        diturunkan dari lebar yang diukur, sehingga zoom yang mengubah lebar kotak
+        ikut mengubah pembungkusan barisnya.
+      - ✅ **Event `resize` pada jendela sungguhan** — diperiksa pemilik 2026-09-12.
+        Ini catatan terbuka ADR-028: panel otomasi tidak pernah mengirim `resize`, jadi
+        jalur itu sebelumnya hanya terbukti lewat event yang dibangkitkan manual.
 - [x] Sesi tersimpan setelah selesai, nol penulisan saat berjalan —
       `sessionFlow.test.tsx` + `persistSession.test.ts`
 - [x] Seluruh alur sesi bisa dijalankan tanpa mouse — `sessionFlow.test.tsx`
