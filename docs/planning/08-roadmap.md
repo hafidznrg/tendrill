@@ -116,8 +116,9 @@ penyimpanan hasil saat idle.
       - ✅ `.ta-root` lahir setinggi **0 px** lalu melompat 129,6 px karena tingginya
         diturunkan dari `lineHeight` yang bernilai 0 sampai font siap — **CLS 0,0497**.
         Tinggi kini dari CSS, dan prop `lineHeight` dicabut dari `TypingArea`
-      - ✅ nav bergeser **0,00035** saat webfont menggantikan fallback —
-        `font-display: optional` (ADR-023): fallback tidak pernah ditukar
+      - ✅ nav bergeser **0,00035** saat webfont menggantikan fallback — fallback
+        kini ber-`size-adjust: 109,1296%` sehingga advance-nya identik dengan
+        JetBrains Mono (ADR-023); selisih sisa 0,2 px di baris penuh 52 kolom
       - ✅ caret: **0 meleset di 35 kolom** setelah `fonts.ready` dan setelah resize;
         zoom browser belum diuji
 - [x] Sesi tersimpan setelah selesai, nol penulisan saat berjalan —

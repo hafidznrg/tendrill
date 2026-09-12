@@ -16,8 +16,52 @@
 /* eslint-disable no-console */
 
 /**
- * Rekam layout shift. Jalankan, lalu **refresh keras** (Ctrl+Shift+R) supaya
- * pemuatan webfont dari nol ikut terekam — di situlah pergeseran biasanya lahir.
+ * Laporkan layout shift yang SUDAH terjadi sejak halaman dimuat. Ini yang
+ * biasanya kamu mau.
+ *
+ * **Tidak perlu dipasang sebelum refresh.** `buffered: true` membuat observer
+ * menerima entri yang lahir SEBELUM ia dibuat — jadi urutannya: refresh keras
+ * dulu, pakai halamannya, baru tempel skrip ini dan panggil `clsSekarang()`.
+ * (Instruksi "jalankan dulu, baru refresh" yang sempat beredar keliru: refresh
+ * memang menghapus semua yang ditempel di konsol, dan itu tidak perlu dilawan.)
+ */
+async function clsSekarang() {
+  let cls = 0;
+  const shifts = [];
+  const po = new PerformanceObserver((list) => {
+    for (const e of list.getEntries()) {
+      if (e.hadRecentInput) continue;
+      cls += e.value;
+      shifts.push({
+        nilai: +e.value.toFixed(5),
+        sumber: (e.sources ?? [])
+          .map(
+            (x) =>
+              (x.node?.nodeName ?? '?') + (x.node?.className ? '.' + x.node.className : ''),
+          )
+          .slice(0, 3),
+      });
+    }
+  });
+  po.observe({ type: 'layout-shift', buffered: true });
+  // Satu putaran event loop supaya entri ter-buffer sempat dikirim.
+  await new Promise((r) => setTimeout(r, 50));
+  po.disconnect();
+
+  const hasil = {
+    cls: +cls.toFixed(5),
+    jumlahShift: shifts.length,
+    shifts,
+    lulus: cls < 0.001,
+  };
+  console.table({ cls: hasil.cls, jumlahShift: hasil.jumlahShift, lulus: hasil.lulus });
+  if (shifts.length > 0) console.table(shifts);
+  return hasil;
+}
+
+/**
+ * Rekam layout shift yang terjadi MULAI SEKARANG — untuk menguji interaksi
+ * tertentu (mis. munculnya layar hasil) tanpa tercampur pergeseran saat muat.
  */
 function watchCLS() {
   let cls = 0;
@@ -38,7 +82,7 @@ function watchCLS() {
   });
   po.observe({ type: 'layout-shift', buffered: true });
 
-  console.log('Merekam layout shift. Refresh keras, pakai halamannya, lalu .stop()');
+  console.log('Merekam layout shift mulai sekarang. Panggil .stop() untuk menutup.');
 
   return {
     stop() {
@@ -133,8 +177,12 @@ function caretCheck() {
   return hasil;
 }
 
-Object.assign(globalThis, { watchCLS, caretCheck });
+Object.assign(globalThis, { clsSekarang, watchCLS, caretCheck });
 
-console.log('Siap. Dua perintah:');
-console.log('  const c = watchCLS()   lalu refresh keras, pakai halaman, c.stop()');
-console.log('  caretCheck()           ulangi setelah resize dan setelah Ctrl +/-');
+console.log('Siap. Tiga perintah:');
+console.log('  await clsSekarang()   shift sejak halaman dimuat — tempel SESUDAH refresh');
+console.log('  const c = watchCLS()  shift mulai sekarang; c.stop() untuk menutup');
+console.log('  caretCheck()          ulangi setelah resize dan setelah Ctrl +/-');
+console.log('');
+console.log('Konsol dibersihkan tiap refresh. Supaya tidak menempel ulang:');
+console.log('  DevTools → Sources → Snippets → New snippet → tempel → Ctrl+Enter.');

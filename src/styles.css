@@ -5,16 +5,16 @@
    JetBrains Mono dipakai sebagai font variabel (100–800) supaya seluruh bobot
    di dok. 12 §4 (400/500/700/800) tertutup oleh SATU berkas woff2.
    Ingat R-06: `charWidth` diukur SETELAH `await document.fonts.ready`. */
-/* `optional`, BUKAN `swap` (ADR-023). `swap` menampilkan fallback dulu lalu
-   MENUKARNYA begitu webfont tiba — dan pertukaran itu menggeser layout, yang
-   dilarang dok. 07 §1 poin 2. Terukur 0,00035 di nav, 2026-09-12.
-   `optional` memakai fallback kalau font belum siap dalam ~100 ms dan TIDAK
-   pernah menukarnya sesudah itu. Aman untuk `charWidth`: ia diukur dari font
-   yang benar-benar terpasang, bukan dari yang diharapkan (R-06). */
+/* `swap`, dengan fallback yang metriknya DICOCOKKAN (ADR-023 amandemen).
+   `optional` dicoba lebih dulu dan gagal di lapangan: ia kalah balapan 100 ms
+   bahkan di localhost, sehingga pengguna melihat Consolas alih-alih JetBrains
+   Mono (terukur `charWidth` 13,195 px, bukan 14,4). Lihat `JetBrains Mono
+   Fallback` di bawah — dengan advance yang sudah sama persis, `swap` tidak
+   punya apa pun untuk digeser. */
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 100 800;
   src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2')
     format('woff2-variations');
@@ -26,7 +26,7 @@
 @font-face {
   font-family: 'IBM Plex Sans';
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 400;
   src: url('@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2')
     format('woff2');
@@ -34,6 +34,29 @@
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
     U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/* Fallback ber-metrik cocok untuk teks mengetik (ADR-023 amandemen).
+   INI yang membuat `swap` tidak menggeser apa pun.
+
+   Layout hanya bergeser kalau lebar karakter berubah saat font ditukar. Untuk
+   monospace, lebar itu satu angka dan bisa dicocokkan PERSIS — diukur langsung
+   dari berkas fontnya pada 2026-09-12:
+
+     JetBrains Mono  0,600000 em
+     Consolas        0,549805 em   → 0,6 / 0,549805 = 109,1296 %
+
+   Jadi Consolas yang diskalakan 109,13 % punya advance yang identik dengan
+   JetBrains Mono. Pertukaran font tetap terjadi, bentuk hurufnya tetap berubah
+   — tetapi tidak ada satu karakter pun yang berpindah tempat.
+
+   `local()` saja, tanpa `url()`: ini bukan webfont, hanya font sistem yang
+   dipinjam dan diskalakan. Di macOS/Linux `local('Consolas')` gagal dan stack
+   jatuh ke `ui-monospace`/`monospace` yang memang sudah ~0,6 em. */
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Consolas');
+  size-adjust: 109.1296%;
+}
+
 @import './assets/brand/tokens.css';
 
 /* Token brand (dok. 12 §5) dipaparkan ke Tailwind sebagai utility:

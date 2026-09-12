@@ -157,6 +157,9 @@ paling murah terhadap regresi diam-diam.
 - [ ] Nol "forced reflow" di panel Performance (R-06)
 - [ ] **Nol layout shift**, diukur `scripts/perf-layout.js` (`watchCLS()`): jalankan,
       lalu **refresh keras** supaya pemuatan webfont dari nol ikut terekam.
+      Urutannya: **refresh keras dulu, baru tempel skripnya** — `buffered: true`
+      membuat observer tetap menerima entri yang lahir sebelum ia dibuat, jadi
+      tidak perlu melawan hilangnya skrip saat refresh.
       **Terukur 2026-09-12: CLS 0,0501 — GAGAL.** Dua sumber: (a) 0,0497 dari
       `.ta-root` yang lahir setinggi **0 px** karena tingginya diturunkan dari
       `lineHeight` hasil pengukuran, dan angka itu 0 sampai `document.fonts.ready`
@@ -165,8 +168,11 @@ paling murah terhadap regresi diam-diam.
       (a) **sudah diperbaiki**: tinggi kini dari CSS (`calc(var(--ta-lines) * 1.8em)`),
       identik angkanya tapi ada sejak paint pertama — dan prop `lineHeight` dicabut
       dari `TypingArea` supaya bug itu tidak bisa kembali. **Ukur ulang.**
-      (b) **sudah diperbaiki**: `font-display: optional` (ADR-023) — fallback tidak
-      pernah ditukar, jadi tidak ada yang bisa bergeser. **Ukur ulang keduanya.**
+      (b) **sudah diperbaiki**: `swap` dengan fallback ber-`size-adjust: 109,1296%`
+      (ADR-023) — Consolas diskalakan sampai advance-nya identik dengan JetBrains
+      Mono, jadi pertukaran font tidak memindahkan satu karakter pun. `optional`
+      sempat dicoba dan **gagal**: ia kalah balapan 100 ms di browser sungguhan,
+      sehingga pengguna melihat Consolas. **Ukur ulang keduanya.**
 - [ ] **Caret presisi** (R-06), diukur `scripts/perf-layout.js` (`caretCheck()`).
       Yang diperiksa bukan posisi caret sekarang melainkan **kolom terjauh di tiap
       baris** — posisi caret aritmetika, jadi error `charWidth` MENUMPUK ke kanan.

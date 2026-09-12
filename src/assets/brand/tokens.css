@@ -24,7 +24,12 @@
   --f8: #55617F; /* kelingking kanan */
   /* jempol memakai --fg-dim */
 
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  /* 'JetBrains Mono Fallback' (styles.css) harus berada TEPAT sesudah font
+     aslinya: ia Consolas yang diskalakan agar advance-nya identik, dan itulah
+     yang membuat pertukaran font tidak menggeser layout (ADR-023). */
+  --font-mono:
+    'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Consolas,
+    monospace;
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 

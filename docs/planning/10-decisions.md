@@ -627,9 +627,9 @@ Timing menjawab pertanyaan berbeda — "apakah ada interaksi sungguhan yang ters
   bisa diperketat; belum dikerjakan karena belum ada perangkatnya untuk diuji.
 
 
-## ADR-023 — `font-display: optional`, dan konsekuensinya yang disengaja
+## ADR-023 — `swap` dengan fallback ber-metrik cocok, bukan `optional`
 
-**Tanggal:** 2026-09-12 · **Status:** Diterima
+**Tanggal:** 2026-09-12 · **Status:** Diterima · **Diamandemen di hari yang sama**
 
 **Konteks.** Kedua webfont memakai `font-display: swap`: teks tampil dengan font
 fallback lebih dulu, lalu **ditukar** begitu webfont tiba. Pertukaran itu mengubah
@@ -666,38 +666,66 @@ pertukaran berarti nol pergeseran, tanpa syarat.
   sering terlihat daripada sebelumnya, sehingga ia layak diperlakukan sebagai bagian
   desain, bukan sebagai jaring pengaman.
 
-**⚠️ Pengamatan yang belum tuntas (2026-09-12).** Di panel browser otomasi, `optional`
-**kalah balapan** — `charWidth` terukur **13,196 px** (Consolas, 0,55em), bukan 14,4 px
-(JetBrains Mono, 0,6em), padahal `document.fonts.check()` bernilai true dan statusnya
-`loaded`. Terjadi di dev server maupun build produksi, dan CSS yang dilayani sudah
-terbukti berisi `optional`.
+### Amandemen — `optional` dicoba, gagal, diganti
 
-**Tapi hasil itu belum tentu berlaku di browser sungguhan.** Panel otomasi tidak pernah
-memanggil `requestAnimationFrame` alias tidak pernah menggambar (lihat ADR-021), dan
-periode blocking `optional` terikat pada percobaan render pertama. Lingkungan yang tidak
-merender sangat mungkin membuat `optional` selalu kalah. **Harus dicek di browser
-sungguhan** sebelum disimpulkan:
+**`optional` ternyata kalah balapan di lapangan.** Terukur di browser pemilik
+(bukan hanya di panel otomasi): `charWidth` **13,195 px** alih-alih 14,4 — pengguna
+melihat **Consolas**, bukan JetBrains Mono. Terjadi di dev server maupun build
+produksi, dan CSS yang dilayani terbukti berisi `optional`.
 
-```js
-const t = document.querySelector('.ta-text'), p = document.createElement('span');
-p.textContent = 'M'.repeat(50); p.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
-t.appendChild(p); const cw = p.getBoundingClientRect().width / 50; p.remove();
-console.log(cw > 14 ? 'JetBrains menang' : 'FALLBACK dipakai', cw);
+Jadi harga "kunjungan pertama tampil dengan fallback" yang diterima di keputusan awal
+ternyata bukan kejadian langka, melainkan **kejadian normal**. Dasar keputusannya
+salah, jadi keputusannya diganti.
+
+**Keputusan pengganti.** Kembali ke **`font-display: swap`**, dan hilangkan
+pergeserannya dari sumbernya: **cocokkan metrik fallback-nya.**
+
+Layout hanya bergeser kalau **lebar karakter** berubah saat font ditukar. Untuk
+monospace, lebar itu satu angka — dan bisa dicocokkan persis. Diukur langsung dari
+berkas fontnya (2026-09-12):
+
+| Font | Advance | |
+|---|---|---|
+| JetBrains Mono | 0,600000 em | target |
+| Consolas | 0,549805 em | fallback di Windows |
+| | **109,1296 %** | `size-adjust` |
+
+```css
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Consolas');
+  size-adjust: 109.1296%;
+}
 ```
 
-**Kalau ternyata sering kalah, dua jalan keluar, dan yang kedua mungkin lebih baik
-daripada keputusan ADR ini:**
+Ditaruh **tepat sesudah** font aslinya di `--font-mono`. Di macOS/Linux
+`local('Consolas')` gagal dan stack jatuh ke `ui-monospace`/`monospace` yang memang
+sudah ~0,6 em.
 
-1. **Preload** berkas fontnya supaya permintaannya dimulai lebih awal. Butuh plugin
-   Vite karena nama berkasnya di-hash.
-2. **Kembali ke `swap`, tetapi dengan fallback ber-`size-adjust`.** Untuk font
-   monospace, satu-satunya metrik yang menggeser layout adalah lebar karakter, dan
-   itu bisa dicocokkan persis: JetBrains Mono 0,6em, Consolas 0,55em, jadi
-   `size-adjust: 109.09%` membuat keduanya identik. Pertukaran font jadi netral
-   terhadap layout — **webfont tetap dipakai, dan tetap nol pergeseran.** Ini
-   mungkin lebih unggul daripada `optional` di kedua sisi; belum dikerjakan karena
-   butuh pengukuran metrik yang teliti, dan karena bukti bahwa `optional` kalah
-   di browser sungguhan belum ada.
+**Terverifikasi 2026-09-12:** JetBrains Mono 14,4 px, fallback yang dicocokkan
+**14,39613 px** — selisih **0,00387 px per karakter**, atau **0,2 px** terakumulasi
+di baris penuh 52 kolom. Jauh di bawah ambang 1 px presisi caret. Dan `charWidth`
+halaman kembali **14,4**: webfont-nya benar-benar dipakai.
+
+**Konsekuensi.**
+
+- (+) **Unggul di kedua sisi**: webfont tetap dipakai (tidak seperti `optional`), dan
+  pertukarannya tidak menggeser apa pun (tidak seperti `swap` polos).
+- (+) Tidak ada kunjungan yang "terkorbankan". Harga yang diterima di keputusan awal
+  ternyata tidak perlu dibayar sama sekali.
+- (−) Angka `109,1296 %` terikat pada Consolas. Kalau Windows suatu saat mengganti
+  font monospace defaultnya, angka ini perlu diukur ulang — karena itu cara
+  mengukurnya ditulis di komentar `styles.css`, bukan hanya hasilnya.
+- (−) Hanya jalur **mono** yang dicocokkan. `IBM Plex Sans` tetap `swap` tanpa
+  pencocokan: font proporsional tidak bisa disamakan hanya dengan satu angka, dan
+  pergeseran yang terukur 2026-09-12 seluruhnya berasal dari elemen `font-mono`.
+  **Ukur ulang; kalau ternyata sans ikut menggeser, tangani dengan data, bukan
+  dengan tebakan.**
+
+**Pelajaran yang lebih umum.** Keputusan awal diambil dari penalaran yang benar
+tentang spec, tetapi tanpa mengukur apakah balapan 100 ms itu menang atau kalah di
+mesin sungguhan. Penalaran tentang spec tidak menggantikan pengukuran — pola yang
+sama sudah muncul tiga kali minggu ini (`perf:heap`, `autotype`, dan sekarang ini).
 
 
 # Backlog ide
