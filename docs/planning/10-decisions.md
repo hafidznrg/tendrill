@@ -743,6 +743,18 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 - [ ] Router tulis sendiri (−13 KB) — jalan keluar kalau anggaran mengikat (ADR-018)
 - [ ] Preact via `compat` (−60 KB) — jalan keluar darurat, evaluasi setelah Fase 2 (ADR-018)
 - [ ] **Mode strict/non-strict bisa dipilih** — kandidat ADR, rinciannya di bawah
+- [ ] **Siluet tangan/jari di virtual keyboard** — usul pemula di uji 2026-09-12: "biar
+      tahu harus pakai jari apa". Warna jari sudah ada, tapi ia memberi tahu *jari mana
+      yang bertanggung jawab*, bukan *di mana tangan beristirahat* — dan `h` dan `j`
+      berwarna sama persis karena memang satu jari. Ditunda, bukan ditolak: perbaikan
+      yang lebih murah (panduan anchoring sebelum `u1-l1`) dikerjakan lebih dulu, dan
+      kalau itu sudah cukup, siluet jadi tidak perlu. Evaluasi ulang di uji pemula
+      berikutnya.
+- [ ] **Sorot Backspace saat ada karakter salah yang bisa dikoreksi** — uji yang sama
+      menemukan pemula berhenti dan **melihat keyboard** untuk mencari Backspace, jadi
+      satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard". Murah
+      (pelukis sorotan sudah ada), tapi menyentuh jalur keystroke — jadi ia butuh
+      pengukuran, bukan sekadar ditambahkan.
 
 ---
 

@@ -203,10 +203,37 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
       "Terasa membantu, bukan menghina" adalah penilaian manusia dan menunggu uji
       pemula; yang bisa dijaga mesin sudah dijaga, termasuk bahwa **akurasi tidak
       pernah diturunkan** di seluruh 37 lesson sampai percobaan ke-20.
-- [ ] **Uji ke satu pemula nyata (~hari 11).** Amati tanpa memberi instruksi.
-      Kalau mereka tidak paham posisi jari setelah Lesson 1, kurikulumnya yang salah —
-      perbaiki sekarang, selagi baru 11 hari kerja yang dipertaruhkan, bukan 25.
-- [ ] **Butir pengamatan khusus di uji itu: pergeseran mode non-strict.**
+- [x] **Uji ke satu pemula nyata — dijalankan 2026-09-12.** Hasilnya di bawah.
+      **Butir "paham posisi jari setelah Lesson 1" GAGAL sebagian**, dan yang gagal
+      persis bagian yang memang belum pernah dibuat.
+
+      | Yang diamati | Bacaannya |
+      |---|---|
+      | `f` dan `j` keduanya dengan telunjuk — benar | Yang **diajarkan** lesson memang melekat |
+      | **Tangan kanan mendarat salah: telunjuk di `h`, bukan `j`** | Seluruh tangan kanan bergeser satu tombol ke kiri. Ini bukan kesalahan `u1-l1`, ini kesalahan sebelum lesson dimulai |
+      | Salah ketik **disadari** dan langsung dikoreksi | Umpan balik merah terbaca. Ini data untuk kandidat ADR mode strict |
+      | Tapi **harus berhenti dan melihat keyboard dulu untuk menemukan Backspace** | "Jangan melihat keyboard" patah justru di jalur koreksi — dan itu jalur yang paling sering dipakai pemula |
+
+      **Akar masalah temuan kedua, dan ini jujur: panduan postur & anchoring belum
+      pernah dibuat.** Dok. 02 §2 menetapkan alur `[Mulai dari nol] → panduan postur
+      (bisa dilewati) → /learn/u1-l1`, dan dok. 04 §13 masih mencatatnya belum
+      ditulis. Fase 3 menyambungkan "Mulai dari nol" **langsung** ke `u1-l1`, jadi
+      tidak ada satu pun titik di aplikasi yang pernah mengatakan **di mana tangan
+      diletakkan sebelum mulai**. Virtual keyboard memberi tahu jari mana yang
+      bertanggung jawab atas sebuah tombol — tetapi `h` dan `j` sama-sama telunjuk
+      kanan dan sama-sama berwarna sama, jadi warna jari **secara struktural tidak
+      bisa** membedakan "jangkau ke sini" dari "diam di sini". Penanda tonjolan home
+      row ada di kedelapan tombolnya, dan terlewat.
+
+      Perbaikannya dikerjakan **sekarang**, sesuai kalimat DoD ini sendiri.
+- [~] **Butir pengamatan khusus di uji itu: pergeseran mode non-strict.**
+      *Separuh terjawab.* Yang sudah pasti: pemula ini **menyadari** salah ketiknya dan
+      mengoreksinya sendiri — jadi ketakutan terbesar kandidat ADR ("pengguna menabrak
+      tembok tanpa sadar") tidak terlihat di sesi ini. Yang belum terhitung: **berapa
+      kali ia menekan satu tombol BERLEBIH** (pergeseran, bukan salah tekan biasa).
+      Keduanya berbeda dan hanya yang kedua yang memutuskan kandidat ADR — salah tekan
+      biasa memang sudah ditangani non-strict dengan baik. Keputusan ditahan sampai
+      angka itu ada; jangan diputuskan dari data yang tidak tegas.
       Bukan sekadar "amati" — **hitung berapa kali ia menekan satu tombol berlebih,
       dan apakah ia menyadarinya.** Ini satu-satunya data yang bisa memutuskan kandidat
       ADR mode strict (dok. 10), dan hanya bisa diambil dari pemula sungguhan.
