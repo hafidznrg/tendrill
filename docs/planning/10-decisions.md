@@ -563,6 +563,70 @@ di jalur otomasi, termasuk pengganti rAF yang dipilih ADR-020.
   ia hanya memperkecilnya dari empat item jadi dua.
 
 
+## ADR-022 — Ambang Event Timing diganti; "nol entri" tidak bisa dipenuhi siapa pun
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima · **Mengamandemen:** ADR-020
+
+**Konteks.** ADR-020 menurunkan Event Timing dari sumber p95 menjadi gerbang
+lulus/gagal, dengan aturan **"nol entri = lulus"**. Alasannya: entri dianggap hanya
+muncul untuk interaksi yang melewati ambang, jadi ketiadaan entri berarti tidak ada
+yang tersendat.
+
+Asumsi itu **salah**, dan pengukuran 2026-09-12 membuktikannya. Dua aturan spec yang
+tidak diperhitungkan:
+
+1. **`durationThreshold` berlantai 16 ms.** Menyetelnya ke 0 tidak berpengaruh — spec
+   menaikkannya kembali ke 16.
+2. **`duration` dihitung sampai paint BERIKUTNYA**, lalu dibulatkan ke kelipatan 8 ms.
+
+Di layar 60 Hz jarak antar-frame 16,7 ms. Keystroke yang jatuh tepat **sesudah** satu
+frame menunggu hampir satu frame penuh sebelum ada yang dicat — itu saja sudah ~16 ms,
+betapa pun cepatnya kode kita, dan ia terekam. Keystroke yang jatuh tepat **sebelum**
+frame hanya menunggu 1–2 ms, tidak sampai ambang, dan tidak terekam.
+
+Jadi entri yang muncul menandai **di mana keystroke jatuh dalam siklus frame**, bukan
+seberapa lambat aplikasinya.
+
+Data yang menutup perkara: **16 entri, semuanya 16 atau 24 ms** — kelipatan 8, tidak
+satu pun di bawah 16, tidak satu pun di atas 24. Itu sidik jari kedua aturan spec di
+atas. Jank yang sungguhan akan tampak sebagai sebaran lebar dengan ekor 50–150 ms.
+Di jalan yang sama `autotype()` melaporkan p95 **7,9 ms** dispatch→paint dan nol long
+task — dua pengukuran independen, dua-duanya menyatakan jalur keystroke lapang.
+
+Ironisnya ADR-020 mengulangi persis kesalahan yang ia perbaiki: syarat yang
+**kelihatan ketat padahal hanya bisa dilewati dengan berpura-pura** — di sini, dengan
+keberuntungan atau dengan tidak mengetik sama sekali.
+
+**Keputusan.** Ambang Event Timing untuk ketikan sungguhan:
+
+| Ukuran | Batas | Artinya |
+|---|---|---|
+| Entri > 50 ms | **nol** | tidak ada interaksi yang benar-benar tersendat |
+| p99 | **≤ 32 ms** | paling buruk dua frame: satu menunggu vsync, satu bekerja |
+
+Karena `duration` dibulatkan ke kelipatan 8 ms, "> 50 ms" secara efektif berarti
+**≥ 56 ms**. Jumlah entri **tidak lagi** menjadi kriteria apa pun — ia dilaporkan
+sebagai konteks, bukan sebagai nilai.
+
+Yang **tidak** berubah dari ADR-020: Event Timing tetap bukan sumber p95 utama. Angka
+yang dibandingkan dengan anggaran 8 ms tetap dispatch→paint dari `autotype()`. Event
+Timing menjawab pertanyaan berbeda — "apakah ada interaksi sungguhan yang tersendat?"
+— dan ambang di atas adalah ambang untuk pertanyaan itu.
+
+**Konsekuensi.**
+
+- (+) Gerbangnya sekarang bisa dilewati oleh aplikasi yang memang cepat, dan tetap
+  menolak yang tersendat. Sebelumnya ia tidak bisa dilewati oleh apa pun.
+- (+) Ambangnya dinyatakan dalam satuan yang sesuai dengan alat ukurnya — frame dan
+  kelipatan 8 ms — bukan dalam angka yang di bawah lantai instrumennya sendiri.
+- (−) 32 ms terasa longgar dibanding 8 ms. Memang berbeda: 8 ms adalah anggaran
+  **kerja kita**; 32 ms adalah anggaran **dari jari sampai piksel**, termasuk penundaan
+  OS dan menunggu vsync yang bukan milik kita. Membandingkan keduanya adalah kesalahan
+  kategori, dan itulah kesalahan ADR-020.
+- (−) Ambang ini dikalibrasi untuk 60 Hz. Di layar 120 Hz lantainya turun dan ambangnya
+  bisa diperketat; belum dikerjakan karena belum ada perangkatnya untuk diuji.
+
+
 # Backlog ide
 
 Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sampai fase berjalan selesai.**

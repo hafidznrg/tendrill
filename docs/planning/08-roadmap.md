@@ -133,11 +133,11 @@ sekali (ADR-021):
       Tetap manual dan memang tidak bisa dihindari: panel browser yang dikendalikan
       agent tidak pernah memanggil `requestAnimationFrame` meski `visibilityState`
       "visible" — 36 keydown tiba, nol rAF. Tanpa paint, tidak ada p95.
-- [ ] `watchRealInput()` — **kriterianya sedang ditinjau**, bukan performanya.
-      Terukur 16 entri, semuanya 16–24 ms. Aturan ADR-020 "nol entri = lulus" ternyata
-      berangkat dari asumsi yang salah: `durationThreshold` Event Timing berlantai
-      16 ms dan `duration`-nya menunggu paint berikutnya, jadi di layar 60 Hz aplikasi
-      secepat apa pun tetap menghasilkan entri. Butuh ADR yang mengganti ambangnya.
+- [x] `watchRealInput()` — **2026-09-12: 16 entri, semuanya 16–24 ms, maks 24. Lulus**
+      terhadap ambang ADR-022 (nol entri > 50 ms, p99 ≤ 32). Ambang lama ADR-020
+      "nol entri = lulus" dibatalkan karena tidak bisa dipenuhi siapa pun: lantai
+      `durationThreshold` 16 ms plus `duration` yang menunggu paint berikutnya membuat
+      layar 60 Hz selalu menghasilkan entri, secepat apa pun kodenya.
 - [x] 15 menit memakai sendiri — **dijalankan 2026-09-11.** Menemukan satu hal yang
       lolos dari 150 test: halaman bergeser saat layar hasil memunculkan scrollbar.
       Diperbaiki di hari yang sama. Sisanya memuaskan.

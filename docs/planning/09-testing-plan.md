@@ -144,16 +144,13 @@ paling murah terhadap regresi diam-diam.
       terukur adalah keystroke sampai frame berikutnya benar-benar dicat.
       **2026-09-12, skrip yang sudah diperbaiki: p50 6,1 · p95 7,9 · p99 8,7 ·
       maks 11,1 ms**, 644 keystroke, 19 restart, 38 frame dibuang. Lulus.
-- [ ] **Event Timing API sebagai gerbang lulus/gagal** (ADR-020) — **kriterianya
-      sedang ditinjau, jangan dipakai apa adanya.** Aturan "nol entri = lulus"
-      berangkat dari asumsi bahwa entri hanya muncul untuk interaksi yang tersendat.
-      Asumsi itu **salah**: `durationThreshold` Event Timing berlantai **16 ms** (nilai
-      di bawah itu dinaikkan ke 16), dan `duration`-nya menghitung sampai paint
-      BERIKUTNYA — jadi di layar 60 Hz, keystroke yang jatuh tepat sesudah satu frame
-      otomatis menunggu ~16 ms dan terekam, betapa pun cepatnya kode kita.
-      Terukur 2026-09-12: 16 entri, **semuanya 16 atau 24 ms** — kelipatan 8 dan tidak
-      satu pun di bawah 16, persis sidik jari kedua aturan spec itu, bukan sidik jari
-      aplikasi yang lambat. Perlu ADR yang mengganti ambangnya.
+- [x] **Event Timing API sebagai gerbang lulus/gagal** (ADR-020, ambang diganti
+      ADR-022): ketik SUNGGUHAN selama 60 detik dengan `watchRealInput()`.
+      **Nol entri > 50 ms, dan p99 ≤ 32 ms.** Jumlah entri bukan kriteria — entri
+      muncul juga untuk keystroke yang sekadar menunggu vsync, karena
+      `durationThreshold` berlantai 16 ms dan `duration` menghitung sampai paint
+      berikutnya. Terukur 2026-09-12: 16 entri, **semuanya 16 atau 24 ms**, maks 24.
+      Lulus dengan margin.
 - [x] Chrome Performance: nol long task (> 50 ms) selama sesi — ikut diukur `autotype()`,
       yang menolak lulus kalau ada satu pun entri `longtask`. **Nol, 2026-09-12**
       (maks frame 11,1 ms, jauh di bawah 50)

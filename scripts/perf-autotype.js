@@ -189,8 +189,11 @@ function watchRealInput() {
       if (e.name === 'keydown') durations.push(e.duration);
     }
   });
-  // durationThreshold 0 supaya event cepat pun ikut terekam (default 104 ms
-  // hanya menangkap yang sudah parah, dan itu bukan yang ingin kita buktikan).
+  // durationThreshold 0 diminta, tetapi spec MENAIKKANNYA ke 16 — 16 ms adalah
+  // lantai Event Timing, bukan pilihan kita. Itu, plus `duration` yang menghitung
+  // sampai paint BERIKUTNYA, membuat keystroke yang jatuh tepat sesudah satu frame
+  // terekam ~16 ms betapa pun cepatnya kode kita (ADR-022). Karena itu JUMLAH entri
+  // tidak pernah menjadi kriteria di sini.
   po.observe({ type: 'event', durationThreshold: 0, buffered: true });
 
   console.log('Merekam. Ketik seperti biasa, lalu panggil .stop()');
@@ -199,19 +202,40 @@ function watchRealInput() {
     stop() {
       po.disconnect();
       if (durations.length === 0) {
-        console.warn('Tidak ada entri. Event Timing hanya merekam input sungguhan.');
+        console.warn(
+          'Tidak ada entri. Event Timing hanya merekam input SUNGGUHAN — dan hanya ' +
+            'yang kebetulan jatuh jauh dari frame berikutnya. Nol entri bukan nilai ' +
+            'lulus, melainkan tanda datanya terlalu sedikit; ketik lebih lama.',
+        );
         return null;
       }
       durations.sort((a, b) => a - b);
+
+      // Ambang ADR-022, bukan anggaran 8 ms milik dispatch→paint. Keduanya mengukur
+      // hal yang berbeda: 8 ms adalah biaya KERJA KITA, sedangkan angka di sini
+      // mencakup penundaan OS dan menunggu vsync yang bukan milik kita. ADR-020
+      // membandingkan keduanya, dan itu kesalahan kategori yang membuat gerbangnya
+      // tidak bisa dilewati oleh apa pun.
+      const p99 = quantile(durations, 0.99);
+      const tersendat = durations.filter((d) => d > 50);
+
       const hasil = {
         keydown: durations.length,
         p50: quantile(durations, 0.5),
         p95: quantile(durations, 0.95),
-        p99: quantile(durations, 0.99),
+        p99,
         maks: +durations.at(-1).toFixed(2),
-        lulus: quantile(durations, 0.95) <= 8 && quantile(durations, 0.99) <= 16,
+        // Pembulatan `duration` ke kelipatan 8 ms membuat "> 50" efektif berarti >= 56.
+        tersendat: tersendat.length,
+        lulus: tersendat.length === 0 && p99 <= 32,
       };
       console.table(hasil);
+      if (!hasil.lulus) {
+        console.warn(
+          `Gagal: ${tersendat.length} entri > 50 ms, p99 ${p99} ms (batas 32). ` +
+            'Ini interaksi sungguhan yang tersendat, bukan sekadar menunggu vsync.',
+        );
+      }
       return hasil;
     },
   };
