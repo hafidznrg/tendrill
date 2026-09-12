@@ -139,25 +139,40 @@ paling murah terhadap regresi diam-diam.
 >    `requestAnimationFrame` berhenti di tab tersembunyi, dan hasilnya akan tampak
 >    sempurna justru karena tidak ada yang pernah dicat.
 
-- [ ] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
+- [x] **p95 dispatch→paint ≤ 8 ms**, p99 ≤ 16 ms, diukur `scripts/perf-autotype.js`
       (`autotype()`): tiap keystroke diikuti satu `requestAnimationFrame`, jadi yang
       terukur adalah keystroke sampai frame berikutnya benar-benar dicat.
-      **Jalan 2026-09-11 TIDAK SAH** — lihat catatan di bawah. Ulangi setelah
-      skripnya diperbaiki.
-- [x] **Event Timing API sebagai gerbang lulus/gagal, bukan sumber p95** (lihat ADR-020):
-      ketik SUNGGUHAN selama 60 detik dengan `watchRealInput()` — **nol entri = lulus**,
-      karena entri hanya muncul untuk interaksi yang melewati ambang. Satu entri saja
-      berarti ada interaksi yang tersendat dan harus dikejar.
-- [ ] Chrome Performance: nol long task (> 50 ms) selama sesi — ikut diukur `autotype()`,
-      yang menolak lulus kalau ada satu pun entri `longtask`. Jalan 2026-09-11 memang
-      melaporkan nol, tetapi dari jalan yang tidak sah; ulangi bersama p95
+      **2026-09-12, skrip yang sudah diperbaiki: p50 6,1 · p95 7,9 · p99 8,7 ·
+      maks 11,1 ms**, 644 keystroke, 19 restart, 38 frame dibuang. Lulus.
+- [ ] **Event Timing API sebagai gerbang lulus/gagal** (ADR-020) — **kriterianya
+      sedang ditinjau, jangan dipakai apa adanya.** Aturan "nol entri = lulus"
+      berangkat dari asumsi bahwa entri hanya muncul untuk interaksi yang tersendat.
+      Asumsi itu **salah**: `durationThreshold` Event Timing berlantai **16 ms** (nilai
+      di bawah itu dinaikkan ke 16), dan `duration`-nya menghitung sampai paint
+      BERIKUTNYA — jadi di layar 60 Hz, keystroke yang jatuh tepat sesudah satu frame
+      otomatis menunggu ~16 ms dan terekam, betapa pun cepatnya kode kita.
+      Terukur 2026-09-12: 16 entri, **semuanya 16 atau 24 ms** — kelipatan 8 dan tidak
+      satu pun di bawah 16, persis sidik jari kedua aturan spec itu, bukan sidik jari
+      aplikasi yang lambat. Perlu ADR yang mengganti ambangnya.
+- [x] Chrome Performance: nol long task (> 50 ms) selama sesi — ikut diukur `autotype()`,
+      yang menolak lulus kalau ada satu pun entri `longtask`. **Nol, 2026-09-12**
+      (maks frame 11,1 ms, jauh di bawah 50)
 - [ ] Nol "forced reflow" di panel Performance (R-06)
 - [ ] Waktu ke keystroke pertama < 3 detik pada Fast 3G ter-throttle,
       diukur dengan `performance.mark` (R-24)
 
-> **Dijalankan pemilik 2026-09-11 dengan virtual keyboard menyala.**
-> `watchRealInput()` **lulus** (nol entri). `autotype()` **belum** — dan jalannya
-> ternyata **tidak sah**.
+> **Status 2026-09-12: `autotype()` LULUS, kriteria Event Timing masih terbuka.**
+>
+> Setelah skripnya diperbaiki: p50 6,1 · **p95 7,9** · p99 8,7 · maks 11,1 ms, nol
+> long task. Bandingkan dengan jalan yang cacat sehari sebelumnya (p95 8,6): selisihnya
+> **bukan** karena kodenya membaik, melainkan karena 38 frame restart berhenti dihitung
+> sebagai biaya mengetik.
+>
+> Catatan kecil yang jujur: 644 keystroke dalam 60,1 detik ≈ **129 WPM**, bukan 140.
+> Jeda restart memakan waktu dinding. Di dalam burst-nya lajunya benar; yang turun hanya
+> rata-rata lintas seluruh jalan.
+>
+> **Riwayat cacat di bawah ini sengaja tidak dihapus.**
 >
 > **Cacat pengukuran kedua di skrip yang sama (lihat juga `e3ac561`).** `autotype()`
 > mengulang drill dengan menekan `Tab`. `Tab` me-restart sesi yang sedang BERJALAN,

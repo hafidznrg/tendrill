@@ -125,19 +125,19 @@ sekali (ADR-021):
 - [x] Nol re-render per keystroke — `rerender.test.tsx`, memakai `<Profiler>` dari
       paket `react` (bukan ekstensi DevTools), dengan virtual keyboard menyala.
       Tepat 2 commit per sesi, keduanya transisi status.
-- [x] `watchRealInput()` **dengan virtual keyboard menyala** — dijalankan pemilik
-      2026-09-11, **lulus**: nol entri Event Timing dari ketikan sungguhan.
-- [ ] `autotype()` **dengan virtual keyboard menyala** — kasus terburuk dok. 09 §5.
-      **Jalan 2026-09-11 tidak sah**: skripnya mengulang drill dengan `Tab`, padahal
-      sesudah drill habis tombol ulangi adalah `Enter` di layar hasil — jadi ia
-      berhenti maju dan menunggu manusia, sementara loop pengukurannya jalan terus.
-      Angkanya (p95 8,6 ms) sebagian besar mengukur biaya mengganti layar: ~38 dari
-      677 frame adalah mount layar hasil dan rebuild span, tepat 5,6% teratas tempat
-      p95 jatuh. Skrip sudah diperbaiki — **ulangi pengukurannya**.
-      Tetap manual dan memang tidak bisa dihindari: selain Event Timing yang menolak
-      input non-manusia (ADR-020), panel browser yang dikendalikan agent tidak pernah
-      memanggil `requestAnimationFrame` meski `visibilityState` "visible" — diuji
-      2026-09-11, 36 keydown tiba, nol rAF. Tanpa paint, tidak ada p95.
+- [x] `autotype()` **dengan virtual keyboard menyala** — kasus terburuk dok. 09 §5.
+      **2026-09-12: p95 7,9 ms / p99 8,7 ms / nol long task — lulus.** Jalan pertama
+      (2026-09-11, p95 8,6) tidak sah: skripnya mengulang drill dengan `Tab`, padahal
+      sesudah drill habis tombol ulangi adalah `Enter` di layar hasil, sehingga ~38
+      frame mount-layar-hasil ikut terhitung sebagai biaya mengetik.
+      Tetap manual dan memang tidak bisa dihindari: panel browser yang dikendalikan
+      agent tidak pernah memanggil `requestAnimationFrame` meski `visibilityState`
+      "visible" — 36 keydown tiba, nol rAF. Tanpa paint, tidak ada p95.
+- [ ] `watchRealInput()` — **kriterianya sedang ditinjau**, bukan performanya.
+      Terukur 16 entri, semuanya 16–24 ms. Aturan ADR-020 "nol entri = lulus" ternyata
+      berangkat dari asumsi yang salah: `durationThreshold` Event Timing berlantai
+      16 ms dan `duration`-nya menunggu paint berikutnya, jadi di layar 60 Hz aplikasi
+      secepat apa pun tetap menghasilkan entri. Butuh ADR yang mengganti ambangnya.
 - [x] 15 menit memakai sendiri — **dijalankan 2026-09-11.** Menemukan satu hal yang
       lolos dari 150 test: halaman bergeser saat layar hasil memunculkan scrollbar.
       Diperbaiki di hari yang sama. Sisanya memuaskan.

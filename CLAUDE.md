@@ -33,8 +33,8 @@ Fase 1 kodenya selesai. Utang verifikasi performanya **sebagian besar sudah luna
 | Nol alokasi heap per keystroke | ✅ `npm run perf:heap` — otomatis, tiap commit |
 | Nol re-render per keystroke | ✅ `rerender.test.tsx` — otomatis, tiap commit |
 | 15 menit memakai sendiri | ✅ dijalankan; menemukan layout shift scrollbar, diperbaiki |
-| `watchRealInput()` | ✅ dijalankan pemilik & lulus — nol entri Event Timing |
-| `autotype()` | ❌ **terbuka** — jalan 2026-09-11 tidak sah, skrip sudah diperbaiki, ulangi |
+| `autotype()` | ✅ 2026-09-12 — p95 7,9 ms / p99 8,7 / nol long task |
+| `watchRealInput()` | ⚠️ **kriterianya** yang bermasalah, bukan performanya — butuh ADR |
 
 **Empat dari lima lunas.** Dua yang pertama tidak lagi lewat DevTools (ADR-021).
 Dua yang terakhir tetap manual dan memang **tidak bisa diotomasi**:
@@ -43,10 +43,10 @@ pernah memanggil `requestAnimationFrame` — tanpa paint, tidak ada p95 input→
 Jangan mencoba mengotomasinya lagi lalu menyimpulkan lulus dari panel yang tidak
 pernah menggambar.
 
-**Sisa DoD Fase 2 — tiga item, semuanya menunggu manusia:** `autotype()` diulang
-dengan skrip yang sudah diperbaiki, diagnosis layar hasil terasa bermakna, dan caret
-tetap presisi setelah webfont termuat & setelah resize/zoom. Fase 3 belum boleh
-dimulai sebelum ketiganya beres.
+**Sisa DoD Fase 2 — tiga item:** ambang Event Timing diganti lewat ADR (aturan
+ADR-020 "nol entri = lulus" tidak bisa dipenuhi siapa pun di layar 60 Hz), diagnosis
+layar hasil terasa bermakna, dan caret tetap presisi setelah webfont termuat & setelah
+resize/zoom. Fase 3 belum boleh dimulai sebelum ketiganya beres.
 
 **Jangan mulai fase berikutnya sebelum DoD fase berjalan terpenuhi** (dok. 08).
 Jangan mengerjakan fitur dari fase yang jauh di depan hanya karena "sekalian".
