@@ -185,6 +185,34 @@ describe('penulisan saat idle (dok. 09 §3, R-20)', () => {
     vi.runAllTimers();
     expect(read(STORAGE_KEYS.sessions).items[0]!.id).toBe('s2');
   });
+
+  /**
+   * `read` WAJIB melihat tulisan yang masih menunggu idle.
+   *
+   * Tanpa ini, pola baca-ubah-tulis di `persistSessionResult` membaca keadaan
+   * sebelum tulisan sebelumnya sempat mendarat, lalu menimpanya — dan sesi yang
+   * pertama hilang tanpa jejak. Bukan teori: sebelum diperbaiki, dua sesi
+   * berturut-turut di dalam satu jendela idle menyisakan SATU.
+   */
+  it('read melihat tulisan yang masih tertunda, bukan yang sudah basi', () => {
+    vi.useFakeTimers();
+    scheduleWrite(STORAGE_KEYS.sessions, appendSession(defaultSessions(), makeRecord(3)));
+
+    // Belum mendarat di localStorage…
+    expect(localStorage.getItem(STORAGE_KEYS.sessions)).toBeNull();
+    // …tapi sudah harus terbaca.
+    expect(read(STORAGE_KEYS.sessions).items.map((i) => i.id)).toEqual(['s3']);
+  });
+
+  it('dua tulisan baca-ubah-tulis di satu jendela idle: tidak ada yang hilang', () => {
+    vi.useFakeTimers();
+    // Persis bentuk `persistSessionResult`: read → append → scheduleWrite.
+    scheduleWrite(STORAGE_KEYS.sessions, appendSession(read(STORAGE_KEYS.sessions), makeRecord(4)));
+    scheduleWrite(STORAGE_KEYS.sessions, appendSession(read(STORAGE_KEYS.sessions), makeRecord(5)));
+    vi.runAllTimers();
+
+    expect(read(STORAGE_KEYS.sessions).items.map((i) => i.id)).toEqual(['s4', 's5']);
+  });
 });
 
 describe('pemangkasan keystats (dok. 05 §3)', () => {

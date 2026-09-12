@@ -98,6 +98,14 @@ function rawRemove(key: string): void {
  */
 export function read<K extends StorageKey>(key: K): StorageShape[K] {
   const fallback = DEFAULTS[key]() as StorageShape[K];
+
+  // Tulisan yang masih menunggu browser senggang adalah kebenaran TERBARU
+  // (R-20). Tanpa baris ini, dua sesi yang selesai di dalam satu jendela idle
+  // membuat yang kedua membaca keadaan sebelum yang pertama — lalu menimpanya,
+  // dan sesi pertama hilang tanpa jejak. Dibuktikan `storage.test.ts`.
+  const queued = pending.get(key);
+  if (queued !== undefined) return queued as StorageShape[K];
+
   const raw = rawGet(key);
   if (raw === null) return fallback;
 
