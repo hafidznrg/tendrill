@@ -1,24 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { applyBackspace, applyKey, createSession, finishSession } from '../session.ts';
+import {
+  applyBackspace,
+  applyKey,
+  createSession,
+  finishSession,
+  setInputMode,
+} from '../session.ts';
 
 /**
- * **Test karakterisasi mode non-strict** (dok. 02 §4: "karakter salah tidak
- * memblokir"). Kandidat ADR di dok. 10 "Backlog ide" mengusulkan menggantinya
- * dengan mode yang bisa dipilih pengguna — strict di `/learn`, non-strict di
- * `/practice`.
+ * **Dua mode input, berdampingan** (ADR-029).
  *
- * **Test ini tidak menyatakan perilaku di bawah ini BENAR.** Ia mengunci apa
- * yang saat ini terjadi, supaya kalau mode strict jadi dikerjakan, test ini
- * berubah merah dan keputusannya terpaksa diambil dengan sadar — bukan
- * ketahuan berbulan-bulan kemudian lewat statistik yang aneh.
+ * Berkas ini lahir sebagai test karakterisasi non-strict, dipasang supaya
+ * berubah merah begitu keputusan mode diambil. Keputusannya sudah diambil
+ * (2026-09-12): **strict menjadi default di `/learn`, non-strict tetap ada dan
+ * menjadi default di `/practice`, dan pengguna bebas mengganti keduanya.**
  *
- * Kalau kamu di sini karena test ini merah setelah menyentuh mode input:
- * itu memang tugasnya. Baca ADR-nya, lalu perbarui test ini dengan sengaja.
+ * Karena itu bagian non-strict di bawah **tetap hijau, dan itu benar** — ia
+ * bukan sisa yang lupa diperbarui. Yang berubah bukan perilaku non-strict,
+ * melainkan siapa yang memakainya.
  *
- * Yang dikunci: engine ini **tidak punya model penyisipan**. Setiap karakter
- * tercetak mengonsumsi tepat satu sel target, jadi satu tombol BERLEBIH
- * menggeser seluruh sisa drill — dan setiap karakter sesudahnya tercatat salah
- * meski jarinya benar.
+ * ⚠️ **Jangan membaca berkas ini sebagai "jadi `/learn` non-strict".** Engine
+ * sengaja netral: `createSession` tanpa opsi = non-strict, dan yang memilih
+ * default per halaman adalah UI (`readInputMode`), karena itu keputusan produk.
+ *
+ * Yang dijaga di sini:
+ * 1. Perilaku non-strict, apa adanya, termasuk kerusakan yang ia sebabkan —
+ *    itulah alasan strict dipilih untuk `/learn`.
+ * 2. Perilaku strict, dan bahwa kerusakan yang sama **mustahil** terjadi di sana.
+ * 3. Bahwa keduanya mencatat kesalahan dengan cara yang sama (ADR-003 & ADR-019
+ *    tidak berubah): menahan tanpa mencatat akan membuat akurasi selalu 100%.
  */
 
 const TARGET = 'ff jj';
@@ -122,5 +132,92 @@ describe('backspace memperbaiki keselarasan, bukan akurasi (ADR-019)', () => {
     // Ketimpangan inilah yang menjadi alasan utama kandidat ADR mode strict.
     expect(a.accuracy).toBe(80);
     expect(b.accuracy).toBe(60);
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+
+describe('strict: tombol salah MENAHAN kursor (ADR-029)', () => {
+  const strict = () => createSession(TARGET, 40, { strict: true });
+
+  it('kursor tidak maju, dan selnya ditandai salah', () => {
+    const s = strict();
+
+    const outcome = applyKey(s, 'x', 1000);
+
+    expect(outcome.accepted).toBe(true);
+    // Inilah seluruh isi mode ini: diterima, dicatat, TAPI tidak memajukan apa pun.
+    expect(outcome.cursorMoved).toBe(false);
+    expect(s.cursor).toBe(0);
+    expect(s.cells[0]!.state).toBe('incorrect');
+    expect(s.status).toBe('running');
+  });
+
+  it('kesalahan tetap DICATAT — menahan tanpa mencatat membuat akurasi palsu', () => {
+    const s = strict();
+    type(s, ['x', 'f', 'f', ' ', 'j', 'j']);
+
+    const r = finishSession(s, 4000)!;
+    expect(r.totalKeystrokes).toBe(5);
+    expect(r.correctKeystrokes).toBe(4);
+    expect(r.accuracy).toBe(80);
+    expect(r.errorsByKey['f']).toBe(1);
+    expect(r.confusions.some((c) => c.expected === 'f' && c.actual === 'x')).toBe(true);
+  });
+
+  it('sel yang sempat salah berakhir "corrected", bukan "correct" (ADR-003)', () => {
+    const s = strict();
+    type(s, ['x', 'f', 'f', ' ', 'j', 'j']);
+    expect(s.cells[0]!.state).toBe('corrected');
+  });
+
+  it('menekan salah berkali-kali di sel yang sama hanya dihitung sekali (ADR-019)', () => {
+    const s = strict();
+    type(s, ['x', 'y', 'z', 'q', 'f']);
+
+    const r = finishSession(s, 4000)!;
+    // Satu kesalahan, bukan empat: menghukum orang yang terus mencoba lebih
+    // berat daripada yang menyerah tidak masuk akal.
+    expect(r.totalKeystrokes).toBe(1);
+    expect(r.accuracy).toBe(0);
+    expect(s.cursor).toBe(1);
+  });
+
+  it('PERGESERAN MUSTAHIL — inilah alasan strict dipilih untuk /learn', () => {
+    // Aliran jari yang PERSIS SAMA dengan kasus non-strict di atas: satu 'f'
+    // berlebih, lalu pengguna melanjutkan menurut niatnya sendiri.
+    const s = strict();
+    type(s, ['f', 'f', 'f', ' ', 'j', 'j']);
+
+    // Di non-strict, ini menghasilkan 60% dan mencemari diagnosis spasi & 'j'.
+    const r = finishSession(s, 4000)!;
+    expect(r.accuracy).toBe(80); // 4 dari 5 — hanya kesalahan yang SUNGGUHAN
+    expect(s.cells.map((c) => c.state)).toEqual([
+      'correct',
+      'correct',
+      'corrected', // 'f' berlebih tertahan di sini sampai spasi ditekan
+      'correct',
+      'correct',
+    ]);
+    // Dan yang paling penting: spasi & 'j' tidak ikut tertuduh.
+    expect(r.errorsByKey).not.toHaveProperty('j');
+    expect(r.confusions.some((c) => c.expected === 'j')).toBe(false);
+  });
+
+  it('mode bisa diganti di tengah sesi tanpa kehilangan apa pun', () => {
+    const s = strict();
+    type(s, ['f', 'f']);
+
+    setInputMode(s, false); // pengguna menekan sakelar
+    applyKey(s, 'x', 3000); // sekarang salah pun lewat
+
+    expect(s.cursor).toBe(3);
+    expect(s.acc.total).toBe(3);
+    expect(s.cells[0]!.state).toBe('correct');
+
+    setInputMode(s, true);
+    applyKey(s, 'q', 3200);
+    expect(s.cursor).toBe(3); // tertahan lagi
   });
 });

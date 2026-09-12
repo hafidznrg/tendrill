@@ -62,6 +62,17 @@ describe('isi panduan', () => {
   });
 });
 
+describe('urutan di layar', () => {
+  it('keyboard mendahului teks langkah — umpan balik uji pemula kedua', () => {
+    renderPosture();
+    const keyboard = document.querySelector('.pg-keys')!;
+    const langkahPertama = screen.getByText(/Duduk dulu, baru tangan/);
+    expect(
+      keyboard.compareDocumentPosition(langkahPertama) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+});
+
 describe('bisa dilewati (dok. 02 §2)', () => {
   it('tombol lewati ada sebelum seluruh panduan dibaca, bukan di bawah', () => {
     renderPosture();

@@ -10,6 +10,7 @@ export {
   createSession,
   restartSession,
   rewrapSession,
+  setInputMode,
   applyKey,
   applyBackspace,
   pause,
@@ -22,6 +23,8 @@ export { combineResults } from './combine.ts';
 export { generateLetterDrill, generateWordDrill, keyWeights } from './generator.ts';
 export { wrapText, rowOf, colOf } from './wrap.ts';
 export { consistencyFrom, intervalStdev } from './accumulators.ts';
+
+export type { SessionOptions } from './session.ts';
 
 export type {
   DrillShape,

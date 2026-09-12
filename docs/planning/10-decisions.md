@@ -742,7 +742,7 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 - [ ] Playwright untuk 3 skenario E2E
 - [ ] Router tulis sendiri (−13 KB) — jalan keluar kalau anggaran mengikat (ADR-018)
 - [ ] Preact via `compat` (−60 KB) — jalan keluar darurat, evaluasi setelah Fase 2 (ADR-018)
-- [ ] **Mode strict/non-strict bisa dipilih** — kandidat ADR, rinciannya di bawah
+- [x] **Mode strict/non-strict bisa dipilih** — diputuskan 2026-09-12, lihat ADR-029
 - [ ] **Siluet tangan/jari di virtual keyboard** — usul pemula di uji 2026-09-12: "biar
       tahu harus pakai jari apa". Warna jari sudah ada, tapi ia memberi tahu *jari mana
       yang bertanggung jawab*, bukan *di mana tangan beristirahat* — dan `h` dan `j`
@@ -1045,13 +1045,76 @@ manusia yang memakai aplikasinya.
 
 ---
 
+## ADR-029 — Mode input bisa dipilih: strict default di `/learn`, non-strict di `/practice`
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima · **Menggantikan** kandidat ADR di bawah
+· **Mengubah** dok. 02 §4
+
+**Konteks.** Dok. 02 §4 menetapkan satu baris tanpa ADR sejak awal: *"karakter salah
+tidak memblokir"*. Peninjauan 2026-09-11 menemukan konsekuensinya: engine tidak punya
+model penyisipan, jadi **satu tombol berlebih menggeser seluruh sisa drill** dan setiap
+karakter sesudahnya tercatat salah meski jarinya benar — selisih 20 poin akurasi dari
+kesalahan jari yang persis sama (`nonStrict.test.ts`).
+
+Keputusannya ditunda menunggu uji pemula. Datanya sekarang ada, dari dua uji:
+
+| Yang teramati | Arahnya |
+|---|---|
+| Salah ketik disadari dan langsung dikoreksi sendiri | Melemahkan keberatan terkuat terhadap strict ("menabrak tembok tanpa sadar") |
+| **Berhenti dan melihat keyboard untuk mencari Backspace** | Mendukung strict: di strict, jalur koreksi itu **tidak ada** — cukup tekan tombol yang benar |
+| Nol ketukan berlebih | Tidak memutuskan apa pun; kecepatannya masih pelan (lihat catatan di kandidat di bawah) |
+
+**Keputusan pemilik, 2026-09-12:** mode input **bisa dipilih pengguna**, dengan default
+yang berbeda per halaman:
+
+| Halaman | Default | Alasan |
+|---|---|---|
+| `/learn` | **strict** | Di sini yang dibentuk adalah memori otot. Gerakan yang salah tidak boleh lewat, dan pergeseran tidak boleh mencemari diagnosis |
+| `/practice` | **non-strict** | Di sini yang diukur adalah kecepatan mengalir; tertahan tiap typo mengubah sifat latihannya |
+
+Aturan yang mengikat implementasinya:
+
+1. **Pengguna bebas mengganti mode di lesson mana pun**, lewat kontrol yang terlihat di
+   layar sesi — **tanpa membuka pengaturan**. Pengguna yang tertahan harus bisa langsung
+   melihat KENAPA ia tertahan; kalau tidak, itu terbaca sebagai aplikasi rusak.
+2. **Pilihannya bertahan** ke lesson berikutnya, disimpan per-halaman di
+   `typing:settings` — bukan per-lesson, dan bukan hanya untuk sesi berjalan.
+3. **Sorotan tombol berikutnya bertahan** sampai ditekan benar. Ini jatuh dengan
+   sendirinya dari desainnya: kursor tidak maju, jadi pelukis tidak pernah dipanggil
+   ulang — panduan jari justru tetap ada di saat ia paling dibutuhkan.
+4. **Akurasi tetap dihitung dari percobaan pertama** (ADR-003 tidak berubah). Tombol
+   salah di mode strict tetap **tercatat salah**; ia hanya tidak memajukan kursor.
+   Menahan tanpa mencatat akan membuat akurasi selalu 100% dan membunuh seluruh
+   diagnosis.
+5. **Percobaan salah berulang di sel yang sama tidak dihitung berkali-kali** —
+   konsekuensi ADR-019 yang sudah ada: hanya percobaan pertama yang masuk log dan
+   akumulator. Menghukum orang yang menekan lima tombol salah lima kali lebih berat
+   daripada yang menyerah tidak masuk akal.
+
+**Konsekuensi.**
+
+- (+) Pergeseran mustahil di `/learn`, jadi data diagnosis dan `keystats` bersih.
+- (+) Backspace tidak lagi wajib di jalur belajar — persis hambatan yang teramati.
+- (−) `nonStrict.test.ts` berubah: ia test karakterisasi yang memang dipasang untuk
+  berubah merah di titik ini. **Diperbarui dengan sengaja, bukan dihapus** — ia sekarang
+  menjaga KEDUA mode, dan bagian non-strict-nya tetap berlaku karena mode itu masih ada.
+- (−) Pemula yang benar-benar tidak melihat layar akan tertahan tanpa tahu kenapa.
+  Dimitigasi: sorotan tombol berikutnya bertahan, mode terlihat di layar, dan
+  menggantinya satu klik. Suara (Fase 8) akan menutup sisanya.
+- (−) Satu percabangan baru di `applyKey`, yaitu jalur terpanas di seluruh aplikasi.
+  Ia satu perbandingan boolean pada nilai yang sudah ada di sesi — nol alokasi, dan
+  `npm run perf:heap` tetap menjaganya.
+
+---
+
 ## Kandidat ADR — Mode input strict/non-strict bisa dipilih pengguna
 
-**Diusulkan:** 2026-09-11 · **Status:** *Kandidat — belum diputuskan, belum dikerjakan*
-· **Diputuskan:** uji pemula Fase 3 · **Dikerjakan:** Fase 4 (bersyarat)
+**Diusulkan:** 2026-09-11 · **Status:** ✅ **Diputuskan 2026-09-12 → ADR-029 di atas**
+· **Diputuskan lewat:** dua uji pemula Fase 3
 
-> Ini **belum** ADR. Ia ditulis di sini, bukan di daftar ADR di atas, justru supaya
-> tidak terbaca sebagai keputusan yang sudah diambil.
+> **Bagian ini disimpan apa adanya, sebagai catatan bagaimana keputusannya diambil** —
+> termasuk keberatan-keberatan yang akhirnya kalah, dan data yang ternyata tidak
+> memutuskan apa pun. Yang berlaku sekarang adalah ADR-029.
 
 ### Konteks
 

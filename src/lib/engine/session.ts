@@ -39,7 +39,16 @@ export interface InternalSessionState extends SessionState {
   readonly _outcome: InternalOutcome;
 }
 
-export function createSession(target: string, cols: number): SessionState {
+export interface SessionOptions {
+  /** true = mode strict: tombol salah menahan kursor (ADR-029). */
+  strict?: boolean;
+}
+
+export function createSession(
+  target: string,
+  cols: number,
+  options: SessionOptions = {},
+): SessionState {
   const cells: CharCell[] = new Array(target.length);
   for (let i = 0; i < target.length; i++) cells[i] = makeCell(target[i]!);
 
@@ -57,6 +66,10 @@ export function createSession(target: string, cols: number): SessionState {
     // Target kosong selesai seketika — metrik 0, tidak crash (dok. 03 §10).
     status: target.length === 0 ? 'finished' : 'idle',
     voided: false,
+    // Default non-strict: engine tidak memihak halaman mana pun. Yang memutuskan
+    // default per halaman adalah UI (ADR-029: strict di /learn, non-strict di
+    // /practice), dan itu memang keputusan produk, bukan keputusan engine.
+    strict: options.strict === true,
     _dirty: [],
     _result: null,
     _firstOk: new Uint8Array(target.length),
@@ -67,6 +80,17 @@ export function createSession(target: string, cols: number): SessionState {
 }
 
 /** Kembalikan sesi ke `idle` bersih tanpa mengalokasikan buffer baru. */
+/**
+ * Ganti mode input di tengah sesi (ADR-029).
+ *
+ * Boleh dipanggil kapan saja — pengguna bisa menekan toggle di tengah drill.
+ * Tidak menyentuh apa pun selain benderanya: yang sudah diketik tetap seperti
+ * adanya, termasuk karakter salah yang terlanjur lewat di mode non-strict.
+ */
+export function setInputMode(s: SessionState, strict: boolean): void {
+  s.strict = strict;
+}
+
 /**
  * Hitung ulang pembungkusan baris untuk lebar baru (ADR-028).
  *
@@ -202,6 +226,21 @@ export function applyKey(s: SessionState, key: string, atMs: number): KeyOutcome
   cell.typed = key;
   cell.state = correct ? (st._firstOk[i] === 1 ? 'correct' : 'corrected') : 'incorrect';
   st._dirty.push(i);
+
+  // Mode strict: tombol salah MENAHAN kursor (ADR-029).
+  //
+  // Yang tetap terjadi walau ditahan: keystroke-nya dicatat (akurasi tetap jujur
+  // — menahan tanpa mencatat membuat akurasi selalu 100%), dan selnya ditandai
+  // merah supaya pengguna melihat apa yang salah.
+  //
+  // Yang TIDAK terjadi: kursor tidak maju, jadi `cursorMoved` false — dan itulah
+  // yang membuat sorotan tombol berikutnya di virtual keyboard **bertahan**
+  // sampai ditekan benar (dok. 08 Fase 4 DoD). Bukan fitur tambahan; ia jatuh
+  // sendiri dari desainnya.
+  if (s.strict && !correct) {
+    return outcome(s, true, false, false);
+  }
+
   s.cursor = i + 1;
 
   const finished = s.cursor >= s.target.length;

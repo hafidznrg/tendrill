@@ -9,6 +9,8 @@ import type { LessonStatus } from '@/lib/storage/schema.ts';
 /**
  * Alur `/learn/:lessonId` dari ujung ke ujung (dok. 09 §4).
  *
+ * Berjalan di **mode strict**, karena itulah default `/learn` sejak ADR-029.
+ *
  * Tiga hal yang hanya bisa diuji di sini, bukan di fungsi pure:
  * 1. **Drill dikerjakan berurutan dalam satu sesi** (dok. 04 §2) dan kelulusan
  *    dinilai terhadap gabungannya.
@@ -42,9 +44,17 @@ function typeCurrentDrill(correct: boolean): void {
   const target = currentTarget();
   expect(target.length).toBeGreaterThan(0);
   for (const char of target) {
-    // Salah tapi tetap maju: engine non-strict menerima karakter apa pun
-    // (dok. 02 §4), jadi drill tetap selesai dengan akurasi rendah.
-    press(correct ? char : char === 'f' ? 'j' : 'f');
+    if (correct) {
+      press(char);
+      continue;
+    }
+    // Sejak ADR-029, `/learn` default **strict**: tombol salah menahan kursor,
+    // jadi mengetik salah saja tidak akan pernah menyelesaikan drill — dan
+    // itulah yang dilakukan pengguna sungguhan yang kesulitan: salah dulu, lalu
+    // menemukan tombol yang benar. Percobaan pertama yang salah tetap tercatat
+    // (ADR-003), jadi akurasinya jatuh dan lesson memang tidak lulus.
+    press(char === 'f' ? 'j' : 'f');
+    press(char);
   }
 }
 

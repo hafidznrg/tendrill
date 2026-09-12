@@ -23,9 +23,10 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 3 — kurikulum Unit 0–1 + `/learn`. Kodenya selesai
-(2026-09-12); DoD-nya menunggu satu hal yang tidak bisa dikerjakan agent: uji ke satu
-pemula nyata.**
+Status sekarang: **Fase 3 SELESAI (2026-09-12), seluruh DoD terpenuhi. Berikutnya
+Fase 4 — kurikulum Unit 2–6 + review session.** Bagian bersyarat Fase 4 (mode input
+strict/non-strict) sudah ikut dikerjakan lebih dulu karena uji pemula memutuskannya
+di Fase 3 (ADR-029).
 
 Fase 1 kodenya selesai. Utang verifikasi performanya **sebagian besar sudah lunas**
 (2026-09-11):
@@ -59,6 +60,12 @@ shift sudah **CLS 0** dan caret **0 meleset** setelah font termuat dan setelah r
 | generator berbobot (dok. 04 §8) | `src/lib/engine/generator.ts` (pure) |
 | gabungan hasil beberapa drill | `src/lib/engine/combine.ts` (ADR-024) |
 | panggung sesi, dipakai lesson & placement | `src/features/typing/components/TypingStage.tsx` |
+
+Dua hal yang lahir dari uji pemula dan gampang tergerus kalau tidak tahu asalnya:
+`/posture` (ADR-027) isinya **bukan** panduan postur generik — dua butirnya menambal
+kegagalan yang teramati, dan keyboardnya sengaja di atas teks. Mode input (ADR-029)
+default **strict di `/learn`**, non-strict di `/practice`, bisa diganti pengguna dan
+bertahan lewat `typing:settings`.
 
 Tiga aturan Fase 3 yang mengikat dan mudah dirusak tanpa sadar:
 1. **Satu lesson = beberapa sesi engine, dinilai sebagai gabungan** (ADR-024). Jangan

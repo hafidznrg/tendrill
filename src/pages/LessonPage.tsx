@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ResultScreen, TypingStage } from '@/features/typing';
+import { InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
 import { persistSessionResult, previousBestFor } from '@/features/typing/persistSession.ts';
 import { topProblemKeys } from '@/features/typing';
 import {
@@ -19,6 +19,8 @@ import {
 } from '@/features/curriculum';
 import { combineResults, type SessionResult } from '@/lib/engine';
 import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
+import { readInputMode, writeInputMode } from '@/lib/storage/flags.ts';
+import type { InputMode } from '@/lib/storage/schema.ts';
 import type { PassCriteria } from '@/data/curriculum/en/types.ts';
 
 /**
@@ -59,6 +61,11 @@ export default function LessonPage() {
   const [micro, setMicro] = useState<string | null>(null);
   const [microResult, setMicroResult] = useState<SessionResult | null>(null);
   const [microDone, setMicroDone] = useState(false);
+
+  // Mode input (ADR-029). Dibaca sekali saat mount, lalu hidup di state: ia
+  // milik pengguna, bukan milik lesson, dan pilihannya bertahan ke lesson
+  // berikutnya lewat `typing:settings`.
+  const [mode, setMode] = useState<InputMode>(() => readInputMode('learn'));
 
   const doneResults = useRef<SessionResult[]>([]);
   const previousBest = useRef<{ netWpm: number; accuracy: number } | null>(null);
@@ -170,6 +177,11 @@ export default function LessonPage() {
     setRunId((n) => n + 1);
   }, [lessonId]);
 
+  const changeMode = useCallback((next: InputMode) => {
+    setMode(next);
+    writeInputMode('learn', next);
+  }, []);
+
   const goNext = useCallback(() => {
     const next = loaded?.nextLessonId;
     void navigate(next ? `/learn/${next}` : '/learn');
@@ -259,10 +271,17 @@ export default function LessonPage() {
         onFinish={onFinish}
         onExit={goBack}
         active={!finished}
+        strict={mode === 'strict'}
         footer={
-          <p className="mt-4 font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
-            target {criteria.minWpm} wpm · {criteria.minAccuracy}% · Tab — ulangi · Esc — keluar
-          </p>
+          // Mode yang aktif terlihat DI SINI, tanpa membuka pengaturan
+          // (ADR-029) — tepat di bawah keyboard, tempat mata pemula berada.
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <InputModeToggle mode={mode} onChange={changeMode} />
+            <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
+              target {criteria.minWpm} wpm · {criteria.minAccuracy}% · Tab — ulangi · Esc —
+              keluar
+            </p>
+          </div>
         }
       />
 

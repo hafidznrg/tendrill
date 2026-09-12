@@ -93,14 +93,25 @@ STATE: idle → running → finished
 - **Diam terlalu lama dengan fokus tetap ada membatalkan sesi.** Jeda > 30 detik antar
   keystroke → sesi di-void, hasil tidak disimpan, dan layar hasil menjelaskan alasannya.
   Ini mencegah "sesi 4 jam dengan 12 WPM" mencemari statistik.
-- Karakter salah **tidak memblokir** — pengguna tetap bisa lanjut (mode non-strict). Karakter salah ditandai dan dihitung.
-  > ⚠️ **Aturan ini sedang ditinjau, jangan dianggap final.** Engine tidak punya model
-  > penyisipan, jadi satu tombol berlebih menggeser seluruh sisa drill — dan hanya
-  > pengguna yang **melihat layar** yang bisa menyelamatkannya lewat backspace. Terukur
-  > selisih 20 poin akurasi dari kesalahan jari yang persis sama
-  > (`src/lib/engine/__tests__/nonStrict.test.ts`). Usulan penggantinya — mode
-  > strict/non-strict yang bisa dipilih, default strict di `/learn` — ada di dok. 10
-  > "Kandidat ADR". **Diputuskan lewat uji pemula Fase 3, dikerjakan di Fase 4.**
+- **Mode input bisa dipilih pengguna** (ADR-029, diputuskan 2026-09-12 lewat uji pemula):
+
+  | Mode | Karakter salah | Default di |
+  |---|---|---|
+  | **strict** | **menahan** — kursor tidak maju sampai tombol yang benar ditekan | `/learn` |
+  | **non-strict** | tidak memblokir; ditandai, dihitung, kursor tetap maju | `/practice` |
+
+  Di kedua mode karakter salah **tetap dicatat** sebagai kesalahan: akurasi dihitung dari
+  percobaan pertama (ADR-003), dan menahan tanpa mencatat akan membuat akurasi selalu 100%.
+
+  Aturan yang mengikat: mode yang aktif **terlihat di layar sesi tanpa membuka
+  pengaturan**, bisa diganti di lesson mana pun, dan pilihannya **bertahan** ke lesson
+  berikutnya. Pengguna yang tertahan harus langsung paham KENAPA ia tertahan — kalau
+  tidak, itu terbaca sebagai aplikasi rusak.
+
+  Alasan strict menjadi default di `/learn`: engine tidak punya model penyisipan, jadi di
+  non-strict satu tombol **berlebih** menggeser seluruh sisa drill dan setiap karakter
+  sesudahnya tercatat salah meski jarinya benar — terukur selisih 20 poin akurasi dari
+  kesalahan jari yang persis sama (`src/lib/engine/__tests__/nonStrict.test.ts`).
 
 ## 5. Layar hasil
 

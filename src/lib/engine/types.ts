@@ -80,6 +80,13 @@ export interface SessionState {
   status: SessionStatus;
   /** true → hasil tidak disimpan (jeda > 30 detik dengan fokus tetap ada) */
   voided: boolean;
+  /**
+   * Mode input (ADR-029). true = strict: tombol salah **menahan** kursor.
+   *
+   * Hidup di sesi, bukan di modul, supaya engine tetap murni dan supaya dua
+   * sesi dengan mode berbeda bisa hidup berdampingan (mis. test).
+   */
+  strict: boolean;
 
   /** Buffer internal yang DIPAKAI ULANG. Jangan pernah menyimpan referensinya. */
   readonly _dirty: number[];

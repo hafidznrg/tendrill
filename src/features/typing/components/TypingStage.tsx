@@ -35,6 +35,11 @@ export interface TypingStageProps {
   footer?: ReactNode;
   /** false → sesi tidak menerima input (mis. layar hasil sedang tampil). */
   active?: boolean;
+  /**
+   * true = mode strict (ADR-029). Default false: placement dan latihan bebas
+   * mengukur ketikan apa adanya, dan menahan di sana mengubah yang diukur.
+   */
+  strict?: boolean;
 }
 
 export function TypingStage({
@@ -45,6 +50,7 @@ export function TypingStage({
   onExit,
   footer,
   active = true,
+  strict = false,
 }: TypingStageProps) {
   const [textEl, setTextEl] = useState<HTMLElement | null>(null);
   const { charWidth, lineHeight, width, ready } = useCharMetrics(textEl);
@@ -58,6 +64,7 @@ export function TypingStage({
     onFinish,
     ...(onExit ? { onExit } : {}),
     enabled: active && ready,
+    strict,
   });
 
   const { restart, registerNextKeyPainter } = session;

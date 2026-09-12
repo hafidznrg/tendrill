@@ -296,6 +296,7 @@ interface KeyOutcome {
 }
 
 applyKey(s: SessionState, key: string, atMs: number): KeyOutcome
+setInputMode(s: SessionState, strict: boolean): void                 // ADR-029
 applyBackspace(s: SessionState): KeyOutcome
 pause(s: SessionState, atMs: number): void
 resume(s: SessionState, atMs: number): void
@@ -304,6 +305,21 @@ computeLiveMetrics(s: SessionState, nowMs: number): LiveMetrics     // O(1), dar
 computeResult(s: SessionState): SessionResult                       // O(n), sekali saja
 wrapText(target: string, cols: number): number[]
 ```
+
+### Mode strict (ADR-029)
+
+`applyKey` punya satu percabangan mode, dan hanya satu:
+
+| | non-strict | strict |
+|---|---|---|
+| tombol benar | kursor maju | kursor maju |
+| tombol salah | ditandai, **kursor maju** | ditandai, **kursor TIDAK maju** |
+| pencatatan | percobaan pertama masuk log & akumulator | **sama persis** |
+
+Yang **tidak** berubah di mode strict: akurasi tetap dari percobaan pertama (ADR-003),
+percobaan salah berulang di sel yang sama tetap hanya dihitung sekali (ADR-019), dan
+`KeyOutcome.cursorMoved` menjadi `false` — sehingga pelukis caret dan sorotan tombol
+berikutnya tidak dipanggil, dan panduan jari **tetap menyala di tombol yang ditunggu**.
 
 `dirty` adalah array yang **dipakai ulang** (dialokasikan sekali per sesi, panjangnya
 diubah dengan `length = 0`) supaya benar-benar nol alokasi per keystroke.

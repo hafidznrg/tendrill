@@ -119,6 +119,10 @@ export interface KeystatsData {
 
 // --- settings & meta --------------------------------------------------------
 
+export type InputMode = 'strict' | 'non-strict';
+/** Halaman yang punya mode input sendiri (ADR-029). */
+export type InputModeSurface = 'learn' | 'practice';
+
 export interface SettingsData {
   version: number;
   theme: 'system' | 'light' | 'dark';
@@ -127,7 +131,21 @@ export interface SettingsData {
   showFingerGuide: boolean;
   keyboardLayout: 'qwerty';
   contentLanguage: 'en';
+  /**
+   * Mode input per halaman (ADR-029). Opsional & aditif, jadi TANPA migrasi:
+   * data lama yang tidak memilikinya jatuh ke `DEFAULT_INPUT_MODE`.
+   *
+   * Per halaman, bukan per lesson: pengguna yang memilih non-strict memilihnya
+   * untuk cara ia belajar, bukan untuk satu drill.
+   */
+  inputMode?: Record<InputModeSurface, InputMode>;
 }
+
+/** dok. 02 §4: strict di `/learn`, non-strict di `/practice`. */
+export const DEFAULT_INPUT_MODE: Record<InputModeSurface, InputMode> = {
+  learn: 'strict',
+  practice: 'non-strict',
+};
 
 export interface MetaData {
   version: number;

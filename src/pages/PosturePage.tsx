@@ -54,6 +54,19 @@ export default function PosturePage() {
         </button>
       </div>
 
+      {/* Keyboard ditaruh DI ATAS teks (umpan balik uji pemula kedua,
+          2026-09-12): pengguna baru langsung memusatkan perhatian ke papan
+          tombolnya, lalu membaca rinciannya di bawah. Urutan sebaliknya membuat
+          gambar acuannya tertutup enam paragraf. */}
+      <div className="pg-keys" aria-hidden="true">
+        <VirtualKeyboard onReady={noop} emphasis="home" />
+      </div>
+      <p className="pg-caption">
+        Baris awal disorot. Warna menunjukkan jari yang bertanggung jawab atas tiap
+        tombol — perhatikan <kbd className="ul-key">h</kbd> dan{' '}
+        <kbd className="ul-key">j</kbd> berwarna sama: satu jari, dua tugas berbeda.
+      </p>
+
       <ol className="pg-steps">
         <li className="pg-step">
           <h2 className="pg-step-title">Duduk dulu, baru tangan</h2>
@@ -123,14 +136,6 @@ export default function PosturePage() {
         </li>
       </ol>
 
-      <div className="pg-keys" aria-hidden="true">
-        <VirtualKeyboard onReady={noop} emphasis="home" />
-      </div>
-      <p className="pg-caption">
-        Baris awal disorot. Warna menunjukkan jari yang bertanggung jawab atas tiap
-        tombol — perhatikan <kbd className="ul-key">h</kbd> dan{' '}
-        <kbd className="ul-key">j</kbd> berwarna sama: satu jari, dua tugas berbeda.
-      </p>
 
       <div className="pg-actions">
         <button type="button" className="ul-cta ul-cta-primary" onClick={start}>

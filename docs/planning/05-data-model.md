@@ -145,9 +145,18 @@ generator adaptif (dok. 04 §8).
   showKeyboard: boolean,
   showFingerGuide: boolean,
   keyboardLayout: "qwerty",
-  contentLanguage: "en"
+  contentLanguage: "en",
+  // ADR-029 — mode input per halaman. Opsional & aditif, jadi tanpa migrasi:
+  // data lama yang tidak memilikinya jatuh ke default di bawah.
+  inputMode?: {
+    learn: "strict" | "non-strict",      // default "strict"
+    practice: "strict" | "non-strict"    // default "non-strict"
+  }
 }
 ```
+
+`inputMode` disimpan **per halaman, bukan per lesson** (ADR-029): pengguna yang memilih
+non-strict di satu lesson memilihnya untuk cara ia belajar, bukan untuk satu drill.
 
 ### `typing:meta`
 ```ts

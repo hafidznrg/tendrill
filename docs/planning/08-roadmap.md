@@ -198,10 +198,11 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
       yang sudah dihapus (R-22) — `progress.test.ts`. Empat keadaan data nyata diuji:
       kosong, entri rusak (`attempts: "banyak"`, `null`, string), id hantu, dan
       **kurikulum yang menyusut** sesudah pengguna lulus di unit yang dihapus.
-- [x] Assist ladder aktif — `progress.test.ts` (tangganya) + `learnFlow.test.tsx`
-      (benar-benar **dirender** di layar hasil pada percobaan 3, 4, dan 6).
-      "Terasa membantu, bukan menghina" adalah penilaian manusia dan menunggu uji
-      pemula; yang bisa dijaga mesin sudah dijaga, termasuk bahwa **akurasi tidak
+- [x] Assist ladder aktif dan **terasa membantu — dinilai pemilik 2026-09-12:
+      "membantu dengan baik"**. Ini penilaian manusia dan memang tidak bisa
+      diotomasi, sama seperti "diagnosis bermakna" di Fase 2. Yang dijaga mesin:
+      `progress.test.ts` (tangganya) + `learnFlow.test.tsx` (benar-benar **dirender**
+      di layar hasil pada percobaan 3, 4, dan 6), termasuk bahwa **akurasi tidak
       pernah diturunkan** di seluruh 37 lesson sampai percobaan ke-20.
 - [x] **Uji ke satu pemula nyata — dijalankan 2026-09-12.** Hasilnya di bawah.
       **Butir "paham posisi jari setelah Lesson 1" GAGAL sebagian**, dan yang gagal
@@ -229,33 +230,37 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
       antara "Mulai dari nol" dan `u1-l1`, sekali tampil, selalu bisa dilewati, dan
       tetap bisa dibuka lagi dari `/learn`. Dua butirnya lahir langsung dari yang
       gagal — periksa telunjuk kanan di `j` bukan `h`, dan letak Backspace supaya
-      tidak dicari dengan mata. **Belum diuji balik ke pemula**; itu pertanyaan
-      pertama uji berikutnya.
-- [~] **Butir pengamatan khusus di uji itu: pergeseran mode non-strict.**
-      *Separuh terjawab.* Yang sudah pasti: pemula ini **menyadari** salah ketiknya dan
-      mengoreksinya sendiri — jadi ketakutan terbesar kandidat ADR ("pengguna menabrak
-      tembok tanpa sadar") tidak terlihat di sesi ini. Yang belum terhitung: **berapa
-      kali ia menekan satu tombol BERLEBIH** (pergeseran, bukan salah tekan biasa).
-      Keduanya berbeda dan hanya yang kedua yang memutuskan kandidat ADR — salah tekan
-      biasa memang sudah ditangani non-strict dengan baik.
+      tidak dicari dengan mata.
 
-      **Hitungannya nol pada uji ini**, dan pemiliknya menyebut alasannya sendiri:
-      kecepatannya masih pelan. Itu penjelasan yang masuk akal, dan justru karena itu
-      **nol di sini bukan bukti untuk menolak** — pergeseran adalah gejala kecepatan,
-      dan pemula 15 WPM mengetik satu tombol pada satu waktu. Menutup kandidat ADR
-      dengan data ini akan mengulang persis pola yang sudah tiga kali menipu proyek
-      ini: angka yang terlihat masuk akal, diambil dari kondisi yang tidak pernah
-      menguji hal yang dimaksud.
+      **Diuji balik 2026-09-12, dan berhasil: pemula baru sudah tahu telunjuk
+      kanannya mendarat di `j`.** Satu umpan balik tata letak ikut masuk dan
+      langsung dikerjakan: **keyboard dipindah ke atas teks**, supaya perhatian
+      jatuh ke papan tombolnya dulu, rinciannya dibaca sesudahnya.
+- [x] **Butir pengamatan khusus di uji itu: pergeseran mode non-strict → KEPUTUSAN
+      DIAMBIL 2026-09-12 (ADR-029).**
 
-      Keputusan tetap **ditahan**, dengan pemicu yang ditulis sekarang supaya tidak
-      menggantung selamanya: diputuskan pada **uji pemula kedua** (sesudah `/posture`,
-      dan idealnya pada orang yang sudah sampai Unit 2–3) atau saat ada pengguna mana
-      pun yang mencapai ~30 WPM di `/learn` — mana yang lebih dulu.
-      Bukan sekadar "amati" — **hitung berapa kali ia menekan satu tombol berlebih,
-      dan apakah ia menyadarinya.** Ini satu-satunya data yang bisa memutuskan kandidat
-      ADR mode strict (dok. 10), dan hanya bisa diambil dari pemula sungguhan.
-      Keputusannya diambil di sini; implementasinya di Fase 4.
+      Datanya sendiri tidak pernah tegas, dan itu dicatat apa adanya: pemula
+      **menyadari** salah ketiknya dan mengoreksi sendiri, sementara hitungan ketukan
+      **berlebih** nol — bukan karena non-strict aman, melainkan karena kecepatannya
+      masih pelan. Nol pada kondisi yang tidak pernah menguji hal yang dimaksud bukan
+      bukti.
 
+      Yang memutuskan justru temuan yang tidak dicari: pemula **berhenti dan melihat
+      keyboard untuk mencari Backspace**. Di mode strict, jalur koreksi itu tidak ada —
+      cukup tekan tombol yang benar. Argumen "backspace tidak lagi wajib" berubah dari
+      butir teoretis menjadi hambatan yang terlihat.
+
+      **Keputusan pemilik:** mode input bisa dipilih pengguna — **strict default di
+      `/learn`, non-strict default di `/practice`**, bisa diganti di lesson mana pun,
+      dan pilihannya bertahan. Dikerjakan langsung sesudah keputusannya (lihat Fase 4).
+
+> ### Fase 3 selesai — 2026-09-12
+>
+> Seluruh DoD terpenuhi, termasuk dua butir yang hanya bisa dinilai manusia (assist
+> ladder terasa membantu; uji pemula) dan satu keputusan yang menunggu data lapangan
+> (mode input → ADR-029). Dua temuan uji pemula diperbaiki di dalam fase yang sama,
+> bukan ditunda: `/posture` (ADR-027) dan tata letaknya sesudah uji kedua.
+>
 > **Catatan penutup Fase 3 (kode).** Tiga hal yang tidak terlihat selama kurikulum
 > masih berupa data, dan baru muncul saat ia dijalankan — semuanya sekarang ber-ADR
 > (dok. 04 §16): beberapa drill menjadi satu sesi (ADR-024), apa yang dihitung sebagai
@@ -284,10 +289,9 @@ logika unlock + `reconcileProgress`, kriteria kelulusan, assist ladder.
 Sisa 25 lesson (konten sudah ditulis sebagai pekerjaan latar), review session tiap akhir unit,
 validasi data kurikulum otomatis.
 
-**Plus, kalau uji pemula Fase 3 memutuskannya: mode strict/non-strict** (~0,5 hari).
-Ditaruh di sini, bukan di Fase 3, karena Fase 3 adalah fase uji risiko yang DoD-nya sudah
-penuh — dan karena datanya baru ada setelah uji pemula selesai. Urutannya mengikat
-(dok. 00): ubah dok. 02 §4 → naikkan kandidat di dok. 10 menjadi ADR → baru kode.
+**Mode strict/non-strict: ✅ sudah dikerjakan 2026-09-12** (ADR-029), langsung sesudah
+uji pemula memutuskannya. Urutan dok. 00 diikuti: dok. 02 §4 diubah → kandidat di
+dok. 10 dinaikkan menjadi ADR-029 → baru kode. Sisa Fase 4 tetap seperti di bawah.
 
 **DoD**
 - [ ] Semua 30 lesson + 6 review terisi konten nyata, bukan placeholder
@@ -296,14 +300,21 @@ penuh — dan karena datanya baru ada setelah uji pemula selesai. Urutannya meng
 - [ ] **Kamu sendiri sudah menyelesaikan Unit 1–3 dari nol** — ini uji kualitas kurikulum
 - [ ] Kriteria lulus terasa adil (tidak terlalu mudah, tidak menyiksa)
 
-**DoD tambahan — hanya kalau mode strict jadi dikerjakan:**
-- [ ] Mode bisa diganti pengguna per halaman dan tersimpan; default **strict di `/learn`,
-      non-strict di `/practice`**
-- [ ] **Mode yang aktif terlihat tanpa membuka pengaturan.** Pengguna yang tertahan harus
-      langsung paham KENAPA ia tertahan — kalau tidak, itu terbaca sebagai aplikasi rusak
-- [ ] Sorotan tombol berikutnya di virtual keyboard **bertahan** sampai ditekan benar
-- [ ] `nonStrict.test.ts` diperbarui dengan sengaja, bukan dihapus — ia memang dipasang
-      untuk berubah merah di titik ini
+**DoD tambahan mode strict — terpenuhi 2026-09-12 (ADR-029):**
+- [x] Mode bisa diganti pengguna per halaman dan tersimpan; default **strict di `/learn`,
+      non-strict di `/practice`** — `inputMode.test.tsx`, termasuk bahwa lesson
+      berikutnya membuka dengan mode yang sudah dipilih
+- [x] **Mode yang aktif terlihat tanpa membuka pengaturan** — sakelar di layar sesi,
+      tepat di bawah keyboard
+- [x] Sorotan tombol berikutnya **bertahan** sampai ditekan benar — jatuh sendiri dari
+      desainnya: kursor tidak maju, jadi `cursorMoved` false dan pelukis tidak pernah
+      dipanggil ulang
+- [x] `nonStrict.test.ts` diperbarui dengan sengaja, bukan dihapus — ia sekarang menjaga
+      **kedua** mode berdampingan, dan bagian non-strict-nya tetap berlaku karena mode
+      itu masih ada. Kepalanya diberi peringatan eksplisit supaya berkas yang hijau ini
+      tidak dibaca sebagai "jadi `/learn` non-strict"
+- [ ] *Belum:* `/practice` sendiri baru ada di Fase 5, jadi default non-strict di sana
+      belum pernah berjalan di layar — hanya nilainya yang sudah benar
 
 ---
 

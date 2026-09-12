@@ -2,6 +2,8 @@ export { TypingArea } from './components/TypingArea.tsx';
 export { ResultScreen } from './components/ResultScreen.tsx';
 export { LiveMetrics } from './components/LiveMetrics.tsx';
 export { TypingStage } from './components/TypingStage.tsx';
+export { InputModeToggle } from './components/InputModeToggle.tsx';
+export type { InputModeToggleProps } from './components/InputModeToggle.tsx';
 export type { TypingStageProps } from './components/TypingStage.tsx';
 export { diagnose, topProblemKeys } from './diagnosis.ts';
 export { useTypingSession, CHAR_CLASS } from './hooks/useTypingSession.ts';

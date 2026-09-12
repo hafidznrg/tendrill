@@ -6,6 +6,7 @@ import {
   createSession,
   finishSession,
   rewrapSession,
+  setInputMode,
   pause,
   restartSession,
   resume,
@@ -62,6 +63,8 @@ export interface UseTypingSessionOptions {
   onFinish?: (result: SessionResult | null) => void;
   onExit?: () => void;
   enabled?: boolean;
+  /** true = mode strict: tombol salah menahan kursor (ADR-029). */
+  strict?: boolean;
 }
 
 export interface TypingSessionApi {
@@ -81,11 +84,20 @@ export interface TypingSessionApi {
 }
 
 export function useTypingSession(options: UseTypingSessionOptions): TypingSessionApi {
-  const { target, cols, charWidth, lineHeight, onFinish, onExit, enabled = true } = options;
+  const {
+    target,
+    cols,
+    charWidth,
+    lineHeight,
+    onFinish,
+    onExit,
+    enabled = true,
+    strict = false,
+  } = options;
 
   const sessionRef = useRef<SessionState>(null as unknown as SessionState);
   if (sessionRef.current === null || sessionRef.current.target !== target) {
-    sessionRef.current = createSession(target, cols);
+    sessionRef.current = createSession(target, cols, { strict });
   }
 
   const spansRef = useRef<HTMLElement[]>([]);
@@ -109,13 +121,22 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   const colsRef = useRef(cols);
   useEffect(() => {
     colsRef.current = cols;
-    sessionRef.current = createSession(target, cols);
+    sessionRef.current = createSession(target, cols, { strict: strictRef.current });
     setStatus(sessionRef.current.status);
     setMetrics(EMPTY_METRICS);
     setVoided(false);
     setStructuralTick((t) => t + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- lihat komentar di atas
   }, [target]);
+
+  // Mode diganti di tengah drill: pindahkan benderanya, JANGAN bangun ulang sesi
+  // (ADR-029). Membangun ulang akan menghapus ketikan pengguna tepat saat ia
+  // mencoba mode yang lain — alasan yang sama dengan ADR-028.
+  const strictRef = useRef(strict);
+  useEffect(() => {
+    strictRef.current = strict;
+    setInputMode(sessionRef.current, strict);
+  }, [strict]);
 
   // Lebar berubah → bungkus ulang, jangan mulai ulang (ADR-028).
   useEffect(() => {
