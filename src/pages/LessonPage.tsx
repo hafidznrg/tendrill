@@ -7,6 +7,7 @@ import {
   assistFor,
   effectiveCriteria,
   entryFor,
+  gradeAttempt,
   loadLesson,
   markPassedWithAssist,
   meetsCriteria,
@@ -16,10 +17,12 @@ import {
   resolveDrills,
   useProgress,
   type LoadedLesson,
+  type ResolvedDrill,
 } from '@/features/curriculum';
-import { combineResults, type SessionResult } from '@/lib/engine';
+import type { GradedPart } from '@/features/curriculum';
+import type { SessionResult } from '@/lib/engine';
 import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
-import { readInputMode, writeInputMode } from '@/lib/storage/flags.ts';
+import { markGraduated, readInputMode, writeInputMode } from '@/lib/storage/flags.ts';
 import type { InputMode } from '@/lib/storage/schema.ts';
 import type { PassCriteria } from '@/data/curriculum/en/types.ts';
 
@@ -29,8 +32,13 @@ import type { PassCriteria } from '@/data/curriculum/en/types.ts';
  * Bentuk yang mengikat halaman ini: **satu lesson = beberapa drill berurutan
  * dalam satu sesi** (dok. 04 §2). Engine hanya mengenal satu target per sesi,
  * jadi tiap drill dijalankan sebagai sesi engine sendiri dan hasil lesson-nya
- * adalah `combineResults` dari semuanya. Kelulusan dinilai terhadap gabungan —
- * menilai drill terakhir saja berarti empat drill pertama bisa diabaikan.
+ * adalah gabungan semuanya. Kelulusan dinilai terhadap gabungan — menilai drill
+ * terakhir saja berarti empat drill pertama bisa diabaikan.
+ *
+ * Satu pengecualian, dan hanya di `u6-review`: drill ber-`graduation: true`
+ * dikeluarkan dari penilaian lesson dan dinilai sendiri terhadap 40 WPM / 95%
+ * (ADR-030). Pembagiannya dikerjakan `gradeAttempt()` yang pure; halaman ini
+ * hanya menampilkan kedua putusannya.
  *
  * Assist ladder (dok. 04 §9) hidup di sini juga, tetapi seluruh keputusannya
  * diambil fungsi pure di `features/curriculum/progress.ts`; halaman ini hanya
@@ -43,6 +51,11 @@ interface AttemptResult {
   passed: boolean;
   /** Percobaan ke berapa — dibekukan di sini supaya tidak bergeser setelah disimpan. */
   attempt: number;
+  /**
+   * Tes kelulusan kursus (ADR-030), hanya ada di `u6-review`. Terpisah dari
+   * `passed` di atas: ia tidak menggerbangi apa pun.
+   */
+  graduation: GradedPart | null;
 }
 
 export default function LessonPage() {
@@ -52,7 +65,7 @@ export default function LessonPage() {
 
   const [loaded, setLoaded] = useState<LoadedLesson | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [drills, setDrills] = useState<string[] | null>(null);
+  const [drills, setDrills] = useState<ResolvedDrill[] | null>(null);
   const [drillIndex, setDrillIndex] = useState(0);
   const [runId, setRunId] = useState(0);
   const [attemptResult, setAttemptResult] = useState<AttemptResult | null>(null);
@@ -106,10 +119,10 @@ export default function LessonPage() {
       // Bobot drill dinamis diambil dari statistik nyata pengguna; kosong →
       // seragam (dok. 04 §7). Dibaca sekali per pemuatan, bukan per drill,
       // supaya seluruh lesson memakai bobot yang konsisten.
-      const texts = await resolveDrills(found.lesson, readDrillStats());
+      const resolved = await resolveDrills(found.lesson, readDrillStats());
       if (cancelled) return;
       setLoaded(found);
-      setDrills(texts);
+      setDrills(resolved);
     });
 
     return () => {
@@ -143,23 +156,48 @@ export default function LessonPage() {
         return;
       }
 
-      const combined = combineResults(doneResults.current);
-      if (!combined || !criteria || !loaded) return;
+      if (!criteria || !loaded) return;
 
-      const passed = meetsCriteria(combined.netWPM, combined.accuracy, criteria);
-      setAttemptResult({ result: combined, criteria, passed, attempt });
+      // Dua penilaian atas dua himpunan drill yang tidak beririsan (ADR-030):
+      // kelulusan lesson dari drill biasa, kelulusan kursus dari drill
+      // `graduation`. Di 35 dari 36 lesson himpunan kedua kosong dan `graded.
+      // lesson` sama persis dengan gabungan seluruh drill.
+      const graded = gradeAttempt(
+        doneResults.current,
+        all.map((d) => d.graduation),
+        criteria,
+      );
+      if (!graded) return;
+      // Seluruh drill bertanda `graduation` tidak mungkin lolos validator, tapi
+      // jatuh ke gabungan tetap lebih baik daripada layar hasil yang kosong.
+      const lessonPart = graded.lesson ?? {
+        result: graded.combined,
+        criteria,
+        passed: meetsCriteria(graded.combined.netWPM, graded.combined.accuracy, criteria),
+      };
+
+      setAttemptResult({
+        result: lessonPart.result,
+        criteria,
+        passed: lessonPart.passed,
+        attempt,
+        graduation: graded.graduation,
+      });
 
       // Penulisan dijadwalkan SETELAH layar hasil ter-paint, tidak pernah saat
-      // mengetik (dok. 05 §1 poin 4).
-      persistSessionResult(combined, { source: 'lesson', lessonId });
+      // mengetik (dok. 05 §1 poin 4). Yang disimpan ke riwayat adalah gabungan
+      // SELURUH drill — pengguna memang mengetik semuanya.
+      persistSessionResult(graded.combined, { source: 'lesson', lessonId });
       save(
         recordAttempt(progress, lessonId, {
-          netWpm: +combined.netWPM.toFixed(2),
-          accuracy: +combined.accuracy.toFixed(2),
-          passed,
-          at: combined.completedAt,
+          netWpm: +lessonPart.result.netWPM.toFixed(2),
+          accuracy: +lessonPart.result.accuracy.toFixed(2),
+          passed: lessonPart.passed,
+          at: graded.combined.completedAt,
         }),
       );
+      // Ditulis sekali, tidak pernah dicabut (ADR-030).
+      if (graded.graduation?.passed) markGraduated(graded.combined.completedAt);
     },
     [attempt, criteria, drillIndex, drills, lessonId, loaded, micro, progress, save],
   );
@@ -244,7 +282,7 @@ export default function LessonPage() {
   // dan catatan "target diturunkan" muncul di percobaan yang targetnya belum
   // diturunkan. Ditemukan `learnFlow.test.tsx`.
   const shownAssist = assistFor(attemptResult?.attempt ?? attempt);
-  const target = micro ?? drills[drillIndex] ?? '';
+  const target = micro ?? drills[drillIndex]?.text ?? '';
   const title = micro
     ? `${lesson.title} · drill mikro`
     : `Unit ${unit.order} · ${lesson.title} · drill ${drillIndex + 1}/${drills.length}`;
@@ -329,6 +367,7 @@ export default function LessonPage() {
               ? assistPass
               : undefined
           }
+          graduation={attemptResult?.graduation ?? null}
         />
       )}
     </section>

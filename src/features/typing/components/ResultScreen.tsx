@@ -41,6 +41,17 @@ export interface ResultScreenProps {
   microDrillLabel?: string;
   /** Percobaan ≥ 6: "lanjut saja" → `passed-with-assist`. */
   onAssistPass?: (() => void) | undefined;
+
+  /**
+   * Tes kelulusan kursus (dok. 04 §4a, ADR-030) — hanya `u6-review` mengirimnya.
+   * Putusan terpisah: ia TIDAK menggerbangi apa pun, jadi ia muncul di bawah
+   * putusan lesson, bukan menggantikannya.
+   */
+  graduation?: {
+    result: SessionResult;
+    criteria: PassCriteria;
+    passed: boolean;
+  } | null;
 }
 
 export function ResultScreen({
@@ -56,6 +67,7 @@ export function ResultScreen({
   onMicroDrill,
   microDrillLabel = 'Drill 30 detik',
   onAssistPass,
+  graduation = null,
 }: ResultScreenProps) {
   // Pintasan layar hasil (dok. 07 §7).
   useEffect(() => {
@@ -147,6 +159,8 @@ export function ResultScreen({
         </p>
       )}
 
+      {graduation && <Graduation {...graduation} />}
+
       <Actions onRetry={onRetry} onNext={onNext} onExit={onExit} />
 
       {(onMicroDrill || onAssistPass) && (
@@ -163,6 +177,50 @@ export function ResultScreen({
           )}
         </div>
       )}
+    </section>
+  );
+}
+
+/**
+ * Putusan tes kelulusan kursus (ADR-030).
+ *
+ * Sengaja di bawah putusan lesson dan dengan kalimat yang menyebut siapa yang
+ * membuka lesson berikutnya: dua putusan di satu layar mudah terbaca sebagai
+ * kontradiksi ("lulus" di atas, "belum 40 WPM" di bawah) kalau tidak dikatakan
+ * mana yang menggerbangi apa.
+ *
+ * Yang belum lulus tidak disembunyikan dan tidak dihibur. Nadanya dok. 07 §11:
+ * faktual, dan menyebutkan bahwa sisanya datang dari pemakaian biasa.
+ */
+function Graduation({
+  result,
+  criteria,
+  passed,
+}: {
+  result: SessionResult;
+  criteria: PassCriteria;
+  passed: boolean;
+}) {
+  return (
+    <section className={`rs-grad${passed ? ' rs-grad-passed' : ''}`}>
+      <h3 className="rs-grad-title">
+        Tes kelulusan · {criteria.minWpm} WPM · {criteria.minAccuracy}%
+      </h3>
+      <p className="rs-grad-body">
+        {passed ? (
+          <>
+            Lulus — {result.netWPM.toFixed(1)} WPM &amp; {result.accuracy.toFixed(1)}% pada
+            dua drill prosa terakhir. Itu target kursus ini, dan kamu sudah melewatinya.
+          </>
+        ) : (
+          <>
+            Belum — {result.netWPM.toFixed(1)} WPM &amp; {result.accuracy.toFixed(1)}% pada
+            dua drill prosa terakhir. Ini diukur tanpa drill angka dan simbol, dan ia tidak
+            menahan apa pun: kelulusan unit di atas yang menentukan. Sisanya datang dari
+            pemakaian biasa.
+          </>
+        )}
+      </p>
     </section>
   );
 }

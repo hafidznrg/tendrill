@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { curriculum } from '@/data/curriculum/en/index.ts';
 import { UnitList, lessonViews, nextLessonId, useProgress } from '@/features/curriculum';
 import { isMemoryMode } from '@/lib/storage';
+import { graduatedAt } from '@/lib/storage/flags.ts';
 
 /**
  * `/learn` — daftar kurikulum (dok. 02 §1).
@@ -17,6 +18,10 @@ export default function LearnPage() {
   const views = useMemo(() => lessonViews(progress, curriculum.lessons), [progress]);
   const nextId = useMemo(() => nextLessonId(progress, curriculum.lessons), [progress]);
   const placementTaken = progress.placement !== null;
+  // Kelulusan kursus (ADR-030). Dibaca sekali saat render, bukan di-state: ia
+  // hanya berubah di layar hasil `u6-review`, dan halaman ini dimuat ulang
+  // sesudahnya.
+  const graduated = graduatedAt();
 
   return (
     <section>
@@ -48,6 +53,21 @@ export default function LearnPage() {
           Panduan posisi tangan
         </Link>
       </div>
+
+      {graduated !== null && (
+        // Faktual, satu baris, tanpa piala — dok. 07 §11. Yang belum lulus tidak
+        // melihat apa pun di sini: baris "kamu belum 40 WPM" di halaman daftar
+        // adalah pengingat harian yang tidak bisa ditindaklanjuti dari sini.
+        <p className="mt-4 max-w-[62ch] border-l-2 border-accent pl-3 text-[15px]">
+          Tes kelulusan 40 WPM · 95% sudah lulus pada{' '}
+          {new Date(graduated).toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}
+          . Review session tetap terbuka kapan pun.
+        </p>
+      )}
 
       {isMemoryMode() && (
         <p className="mt-4 rounded border border-line bg-surface px-3 py-2 text-fg-dim">

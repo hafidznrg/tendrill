@@ -170,3 +170,33 @@
   padding-top: 0.6rem;
   border-top: 1px solid var(--line);
 }
+
+/* Tes kelulusan kursus (ADR-030). Kotak sendiri, di bawah putusan lesson:
+   ia putusan KEDUA, bukan pengganti yang pertama. Tanpa warna "berhasil/gagal"
+   yang menyala — dok. 07 §11, dan yang belum lulus di sini tidak gagal apa pun. */
+.rs-grad {
+  margin: 1.1rem 0 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  max-width: 62ch;
+}
+
+.rs-grad-passed {
+  border-color: var(--accent);
+}
+
+.rs-grad-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+.rs-grad-body {
+  margin: 0.35rem 0 0;
+  font-size: 14px;
+}
