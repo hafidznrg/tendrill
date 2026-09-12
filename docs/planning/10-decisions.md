@@ -755,6 +755,24 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard". Murah
       (pelukis sorotan sudah ada), tapi menyentuh jalur keystroke — jadi ia butuh
       pengukuran, bukan sekadar ditambahkan.
+- [ ] **`attempts` per tombol kurang satu tiap sesi** — temuan audit Fase 1–4,
+      2026-09-12. `mergeKeystats` menurunkan jumlah percobaan dari `latencyByKey`,
+      yang sengaja melewatkan keystroke **pertama** sesi (ia tidak punya jeda
+      sebelumnya, R-18). Akibatnya tombol pertama tiap sesi tidak pernah terhitung
+      sebagai percobaan kecuali ia salah. Skewnya ~1/200 dan ia **hanya** memengaruhi
+      bobot generator drill — bukan WPM, akurasi, atau kelulusan; nol angka yang
+      dilihat pengguna berubah. Ditunda dengan sengaja ke **Fase 6/7**: di situlah
+      `keystats` baru benar-benar menggerakkan sesuatu (heatmap, latihan adaptif),
+      jadi di situ pula perbaikannya bisa **diukur** akibatnya, bukan sekadar
+      dibenarkan secara aritmetika.
+- [ ] **Spasi sebelum keystroke pertama menggulung halaman** — temuan audit yang sama.
+      `preventDefault` untuk spasi digerbangi `isActive()`, yang baru true setelah
+      sesi berstatus `running` — yaitu setelah tombol pertama. Jadi spasi yang salah
+      tekan di detik pertama masih menggulung halaman. Nol drill diawali spasi, nol
+      data hilang, nol angka salah. Ditunda karena perbaikannya menyentuh **jalur
+      input**, dan apa pun di sana wajib diukur lebih dulu — alasan yang sama persis
+      dengan butir "Sorot Backspace" di atas. Kalau keduanya jadi dikerjakan,
+      kerjakan sekali jalan dengan satu pengukuran.
 
 ---
 
@@ -1275,6 +1293,14 @@ Tiga aturan yang ikut mengikat:
   belakangnya", catatan penutup Fase 3).
 - (−) Layar hasil `u6-review` menampilkan **dua** putusan. Diterima, dan memang itu yang
   diminta dok. 04: kalimat pertamanya menyebutkan mana yang membuka lesson berikutnya.
+- (−) **Pembanding "terbaik sebelumnya" disembunyikan di `u6-review`** (ditambahkan
+  2026-09-12 sesudah audit Fase 1–4). Angka yang ditampilkan di sana adalah bagian
+  angka/simbol saja, sedangkan riwayat menyimpan gabungan SELURUH drill termasuk dua
+  drill prosa yang jauh lebih cepat — panahnya akan membandingkan nilai matematika hari
+  ini dengan rata-rata seluruh mata pelajaran minggu lalu, dan bisa menunjuk ke bawah
+  justru saat pengguna membaik. Menyimpan angka bagian-lesson ke riwayat ditolak: yang
+  masuk riwayat harus mewakili apa yang benar-benar diketik (ADR-024). Jadi yang
+  dikorbankan pembandingnya, di satu lesson, bukan kejujuran riwayatnya.
 
 ---
 

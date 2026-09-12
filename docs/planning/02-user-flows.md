@@ -120,6 +120,9 @@ Wajib menampilkan, berurutan dari yang paling aktionable:
 1. **Lulus / belum lulus** terhadap kriteria lesson (misal: butuh 25 WPM & 95%, kamu dapat 27 WPM & 92%).
 2. **Satu kalimat diagnosis.** Contoh: "Kesalahan terbanyak: `e` diketik sebagai `r` (5×) — jari telunjuk kiri bergeser."
 3. WPM (net) dan akurasi, dengan perbandingan terhadap percobaan terbaik sebelumnya.
+   **Kecuali di `u6-review`**: lesson itu dinilai dua kali (ADR-030), sehingga angka yang
+   ditampilkan hanya bagian angka/simbol sementara catatan lama berisi seluruh drill —
+   dua hal yang tidak sebanding. Di sana pembandingnya disembunyikan, bukan dipaksakan.
 4. Daftar 3 tombol paling bermasalah di sesi ini.
 5. Tombol aksi: `Ulangi (Enter)` · `Lanjut (N)` · `Kembali (Esc)`.
 

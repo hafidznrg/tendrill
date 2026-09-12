@@ -289,6 +289,14 @@ export default function LessonPage() {
   // dan catatan "target diturunkan" muncul di percobaan yang targetnya belum
   // diturunkan. Ditemukan `learnFlow.test.tsx`.
   const shownAssist = assistFor(attemptResult?.attempt ?? attempt);
+
+  // Pembanding "terbaik sebelumnya" disembunyikan di lesson yang dinilai dua
+  // kali (ADR-030, dok. 02 §5). Angka yang ditampilkan di situ hanya bagian
+  // non-graduation, sedangkan riwayat menyimpan gabungan SELURUH drill —
+  // termasuk dua drill prosa yang jauh lebih cepat. Panahnya akan menunjuk ke
+  // bawah justru saat pengguna membaik. Riwayatnya tidak diubah: yang masuk ke
+  // sana harus mewakili apa yang benar-benar diketik (ADR-024).
+  const hasGraduationDrill = drills.some((d) => d.graduation);
   const target = micro ?? drills[drillIndex]?.text ?? '';
   const title = micro
     ? `${lesson.title} · drill mikro`
@@ -351,7 +359,7 @@ export default function LessonPage() {
           result={attemptResult?.result ?? null}
           voided={voided}
           criteria={attemptResult?.criteria ?? null}
-          previousBest={previousBest.current}
+          previousBest={hasGraduationDrill ? null : previousBest.current}
           onRetry={startAttempt}
           onNext={attemptResult?.passed ? goNext : undefined}
           onExit={goBack}

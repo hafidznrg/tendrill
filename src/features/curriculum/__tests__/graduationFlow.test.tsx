@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import LessonPage from '@/pages/LessonPage';
 import { STORAGE_KEYS, _resetForTests, read } from '@/lib/storage';
@@ -83,6 +83,30 @@ describe('u6-review — dua putusan di satu layar (ADR-030)', () => {
     expect(document.querySelector('.rs-grad-body')?.textContent).toMatch(/^Lulus —/);
 
     expect(typeof read(STORAGE_KEYS.meta).graduatedAt).toBe('number');
+  });
+
+  /**
+   * Pembanding "terbaik sebelumnya" tidak boleh muncul di lesson yang dinilai
+   * dua kali (ADR-030). Angka di layar hanya bagian angka/simbol, sedangkan
+   * riwayat menyimpan gabungan seluruh drill — panahnya akan membandingkan dua
+   * hal yang tidak sebanding, dan bisa menunjuk ke bawah saat pengguna membaik.
+   */
+  it('u6-review tidak menampilkan pembanding percobaan sebelumnya', async () => {
+    const { unmount } = render(<div />);
+    unmount();
+
+    // Percobaan pertama: menaruh catatan di riwayat.
+    await renderLesson('u6-review');
+    await playPerfectly();
+    cleanup();
+
+    // Percobaan kedua: riwayatnya sudah ada, jadi panah pembanding SEHARUSNYA
+    // muncul kalau tidak sengaja disembunyikan.
+    await renderLesson('u6-review');
+    await playPerfectly();
+
+    expect(screen.getByRole('heading', { level: 3 })).toBeTruthy(); // memang u6-review
+    expect(document.querySelectorAll('.rs-delta')).toHaveLength(0);
   });
 
   it('lesson biasa tidak pernah menampilkan panel kelulusan', async () => {
