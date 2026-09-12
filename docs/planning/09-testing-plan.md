@@ -165,8 +165,8 @@ paling murah terhadap regresi diam-diam.
       (a) **sudah diperbaiki**: tinggi kini dari CSS (`calc(var(--ta-lines) * 1.8em)`),
       identik angkanya tapi ada sejak paint pertama — dan prop `lineHeight` dicabut
       dari `TypingArea` supaya bug itu tidak bisa kembali. **Ukur ulang.**
-      (b) **belum diputuskan** — butuh `font-display: optional` atau fallback
-      ber-`size-adjust`. Kecil, tapi dok. 07 §1 poin 2 menuntut nol.
+      (b) **sudah diperbaiki**: `font-display: optional` (ADR-023) — fallback tidak
+      pernah ditukar, jadi tidak ada yang bisa bergeser. **Ukur ulang keduanya.**
 - [ ] **Caret presisi** (R-06), diukur `scripts/perf-layout.js` (`caretCheck()`).
       Yang diperiksa bukan posisi caret sekarang melainkan **kolom terjauh di tiap
       baris** — posisi caret aritmetika, jadi error `charWidth` MENUMPUK ke kanan.

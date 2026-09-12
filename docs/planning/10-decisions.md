@@ -627,6 +627,79 @@ Timing menjawab pertanyaan berbeda — "apakah ada interaksi sungguhan yang ters
   bisa diperketat; belum dikerjakan karena belum ada perangkatnya untuk diuji.
 
 
+## ADR-023 — `font-display: optional`, dan konsekuensinya yang disengaja
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Kedua webfont memakai `font-display: swap`: teks tampil dengan font
+fallback lebih dulu, lalu **ditukar** begitu webfont tiba. Pertukaran itu mengubah
+metrik huruf, dan metrik yang berubah menggeser layout — persis yang dilarang
+dok. 07 §1 poin 2.
+
+Terukur 2026-09-12: nav bergeser **0,00035** saat pertukaran terjadi. Kecil — ambang
+"baik" CLS adalah 0,1, jadi ini 300× di bawahnya — tetapi dokumennya menuntut **nol**,
+dan "kecil" adalah awal dari semua anggaran yang akhirnya jebol.
+
+Ini sumber layout shift **ketiga** yang ditemukan di fase yang sama, sesudah scrollbar
+dan `.ta-root` setinggi 0 px. Ketiganya punya bentuk yang sama: ruang yang tidak
+dipesan sejak paint pertama.
+
+**Keputusan.** `font-display: optional` untuk kedua `@font-face`.
+
+Browser memakai webfont **hanya** kalau ia siap dalam periode blocking ~100 ms; kalau
+tidak, fallback dipakai dan **tidak pernah ditukar** sepanjang halaman itu hidup. Nol
+pertukaran berarti nol pergeseran, tanpa syarat.
+
+**Konsekuensi.**
+
+- (+) Sumber layout shift ini hilang seluruhnya, bukan diperkecil.
+- (+) Aman terhadap R-06. `charWidth` diukur setelah `document.fonts.ready` dari
+  elemen yang benar-benar dirender, jadi ia mengukur font yang **terpasang** —
+  bukan yang diharapkan. Kalau fallback yang dipakai, caret tetap presisi terhadap
+  fallback itu.
+- (−) **Kunjungan pertama dengan disk atau jaringan lambat akan tampil dengan font
+  fallback sepenuhnya**, sampai pengguna memuat ulang. Ini konsekuensi yang dipilih
+  sadar: satu kunjungan yang tampil kurang rapi lebih murah daripada setiap
+  kunjungan yang bergeser. Font di-host sendiri, di-subset latin, dan dibundel,
+  jadi ia hampir selalu memenangi balapan 100 ms.
+- (−) Fallback stack (`ui-monospace, SFMono-Regular, Consolas, monospace`) jadi lebih
+  sering terlihat daripada sebelumnya, sehingga ia layak diperlakukan sebagai bagian
+  desain, bukan sebagai jaring pengaman.
+
+**⚠️ Pengamatan yang belum tuntas (2026-09-12).** Di panel browser otomasi, `optional`
+**kalah balapan** — `charWidth` terukur **13,196 px** (Consolas, 0,55em), bukan 14,4 px
+(JetBrains Mono, 0,6em), padahal `document.fonts.check()` bernilai true dan statusnya
+`loaded`. Terjadi di dev server maupun build produksi, dan CSS yang dilayani sudah
+terbukti berisi `optional`.
+
+**Tapi hasil itu belum tentu berlaku di browser sungguhan.** Panel otomasi tidak pernah
+memanggil `requestAnimationFrame` alias tidak pernah menggambar (lihat ADR-021), dan
+periode blocking `optional` terikat pada percobaan render pertama. Lingkungan yang tidak
+merender sangat mungkin membuat `optional` selalu kalah. **Harus dicek di browser
+sungguhan** sebelum disimpulkan:
+
+```js
+const t = document.querySelector('.ta-text'), p = document.createElement('span');
+p.textContent = 'M'.repeat(50); p.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
+t.appendChild(p); const cw = p.getBoundingClientRect().width / 50; p.remove();
+console.log(cw > 14 ? 'JetBrains menang' : 'FALLBACK dipakai', cw);
+```
+
+**Kalau ternyata sering kalah, dua jalan keluar, dan yang kedua mungkin lebih baik
+daripada keputusan ADR ini:**
+
+1. **Preload** berkas fontnya supaya permintaannya dimulai lebih awal. Butuh plugin
+   Vite karena nama berkasnya di-hash.
+2. **Kembali ke `swap`, tetapi dengan fallback ber-`size-adjust`.** Untuk font
+   monospace, satu-satunya metrik yang menggeser layout adalah lebar karakter, dan
+   itu bisa dicocokkan persis: JetBrains Mono 0,6em, Consolas 0,55em, jadi
+   `size-adjust: 109.09%` membuat keduanya identik. Pertukaran font jadi netral
+   terhadap layout — **webfont tetap dipakai, dan tetap nol pergeseran.** Ini
+   mungkin lebih unggul daripada `optional` di kedua sisi; belum dikerjakan karena
+   butuh pengukuran metrik yang teliti, dan karena bukti bahwa `optional` kalah
+   di browser sungguhan belum ada.
+
+
 # Backlog ide
 
 Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sampai fase berjalan selesai.**
