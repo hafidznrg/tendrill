@@ -23,10 +23,19 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 3 SELESAI (2026-09-12), seluruh DoD terpenuhi. Berikutnya
-Fase 4 — kurikulum Unit 2–6 + review session.** Bagian bersyarat Fase 4 (mode input
-strict/non-strict) sudah ikut dikerjakan lebih dulu karena uji pemula memutuskannya
-di Fase 3 (ADR-029).
+Status sekarang: **Fase 4 — kode selesai (2026-09-12), sisa DoD-nya menunggu tangan
+pemilik.** Bagian bersyarat Fase 4 (mode input strict/non-strict) sudah dikerjakan
+lebih dulu karena uji pemula memutuskannya di Fase 3 (ADR-029).
+
+Yang sudah lunas di Fase 4: konten 30 lesson + 6 review (nyata, 14.858 karakter
+statis), validator kurikulum sebagai gerbang, dan **tes kelulusan kursus 40 WPM /
+95%** yang sebelumnya hanya hidup di dokumen (ADR-030 — drill ber-`graduation: true`
+di `u6-review`, dinilai terpisah dari kelulusan lesson dan tidak menggerbangi apa pun).
+
+Dua butir DoD yang tersisa **tidak bisa dikerjakan agent**: menyelesaikan sendiri
+Unit 1–3 dari nol, dan menilai apakah kriteria lulusnya terasa adil. Jangan
+menyatakannya lulus dari test — mengetik 36 lesson di jsdom membuktikan kodenya
+jalan, bukan kurikulumnya mengajar.
 
 Fase 1 kodenya selesai. Utang verifikasi performanya **sebagian besar sudah lunas**
 (2026-09-11):
@@ -68,6 +77,11 @@ Dua hal yang lahir dari uji pemula dan gampang tergerus kalau tidak tahu asalnya
 kegagalan yang teramati, dan keyboardnya sengaja di atas teks. Mode input (ADR-029)
 default **strict di `/learn`**, non-strict di `/practice`, bisa diganti pengguna dan
 bertahan lewat `typing:settings`.
+
+Satu aturan Fase 4 yang mudah dirusak tanpa sadar: **`u6-review` dinilai dua kali**
+(ADR-030). Drill ber-`graduation: true` **tidak** ikut menilai kelulusan lesson, dan
+ambang 40/95-nya tidak pernah diturunkan assist ladder. Pembagiannya dikerjakan
+`gradeAttempt()` yang pure; jangan memindahkannya ke komponen.
 
 Tiga aturan Fase 3 yang mengikat dan mudah dirusak tanpa sadar:
 1. **Satu lesson = beberapa sesi engine, dinilai sebagai gabungan** (ADR-024). Jangan

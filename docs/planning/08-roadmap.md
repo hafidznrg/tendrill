@@ -307,11 +307,27 @@ uji pemula memutuskannya. Urutan dok. 00 diikuti: dok. 02 §4 diubah → kandida
 dok. 10 dinaikkan menjadi ADR-029 → baru kode. Sisa Fase 4 tetap seperti di bawah.
 
 **DoD**
-- [ ] Semua 30 lesson + 6 review terisi konten nyata, bukan placeholder
-- [ ] Validasi kurikulum lulus: id unik, urutan tidak bolong, `reviewKeys` selalu
-      sudah diperkenalkan sebelumnya
-- [ ] **Kamu sendiri sudah menyelesaikan Unit 1–3 dari nol** — ini uji kualitas kurikulum
-- [ ] Kriteria lulus terasa adil (tidak terlalu mudah, tidak menyiksa)
+- [x] Semua 30 lesson + 6 review terisi konten nyata, bukan placeholder — **14.858
+      karakter isi statis**, nol `TODO`/placeholder, ditambah drill dinamis.
+      Dikerjakan sebagai pekerjaan latar sejak Fase 0, seperti rencananya.
+- [x] Validasi kurikulum lulus: id unik, urutan tidak bolong, `reviewKeys` selalu
+      sudah diperkenalkan sebelumnya — `npm run validate:curriculum`, dan ia sudah
+      menjadi gerbang `npm run verify` sejak Fase 3.
+- [x] **Tes kelulusan kursus 40 WPM / 95% benar-benar ada di kode** (ADR-030).
+      Ini bukan butir DoD asli; ia lubang yang baru terlihat saat `u6-review`
+      dijalankan, dan bentuknya persis yang diperingatkan catatan penutup Fase 3:
+      dok. 04 §4a menulis "dua drill prosa terakhir", sebuah aturan **posisi** yang
+      benar hari ini dan salah diam-diam begitu ada yang menambah satu drill.
+      Sekarang drill-nya ditandai `graduation: true`, dinilai terpisah dari
+      kelulusan lesson, dan gerbang validatornya **sudah dibuktikan merah** lewat
+      dua kontrol negatif (penanda diselundupkan ke `u1-l1`; jumlahnya dijadikan 3).
+- [ ] **Kamu sendiri sudah menyelesaikan Unit 1–3 dari nol** — ini uji kualitas
+      kurikulum, dan **hanya bisa dilakukan pemilik**. Tidak bisa diotomasi dan
+      tidak boleh dinyatakan lulus dari test: mengetik 36 lesson di jsdom
+      membuktikan kodenya jalan, bukan kurikulumnya mengajar.
+- [ ] Kriteria lulus terasa adil (tidak terlalu mudah, tidak menyiksa) — menunggu
+      butir di atas; penilaian manusia, sama seperti "diagnosis bermakna" (Fase 2)
+      dan "assist ladder terasa membantu" (Fase 3).
 
 **DoD tambahan mode strict — terpenuhi 2026-09-12 (ADR-029):**
 - [x] Mode bisa diganti pengguna per halaman dan tersimpan; default **strict di `/learn`,
