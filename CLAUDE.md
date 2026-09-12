@@ -142,7 +142,8 @@ npm run verify
 ```
 
 Itu menjalankan lint → test (termasuk validator kurikulum) → build (`tsc -b` strict) →
-anggaran bundel. Anggarannya dipecah dua (ADR-018):
+anggaran bundel → **graf chunk** (ADR-031: layar sesi tidak boleh menarik peta kurikulum
+lengkap — aturan yang benar di sumber tapi batal di keluaran bundler selama tiga fase). Anggarannya dipecah dua (ADR-018):
 
 | Anggaran      | Batas       | Artinya                                                            |
 | ------------- | ----------- | ------------------------------------------------------------------ |

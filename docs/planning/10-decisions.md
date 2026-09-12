@@ -1275,3 +1275,71 @@ Tiga aturan yang ikut mengikat:
   belakangnya", catatan penutup Fase 3).
 - (−) Layar hasil `u6-review` menampilkan **dua** putusan. Diterima, dan memang itu yang
   diminta dok. 04: kalimat pertamanya menyebutkan mana yang membuka lesson berikutnya.
+
+---
+
+## ADR-031 — Tiga gerbang baru dari audit Fase 1–4; graf chunk ikut diukur, bukan hanya bundel awal
+
+**Tanggal:** 2026-09-12 · **Status:** Diterima
+
+**Konteks.** Audit lintas Fase 1–4 menemukan tiga cacat. Ketiganya punya bentuk
+yang sama dan itulah yang membuat ADR ini ada: **semuanya berada tepat di luar
+jangkauan gerbang yang sudah dimiliki proyek.**
+
+| Cacat | Gerbang yang seharusnya menangkap | Kenapa ia buta |
+|---|---|---|
+| Halaman sesi menarik SELURUH kurikulum | `npm run budget` | ia mengukur **bundel awal**; chunk lazy yang salah gaul tidak pernah membuatnya merah |
+| `read()` tidak melihat tulisan tertunda | `storage.test.ts` | ia menguji "flush menulis", bukan "read melihat yang belum ter-flush" |
+| Dua drill berurutan berteks sama menggantungkan layar | validator kurikulum | ia memeriksa isi tiap drill, bukan **relasi antar** drill |
+
+**1. Graf chunk.** `loadLesson.ts` sudah menepati aturan CLAUDE.md §2 di sumber —
+ia sengaja mengimpor `units.ts`, bukan `index.ts`, lengkap dengan komentarnya.
+Aturannya tetap batal, karena `manualChunks` melempar **keduanya** ke satu chunk
+`curriculum-map`, dan `index.ts` mengimpor statis ketujuh unit. Jadi membuka satu
+lesson mengunduh seluruh kurikulum. Ini berlaku sejak Fase 3; Fase 4 tidak
+menyebabkannya (dibuktikan dengan membangun ulang tanpa impor Fase 4).
+
+Pelajarannya melampaui satu bug: **aturan impor di sumber tidak berarti apa-apa
+sampai keluaran bundler-nya ikut diukur.** Sebuah berkas config bisa membatalkan
+batasan arsitektur tanpa satu baris `import` pun berubah.
+
+Keputusan: `units.ts`/`types.ts` mendapat chunk sendiri, dan
+`scripts/check-chunk-graph.ts` menelusuri impor **statis** dari chunk tiap
+halaman sesi lalu menolak `curriculum-map`, `unit-N`, dan `wordlists`. Impor
+`import()` dinamis sengaja tidak dihitung — justru itu mekanisme yang diinginkan.
+Masuk `npm run verify`.
+
+**2. `read()` melihat tulisan tertunda.** `persistSessionResult` berpola
+baca-ubah-tulis, sementara `scheduleWrite` menunda sampai browser senggang
+(R-20). Dua sesi yang selesai di dalam satu jendela idle: yang kedua membaca
+keadaan **sebelum** yang pertama, lalu menimpanya — sesi pertama hilang tanpa
+jejak. Sulit terpicu manusia (idle callback menyala dalam satu-dua frame),
+tetapi bentuknya kehilangan data diam-diam, dan obatnya dua baris.
+
+**3. Perpindahan drill tidak lagi bergantung pada teks yang berbeda.**
+`useTypingSession` membuat sesi baru hanya saat `target` berubah, dan
+`LessonPage` memajukan drill tanpa menaikkan `runId`. Dua drill berturutan yang
+berteks sama karenanya membiarkan sesi tetap `finished`: layar menggantung tanpa
+pesan apa pun. Kurikulum hari ini nol kejadian — sudah diperiksa — jadi ini
+laten, bukan aktif. Diperbaiki di **dua** sisi, karena satu sisi saja menyisakan
+jebakan: mekanismenya (`runId` naik tiap pindah drill) dan datanya (validator
+menolak dua drill berurutan berisi teks identik).
+
+**Ketiga gerbang sudah dibuktikan merah** dengan kontrol negatif, sesuai aturan
+Fase 2: graf chunk diuji dua kali (menggabungkan ulang chunk-nya, dan mengimpor
+`index.ts` langsung dari `loadLesson.ts`); `read` diuji dengan mencabut kembali
+pembacaan `pending` — hasilnya `['s5']` alih-alih `['s4','s5']`, kehilangan yang
+persis; perpindahan drill diuji dengan menghentikan kenaikan `runId` di harness.
+
+**Konsekuensi.**
+
+- (+) Batasan "layar sesi hanya memuat unit yang diminta" akhirnya **terukur**,
+  bukan sekadar tertulis di komentar.
+- (+) Anggaran total turun (~11 KB gzip tidak lagi ikut terunduh saat membuka
+  lesson), tetapi itu efek samping — yang dikejar adalah janji arsitekturnya.
+- (−) Satu skrip gerbang lagi di `verify`, dan ia butuh `dist` hasil build.
+  Diterima: ia berjalan sesudah `build` yang memang sudah ada di rantai.
+- (−) `read()` kini mengembalikan objek yang sama dengan yang ada di antrean
+  tulis. Pemanggil yang memutasinya ikut memutasi antrean — itu justru arah yang
+  benar, tapi layak diingat kalau suatu saat ada pemanggil yang mengandaikan
+  salinan.

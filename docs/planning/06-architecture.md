@@ -165,6 +165,7 @@ wordlist, dan halaman statistik ke dalam satu bundel awal. Peta pemuatan sekaran
 | `main`      | React, router, tema, engine, layar sesi | awal                          |
 | `unit-1`    | data lesson Unit 0–1                    | awal (prefetch)               |
 | `unit-n`    | data lesson unit lain                   | saat unit dibuka              |
+| `curriculum-units` | 7 objek unit + tipe (`units.ts`) — tanpa isi drill | bersama layar sesi; ia yang dipakai `loadLesson.ts` |
 | `curriculum-map` | peta lengkap 37 lesson (`data/curriculum/en/index.ts`) | saat `/learn` dibuka; **tidak pernah** dari layar sesi |
 | `wordlists` | daftar kata & kutipan                   | saat `/practice` atau Unit 4+ |
 | `stats`     | halaman statistik + chart SVG           | saat `/stats`                 |
@@ -183,6 +184,15 @@ membengkak — ia hanya meledak sekali saat dependensi bertambah, lalu dinaikkan
   engine ~6 + layar sesi ~4 + virtual keyboard ~3 + layout/store ~2 ≈ 15 KB.
 - **Bundel awal < 105 KB gzip** (jumlah keduanya, plus CSS).
 - Total seluruh chunk < 250 KB gzip.
+
+**"Tidak pernah dari layar sesi" ditegakkan mesin** (ADR-031). `units.ts` wajib
+berada di chunk yang **terpisah** dari `index.ts`: keduanya di folder yang sama,
+sehingga satu aturan `manualChunks` yang menyapu folder itu akan menggabungkan
+mereka — dan layar sesi ikut menarik ketujuh unit tanpa satu baris impor pun
+berubah. Persis itu yang terjadi sejak Fase 3 dan tidak tertangkap anggaran, yang
+memang hanya mengukur bundel **awal**. `npm run chunkgraph` menelusuri impor
+statis dari chunk tiap halaman sesi dan menolak `curriculum-map`, `unit-N`, serta
+`wordlists`; ia bagian dari `npm run verify`.
 
 > **Angka 105 belum diukur, dan itu utang.** Ia dinaikkan dari 90 karena kepentok
 > (ADR-018), bukan karena diturunkan dari pengukuran. Utangnya dibayar di Fase 8:
