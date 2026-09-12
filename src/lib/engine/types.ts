@@ -87,6 +87,15 @@ export interface SessionState {
    * sesi dengan mode berbeda bisa hidup berdampingan (mis. test).
    */
   strict: boolean;
+  /**
+   * true = sesi berbatas waktu (ADR-032, `/practice`).
+   *
+   * Hanya memengaruhi **penilaian**: durasi dihitung sampai sesi berakhir, bukan
+   * sampai keystroke terakhir. Tanpa ini, berhenti mengetik di detik ke-2 dari
+   * sesi 15 detik melaporkan WPM dari jendela 2 detik itu saja — diukur di
+   * browser, 896 WPM untuk dua tombol. Timernya sendiri hidup di luar engine.
+   */
+  timed: boolean;
 
   /** Buffer internal yang DIPAKAI ULANG. Jangan pernah menyimpan referensinya. */
   readonly _dirty: number[];

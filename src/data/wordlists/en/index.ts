@@ -264,9 +264,66 @@ export const sentencesPunct: string[] = [
   "One question remains: what do we do if it doesn't rain?",
 ];
 
+/**
+ * Potongan angka & simbol — sumber keempat `/practice` (ADR-032).
+ *
+ * Bukan pool lesson: tidak ada satu pun drill kurikulum yang memakainya, jadi
+ * aturan kumulatif dok. 04 §5 nomor 5 tidak berlaku untuknya. Ia hidup di sini
+ * dan bukan di komponen karena dok. 06 §2 batasan 3 — teks latihan tidak pernah
+ * di-hardcode di komponen — dan supaya ia ikut chunk `wordlists` yang dimuat
+ * lazy.
+ *
+ * Bentuknya sengaja menyerupai angka yang benar-benar diketik orang (harga,
+ * tahun, versi, persen) alih-alih deret digit acak: yang dilatih adalah
+ * perpindahan tangan ke baris angka, dan itu paling nyata pada pola nyata.
+ */
+export const numbersSymbols: string[] = [
+  '2026',
+  '$18.50',
+  '47%',
+  'v2.1.0',
+  '#7',
+  '(3 + 4)',
+  '1,200',
+  'room 214',
+  '9:45',
+  'ext. 3081',
+  'x = 12',
+  '75/100',
+  '@home',
+  'lot #92',
+  '5th',
+  '0.375',
+  'A1-B2',
+  '£40',
+  '60 fps',
+  'page 128',
+  '2 * 6 = 12',
+  '~80 ms',
+  'CVE-2019',
+  '[4]',
+  '{x: 9}',
+  '1998-2007',
+  '+1 555 0134',
+  '3.14159',
+  '16 GB',
+  '50% off',
+  'no. 6',
+  '10^3',
+  'q4 2025',
+  '8 & 9',
+  '<= 25',
+  'ISO 8601',
+  '$0.99',
+  '12:30 pm',
+  'w/ 3 more',
+  '100_000',
+];
+
 export const pools: Record<string, string[]> = {
   'common-100': common100,
   'common-200': common200,
   'sentences-basic': sentencesBasic,
   'sentences-punct': sentencesPunct,
+  'numbers-symbols': numbersSymbols,
 };

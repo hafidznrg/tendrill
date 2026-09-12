@@ -40,6 +40,8 @@ export interface TypingStageProps {
    * mengukur ketikan apa adanya, dan menahan di sana mengubah yang diukur.
    */
   strict?: boolean;
+  /** Batas waktu dalam milidetik waktu aktif (ADR-032). null = tanpa batas. */
+  limitMs?: number | null;
 }
 
 export function TypingStage({
@@ -51,6 +53,7 @@ export function TypingStage({
   footer,
   active = true,
   strict = false,
+  limitMs = null,
 }: TypingStageProps) {
   const [textEl, setTextEl] = useState<HTMLElement | null>(null);
   const { charWidth, lineHeight, width, ready } = useCharMetrics(textEl);
@@ -65,6 +68,7 @@ export function TypingStage({
     ...(onExit ? { onExit } : {}),
     enabled: active && ready,
     strict,
+    limitMs,
   });
 
   const { restart, registerNextKeyPainter } = session;

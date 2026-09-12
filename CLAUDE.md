@@ -23,8 +23,16 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 4 — kode selesai (2026-09-12), sisa DoD-nya menunggu tangan
-pemilik.** Bagian bersyarat Fase 4 (mode input strict/non-strict) sudah dikerjakan
+Status sekarang: **Fase 5 — kode selesai (2026-09-12). Fase 4 masih menyisakan dua
+butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
+apakah kriteria lulusnya adil); Fase 5 dikerjakan lebih dulu atas permintaan pemilik,
+dan kedua butir itu **tidak hilang**.
+
+Yang mengikat dari Fase 5: batas waktu `/practice` adalah **waktu aktif**, dan sesi
+berbatas waktu **dinilai atas seluruh durasinya** — bukan sampai keystroke terakhir
+(ADR-032). Membalikkannya mengembalikan bug 896 WPM. Sumber teksnya wajib tetap lewat
+`import()` dinamis; `npm run chunkgraph` menjaganya.
+ Bagian bersyarat Fase 4 (mode input strict/non-strict) sudah dikerjakan
 lebih dulu karena uji pemula memutuskannya di Fase 3 (ADR-029).
 
 Yang sudah lunas di Fase 4: konten 30 lesson + 6 review (nyata, 14.858 karakter

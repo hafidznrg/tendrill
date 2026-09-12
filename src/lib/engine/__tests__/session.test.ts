@@ -350,3 +350,43 @@ describe('waktu (dok. 09 §2, R-04)', () => {
     expect(live.accuracy).toBeCloseTo(r.accuracy, 10);
   });
 });
+
+describe('sesi berbatas waktu (ADR-032)', () => {
+  /**
+   * Ditemukan di browser, bukan di test: sesi 15 detik yang diketik dua tombol
+   * lalu ditinggalkan melaporkan **896 WPM**, karena durasinya diukur sampai
+   * keystroke terakhir. Aturan lama benar untuk lesson — di sana sesi berakhir
+   * PADA keystroke terakhir — dan diam-diam salah begitu ada cara lain untuk
+   * mengakhiri sesi.
+   */
+  it('durasi dihitung sampai sesi berakhir, bukan sampai keystroke terakhir', () => {
+    const s = createSession('a'.repeat(200), COLS, { timed: true });
+    applyKey(s, 'a', 1_000);
+    applyKey(s, 'a', 1_020);
+    const r = finishSession(s, 16_000);
+
+    expect(r).not.toBeNull();
+    expect(r!.durationMs).toBe(15_000);
+    // 2 karakter dalam 15 detik = 0,4 kata/menit. Angka yang jujur.
+    expect(r!.netWPM).toBeCloseTo(1.6, 1);
+  });
+
+  it('sesi biasa tidak berubah sama sekali', () => {
+    const s = createSession('a'.repeat(200), COLS);
+    applyKey(s, 'a', 1_000);
+    applyKey(s, 'a', 1_020);
+    const r = finishSession(s, 16_000);
+
+    expect(r!.durationMs).toBe(20);
+  });
+
+  it('pause tidak ikut dihitung di sesi berbatas waktu', () => {
+    const s = createSession('a'.repeat(200), COLS, { timed: true });
+    applyKey(s, 'a', 1_000);
+    pause(s, 2_000);
+    resume(s, 7_000); // 5 detik di luar layar
+    const r = finishSession(s, 21_000);
+
+    expect(r!.durationMs).toBe(15_000);
+  });
+});

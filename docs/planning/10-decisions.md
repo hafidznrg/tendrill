@@ -1369,3 +1369,77 @@ persis; perpindahan drill diuji dengan menghentikan kenaikan `runId` di harness.
   tulis. Pemanggil yang memutasinya ikut memutasi antrean — itu justru arah yang
   benar, tapi layak diingat kalau suatu saat ada pemanggil yang mengandaikan
   salinan.
+
+---
+
+## ADR-032 — Latihan bebas: batas waktu adalah waktu **aktif**, dan teksnya sengaja lebih panjang daripada yang bisa diketik
+
+**Tanggal:** 2026-09-12 · **Status:** diterima · **Fase:** 5
+
+### Konteks
+
+Engine hanya mengenal satu cara sesi berakhir: target habis (dok. 03 §5). `/practice`
+butuh cara kedua — 15/30/60 detik — dan ada tiga pilihan yang semuanya terlihat masuk
+akal:
+
+| Pilihan | Kenapa ditolak |
+|---|---|
+| Timer wall-clock dari halaman dibuka | Menghukum pengguna yang membaca pilihan dulu. Sesi 15 detik bisa berakhir sebelum keystroke pertama |
+| Timer wall-clock dari keystroke pertama | Pause (blur/alt-tab) memakan jatah waktu. Dok. 03 §5 sudah memutuskan pause tidak dihitung untuk WPM; membuat timer tidak sepakat dengannya berarti dua definisi "waktu" di satu sesi |
+| **Waktu aktif** (terpilih) | Definisi yang sama dengan yang dipakai metrik: keystroke pertama → sekarang, dikurangi pause |
+
+### Keputusan
+
+1. **Batas waktu diukur terhadap `activeElapsedMs`.** `useTypingSession` menerima
+   `limitMs`; timernya dijadwalkan ulang tiap transisi status, dan sisa waktunya
+   dihitung ulang dari akumulator — bukan dari `Date.now()` saat sesi dimulai.
+   Konsekuensinya pause benar-benar membekukan hitungan mundur.
+2. **Sesi berbatas waktu dinilai atas seluruh durasinya**, bukan sampai keystroke
+   terakhir. Sesi 60 detik yang berhenti mengetik di detik ke-40 tetap dinilai
+   atas 60 detik.
+
+   Versi pertama ADR ini memutuskan sebaliknya — "timer menentukan kapan sesi
+   berakhir, bukan berapa lama ia dinilai" — dengan alasan WPM tidak boleh
+   diencerkan ekor diam. Itu **salah**, dan ketahuannya bukan dari penalaran
+   melainkan dari membuka halamannya: dua tombol ditekan lalu ditinggalkan pada
+   sesi 15 detik melaporkan **896 WPM**, dan angka itu masuk ke riwayat. Aturan
+   lama benar untuk lesson — di sana sesi memang berakhir PADA keystroke terakhir
+   — dan diam-diam salah begitu ada cara kedua untuk mengakhiri sesi.
+
+   Implementasinya: `createSession(..., { timed: true })`, dan `computeResult`
+   memakai `activeElapsedMs(s, s.endedAt)` untuk sesi bertanda itu. Pause tetap
+   tidak dihitung, jadi definisi "waktu aktif" tetap satu.
+3. **Teks dibangkitkan untuk 200 WPM.** Panjang target = `detik × 200 × 5 / 60`
+   karakter (15s → 250, 30s → 500, 60s → 1000). Rekor dunia sustained ada di bawah
+   angka itu, jadi mode timer berhenti karena waktunya habis. Kalau teksnya habis
+   lebih dulu, sesi berakhir normal — itu bukan kasus yang perlu ditangani khusus.
+   Mode "sampai selesai" memakai 240 karakter, satu paragraf.
+4. **Empat sumber teks**, dan salah satunya berganti nama dari rencana:
+   kata umum (`common-200`), kalimat (`sentences-basic`), kalimat bertanda baca
+   (`sentences-punct`), angka & simbol (`numbers-symbols`, pool baru).
+   Dok. 02 §6 v1 menulis "kutipan" — pool kutipan tidak pernah ditulis dan
+   memasukkan kutipan orang lain menyeret pertanyaan lisensi yang dok. 04 §13
+   sengaja hindari (semua konten ditulis/dikurasi sendiri). Pool kalimat sudah ada,
+   sudah dikurasi, dan melatih hal yang sama.
+5. **Latihan bebas tidak menyentuh kurikulum sama sekali.** Ia menulis
+   `typing:sessions` (`source: 'practice'`, `mode`) dan `typing:keystats`, dan
+   **tidak** `typing:progress`. Tidak ada kriteria lulus di layar hasilnya —
+   `ResultScreen` sudah menerima `criteria: null` sejak Fase 2.
+
+### Konsekuensi
+
+- (+) Satu definisi "waktu" di seluruh aplikasi. Timer, WPM, dan jam di bilah
+  metrik ketiganya membaca `activeElapsedMs`.
+- (+) `limitMs` hidup di `useTypingSession`, bukan di `PracticePage`, jadi ia
+  **nol biaya per keystroke**: satu `setTimeout` per transisi status, bukan
+  pemeriksaan di jalur input.
+- (−) Pengguna yang alt-tab di tengah sesi 60 detik menghabiskan lebih dari 60
+  detik wall-clock. Itu memang yang diinginkan, tapi ia bisa terlihat "salah"
+  bagi yang mengukur dengan stopwatch di sebelahnya.
+- (−) `SessionState` bertambah satu bendera, dan `computeResult` bercabang.
+  Diterima karena cabangnya satu baris dan dijaga test sesi biasa yang menuntut
+  perilakunya **tidak** berubah — tanpa itu, cabang ini bisa menelan lesson.
+- (−) Teks 1000 karakter untuk sesi 60 detik berarti ~950 karakter dibangkitkan
+  percuma. Diterima: pembangkitannya pure dan di luar jalur input, dan
+  alternatifnya (menyambung teks di tengah sesi) adalah persis mutasi target yang
+  ADR-028 larang.

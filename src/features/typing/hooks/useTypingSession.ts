@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  activeElapsedMs,
   applyBackspace,
   applyKey,
   computeLiveMetrics,
@@ -65,6 +66,11 @@ export interface UseTypingSessionOptions {
   enabled?: boolean;
   /** true = mode strict: tombol salah menahan kursor (ADR-029). */
   strict?: boolean;
+  /**
+   * Batas waktu sesi dalam milidetik **waktu aktif** (ADR-032), atau null/undefined
+   * untuk sesi yang berakhir saat targetnya habis — yaitu seluruh lesson.
+   */
+  limitMs?: number | null;
 }
 
 export interface TypingSessionApi {
@@ -93,11 +99,16 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     onExit,
     enabled = true,
     strict = false,
+    limitMs = null,
   } = options;
+
+  // Sesi berbatas waktu dinilai berbeda di akhir (ADR-032), jadi benderanya ikut
+  // masuk saat sesi dibuat — bukan ditambahkan belakangan.
+  const timed = limitMs !== null;
 
   const sessionRef = useRef<SessionState>(null as unknown as SessionState);
   if (sessionRef.current === null || sessionRef.current.target !== target) {
-    sessionRef.current = createSession(target, cols, { strict });
+    sessionRef.current = createSession(target, cols, { strict, timed });
   }
 
   const spansRef = useRef<HTMLElement[]>([]);
@@ -121,7 +132,10 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   const colsRef = useRef(cols);
   useEffect(() => {
     colsRef.current = cols;
-    sessionRef.current = createSession(target, cols, { strict: strictRef.current });
+    sessionRef.current = createSession(target, cols, {
+      strict: strictRef.current,
+      timed: timedRef.current,
+    });
     setStatus(sessionRef.current.status);
     setMetrics(EMPTY_METRICS);
     setVoided(false);
@@ -132,6 +146,9 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   // Mode diganti di tengah drill: pindahkan benderanya, JANGAN bangun ulang sesi
   // (ADR-029). Membangun ulang akan menghapus ketikan pengguna tepat saat ia
   // mencoba mode yang lain — alasan yang sama dengan ADR-028.
+  const timedRef = useRef(timed);
+  timedRef.current = timed;
+
   const strictRef = useRef(strict);
   useEffect(() => {
     strictRef.current = strict;
@@ -230,7 +247,12 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     const result = finishSession(s, performance.now());
     setStatus('finished');
     setVoided(s.voided);
-    setMetrics(computeLiveMetrics(s, s.acc.lastKeystrokeAt));
+    // Bilah metrik dibekukan pada titik yang SAMA dengan yang dipakai layar
+    // hasil (ADR-032). Tanpa cabang `timed`, sesi berbatas waktu memperlihatkan
+    // dua angka sekaligus: 1039 WPM di bilah dan 1,6 WPM di layar hasil —
+    // terlihat langsung saat halamannya dibuka.
+    const until = s.timed && s.endedAt !== null ? s.endedAt : s.acc.lastKeystrokeAt;
+    setMetrics(computeLiveMetrics(s, until));
     onFinish?.(result);
   }, [onFinish]);
 
@@ -288,6 +310,30 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   );
 
   useKeyboardCapture(handlers, enabled && status !== 'finished');
+
+  // --- batas waktu latihan bebas (ADR-032) ----------------------------------
+
+  // Sisa waktu dihitung ulang dari `activeElapsedMs`, bukan dari jam dinding saat
+  // sesi dimulai. Itulah yang membuat pause benar-benar membekukan hitungan
+  // mundur, dan yang membuat timer memakai definisi "waktu" yang sama dengan
+  // WPM di bilah metrik.
+  //
+  // Satu `setTimeout` per transisi status — bukan pemeriksaan di jalur
+  // keystroke, yang akan melanggar anggaran Fase 1.
+  const finishRef = useRef(finish);
+  finishRef.current = finish;
+
+  useEffect(() => {
+    if (limitMs === null || status !== 'running') return;
+    const remaining = limitMs - activeElapsedMs(sessionRef.current, performance.now());
+    const id = setTimeout(
+      () => {
+        if (sessionRef.current.status === 'running') finishRef.current();
+      },
+      remaining > 0 ? remaining : 0,
+    );
+    return () => clearTimeout(id);
+  }, [limitMs, status]);
 
   // --- fokus hilang → pause (R-05) ------------------------------------------
 

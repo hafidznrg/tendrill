@@ -78,7 +78,13 @@ export function computeLiveMetrics(s: SessionState, nowMs: number): LiveMetrics 
  */
 export function computeResult(s: SessionState): SessionResult {
   const { acc, log } = s;
-  const durationMs = activeElapsedMs(s);
+  // Sesi berbatas waktu dinilai sampai ia BERAKHIR, bukan sampai keystroke
+  // terakhir (ADR-032). Untuk sesi biasa keduanya sama — `finishSession`
+  // dipanggil tepat pada keystroke yang menghabiskan target — jadi cabang ini
+  // hanya menggigit di `/practice`, dan di sana ia yang benar: berhenti
+  // mengetik tidak boleh menaikkan WPM.
+  const durationMs =
+    s.timed && s.endedAt !== null ? activeElapsedMs(s, s.endedAt) : activeElapsedMs(s);
   const total = acc.total;
   const correct = acc.correct;
 

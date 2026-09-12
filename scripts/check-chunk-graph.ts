@@ -24,8 +24,15 @@ import { fileURLToPath } from 'node:url';
 
 const ASSETS = join(fileURLToPath(new URL('..', import.meta.url)), 'dist', 'assets');
 
-/** Chunk halaman sesi — titik awal penelusuran. */
-const SESSION_ENTRIES = ['LessonPage', 'PlacementPage'];
+/**
+ * Chunk halaman sesi — titik awal penelusuran.
+ *
+ * `PracticePage` ikut sejak Fase 5: ia MEMANG memakai wordlist, tetapi lewat
+ * `import()` dinamis (ADR-032). Mengubahnya menjadi impor statis akan menarik
+ * seluruh pool ke chunk halamannya tanpa satu test pun merah — persis bentuk
+ * kegagalan yang melahirkan gerbang ini.
+ */
+const SESSION_ENTRIES = ['LessonPage', 'PlacementPage', 'PracticePage'];
 
 /**
  * Chunk yang tidak boleh tercapai secara statis dari halaman sesi.

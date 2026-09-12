@@ -42,6 +42,8 @@ export interface InternalSessionState extends SessionState {
 export interface SessionOptions {
   /** true = mode strict: tombol salah menahan kursor (ADR-029). */
   strict?: boolean;
+  /** true = sesi berbatas waktu (ADR-032): durasi dinilai sampai sesi berakhir. */
+  timed?: boolean;
 }
 
 export function createSession(
@@ -70,6 +72,7 @@ export function createSession(
     // default per halaman adalah UI (ADR-029: strict di /learn, non-strict di
     // /practice), dan itu memang keputusan produk, bukan keputusan engine.
     strict: options.strict === true,
+    timed: options.timed === true,
     _dirty: [],
     _result: null,
     _firstOk: new Uint8Array(target.length),

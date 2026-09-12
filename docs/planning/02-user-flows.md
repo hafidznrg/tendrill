@@ -149,14 +149,23 @@ akan membingungkan lebih daripada membantu.
 ```
 /practice
   └─ Pilih: durasi (15 / 30 / 60 detik / sampai selesai)
-           sumber teks (kata umum / kutipan / kata dengan tanda baca / angka+simbol)
+           sumber teks (kata umum / kalimat / kalimat bertanda baca / angka & simbol)
        └─ Sesi (state machine sama seperti di atas)
             └─ Hasil (tanpa kriteria lulus — murni skor)
+                 └─ Riwayat 10 sesi latihan bebas terakhir, di bawah pilihan
 
 Latihan bebas tidak punya kriteria kelulusan dan tidak memengaruhi unlock kurikulum,
 tetapi hasilnya **tetap masuk** ke `keystats` — jadi ikut membentuk heatmap dan
 latihan adaptif.
 ```
+
+**Batas waktu dihitung terhadap waktu AKTIF** (ADR-032): ia mulai pada keystroke
+pertama, bukan saat halaman dibuka, dan berhenti selama sesi di-pause. Teks
+dibangkitkan lebih panjang daripada yang bisa diketik siapa pun dalam durasi itu,
+jadi mode timer berakhir karena waktunya habis — bukan karena teksnya habis.
+
+Sumber "kutipan" di v1 diganti "kalimat": pool kutipan tidak pernah ditulis (dok.
+04 §13), sedangkan pool kalimat sudah ada dan sudah dikurasi sendiri (ADR-032).
 
 ## 7. Flow pengaturan & data
 

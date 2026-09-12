@@ -342,8 +342,9 @@ dok. 10 dinaikkan menjadi ADR-029 → baru kode. Sisa Fase 4 tetap seperti di ba
       **kedua** mode berdampingan, dan bagian non-strict-nya tetap berlaku karena mode
       itu masih ada. Kepalanya diberi peringatan eksplisit supaya berkas yang hijau ini
       tidak dibaca sebagai "jadi `/learn` non-strict"
-- [ ] *Belum:* `/practice` sendiri baru ada di Fase 5, jadi default non-strict di sana
-      belum pernah berjalan di layar — hanya nilainya yang sudah benar
+- [x] Default non-strict di `/practice` **berjalan di layar** — lunas 2026-09-12
+      bersama Fase 5; `practiceFlow.test.tsx` memeriksa sakelarnya benar-benar
+      dirender bermode "bebas", bukan sekadar nilainya benar di storage
 
 ---
 
@@ -354,9 +355,33 @@ Halaman `/practice`: durasi 15/30/60 detik, sumber teks, riwayat.
 Turun prioritas dari Fase 3 (v1) — ini fitur yang menyenangkan, bukan fitur yang
 membuktikan produk. Storage-nya sudah selesai sejak Fase 1, jadi tinggal UI.
 
-**DoD**
-- [ ] Mode timer berhenti tepat waktu
-- [ ] Sumber teks dimuat lazy (chunk `wordlists`)
+**DoD** — kode selesai 2026-09-12
+- [x] **Mode timer berhenti tepat waktu** — `practiceFlow.test.tsx`, dengan
+      kontrol negatif di kedua arah: sesi masih berjalan di detik ke-14,6 dan
+      berakhir sesudah 15. Gerbangnya sudah dibuktikan merah (timer dimatikan →
+      3 test langsung gagal). Batasnya waktu **aktif** (ADR-032), jadi ia sepakat
+      dengan definisi waktu yang dipakai WPM sejak Fase 1.
+- [x] **Sumber teks dimuat lazy (chunk `wordlists`)** — `PracticePage` masuk
+      daftar entri `scripts/check-chunk-graph.ts`, dan gerbangnya dibuktikan
+      merah dengan mengubah `import()`-nya menjadi impor statis. Sumber saja
+      tidak cukup membuktikan ini (ADR-031).
+- [x] Riwayat 10 sesi latihan bebas terakhir, disaring dari `typing:sessions` —
+      bukan penyimpanan baru yang bisa menyimpang dari sesi sebenarnya.
+
+> **Catatan penutup Fase 5.** Pelajaran Fase 2 nomor 3 ("curigai yang belum
+> pernah diuji dari arah lain") terbukti lagi, dan kali ini oleh **membuka
+> halamannya**, bukan oleh test:
+>
+> | Yang ditemukan | Ditemukan oleh | Kalau lolos |
+> |---|---|---|
+> | Sesi 15 detik yang diketik dua tombol lalu ditinggalkan melaporkan **896 WPM** | menjalankan `/practice` di browser | Riwayat dan `daily` pengguna terisi angka fiktif, dan grafik Fase 6 dibangun di atasnya |
+>
+> Bentuknya sama dengan yang sudah dua kali muncul: **aturan yang benar selama
+> hanya ada satu jalan keluar.** `durationMs` sampai keystroke terakhir benar
+> untuk lesson — di sana sesi berakhir PADA keystroke terakhir — dan salah
+> diam-diam begitu timer menjadi cara kedua mengakhiri sesi. ADR-032 ditulis
+> dengan keputusan yang salah, lalu dikoreksi di ADR yang sama; yang berubah
+> bukan hanya kodenya melainkan alasannya.
 
 ---
 
