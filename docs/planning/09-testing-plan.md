@@ -155,12 +155,14 @@ paling murah terhadap regresi diam-diam.
       yang menolak lulus kalau ada satu pun entri `longtask`. **Nol, 2026-09-12**
       (maks frame 11,1 ms, jauh di bawah 50)
 - [ ] Nol "forced reflow" di panel Performance (R-06)
-- [ ] **Nol layout shift**, diukur `scripts/perf-layout.js` (`watchCLS()`): jalankan,
+- [x] **Nol layout shift**, diukur `scripts/perf-layout.js`: jalankan,
       lalu **refresh keras** supaya pemuatan webfont dari nol ikut terekam.
       Urutannya: **refresh keras dulu, baru tempel skripnya** — `buffered: true`
       membuat observer tetap menerima entri yang lahir sebelum ia dibuat, jadi
       tidak perlu melawan hilangnya skrip saat refresh.
-      **Terukur 2026-09-12: CLS 0,0501 — GAGAL.** Dua sumber: (a) 0,0497 dari
+      **Terukur ulang 2026-09-12 sesudah ketiga perbaikan: CLS 0 — LULUS**
+      (`clsSekarang()` nol shift, `watchCLS()` nol shift).
+      Sebelumnya **0,0501 — gagal.** Dua sumber: (a) 0,0497 dari
       `.ta-root` yang lahir setinggi **0 px** karena tingginya diturunkan dari
       `lineHeight` hasil pengukuran, dan angka itu 0 sampai `document.fonts.ready`
       selesai — virtual keyboard di bawahnya ikut melompat 129,6 px; (b) 0,00035
@@ -176,9 +178,11 @@ paling murah terhadap regresi diam-diam.
 - [ ] **Caret presisi** (R-06), diukur `scripts/perf-layout.js` (`caretCheck()`).
       Yang diperiksa bukan posisi caret sekarang melainkan **kolom terjauh di tiap
       baris** — posisi caret aritmetika, jadi error `charWidth` MENUMPUK ke kanan.
-      Sebagian terukur 2026-09-12: setelah `fonts.ready` dan setelah resize,
-      `charWidth` 14,4 px dan **0 meleset di 35 kolom**. **Zoom browser (Ctrl +/-)
-      belum diuji** — belum bisa dikendalikan dari panel otomasi.
+      Terukur 2026-09-12 di browser pemilik: `charWidth` **14,4 px** (JetBrains
+      Mono, bukan fallback), `kolomTerjauhMeleset` **0**, `selisihCaret` **0**.
+      Setelah resize juga 0. **Zoom browser (Ctrl +/-) belum diuji** — belum bisa
+      dikendalikan dari panel otomasi, dan justru di situ pembulatan sub-piksel
+      paling mungkin muncul.
 - [ ] Waktu ke keystroke pertama < 3 detik pada Fast 3G ter-throttle,
       diukur dengan `performance.mark` (R-24)
 

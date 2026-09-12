@@ -109,8 +109,9 @@ penyimpanan hasil saat idle.
       `fingerMap.test.ts` + `VirtualKeyboard.test.tsx`
 - [ ] Nol layout shift saat mengetik; caret tetap presisi setelah webfont termuat
       dan setelah resize/zoom (R-06) — *manual: `layout-shift` butuh paint, dan panel
-      otomasi tidak menggambar.* Diukur `scripts/perf-layout.js`. **Dua sumber sudah
-      ditutup, satu tersisa:**
+      otomasi tidak menggambar.* Diukur `scripts/perf-layout.js`.
+      **CLS 0 dan caret 0 meleset (2026-09-12). Tersisa satu: uji zoom.**
+      Tiga sumber pergeseran ditemukan dan ditutup semuanya:
       - ✅ scrollbar lahir saat layar hasil muncul, menggeser halaman **−7,6 px** —
         `scrollbar-gutter: stable`
       - ✅ `.ta-root` lahir setinggi **0 px** lalu melompat 129,6 px karena tingginya
@@ -119,8 +120,9 @@ penyimpanan hasil saat idle.
       - ✅ nav bergeser **0,00035** saat webfont menggantikan fallback — fallback
         kini ber-`size-adjust: 109,1296%` sehingga advance-nya identik dengan
         JetBrains Mono (ADR-023); selisih sisa 0,2 px di baris penuh 52 kolom
-      - ✅ caret: **0 meleset di 35 kolom** setelah `fonts.ready` dan setelah resize;
-        zoom browser belum diuji
+      - ✅ caret: `charWidth` **14,4 px**, **0 meleset**, `selisihCaret` **0** setelah
+        `fonts.ready` dan setelah resize
+      - ⬜ **caret setelah zoom browser (Ctrl +/-)** — satu-satunya yang belum diuji
 - [x] Sesi tersimpan setelah selesai, nol penulisan saat berjalan —
       `sessionFlow.test.tsx` + `persistSession.test.ts`
 - [x] Seluruh alur sesi bisa dijalankan tanpa mouse — `sessionFlow.test.tsx`
