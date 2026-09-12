@@ -181,6 +181,23 @@ for (const lesson of lessons) {
   }
 }
 
+// 5c. tidak ada dua drill BERURUTAN dengan isi identik
+//
+// Bukan soal selera: layar sesi membuat sesi engine baru saat teks target
+// berubah, jadi dua drill berturutan yang berteks sama pernah bisa membuat
+// layarnya menggantung. Mekanismenya sudah diperbaiki (runId ikut naik tiap
+// pindah drill, dijaga `drillAdvance.test.tsx`), dan aturan ini menjaga sisi
+// datanya — drill kembar berurutan juga sekadar membuang waktu pengguna.
+for (const lesson of lessons) {
+  for (let i = 1; i < lesson.drills.length; i++) {
+    const before = lesson.drills[i - 1]!;
+    const current = lesson.drills[i]!;
+    if (current.content !== undefined && current.content === before.content) {
+      fail(lesson.id, `drill#${i} dan drill#${i + 1} isinya identik`);
+    }
+  }
+}
+
 // 6. kriteria lulus
 for (const unit of curriculum.units) {
   if (unit.id === 'u0') continue;

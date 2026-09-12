@@ -153,6 +153,13 @@ export default function LessonPage() {
       const all = drills ?? [];
       if (drillIndex < all.length - 1) {
         setDrillIndex(drillIndex + 1);
+        // `runId` ikut naik, dan itu WAJIB — bukan sekadar kerapian.
+        // `useTypingSession` hanya membuat sesi baru kalau `target` BERUBAH.
+        // Dua drill berturutan yang kebetulan berteks sama karenanya akan
+        // membiarkan sesi tetap `finished`: `onFinish` tidak pernah menyala
+        // lagi dan layarnya menggantung. Menaikkan `runId` membuat perpindahan
+        // drill tidak lagi bergantung pada teksnya berbeda.
+        setRunId((n) => n + 1);
         return;
       }
 
