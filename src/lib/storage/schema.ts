@@ -164,6 +164,16 @@ export interface MetaData {
    * field lama tetap wajib menaikkan versi.
    */
   postureSeenAt?: number;
+  /**
+   * Kapan tes kelulusan kursus (40 WPM / 95%, dok. 04 §4a · ADR-030) pertama
+   * kali lulus. Opsional & aditif, jadi TANPA migrasi.
+   *
+   * Ditulis sekali dan tidak pernah dicabut: gagal lagi besok bukan alasan
+   * menghapus hari itu. Di `meta`, bukan di `progress.lessons['u6-review']`,
+   * karena ini fakta tentang PENGGUNA — `u6-review` bisa lulus tanpa kelulusan
+   * kursus, dan sebaliknya.
+   */
+  graduatedAt?: number;
 }
 
 export interface StorageShape {

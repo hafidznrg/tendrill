@@ -41,3 +41,21 @@ export function writeInputMode(surface: InputModeSurface, mode: InputMode): void
     inputMode: { ...DEFAULT_INPUT_MODE, ...settings.inputMode, [surface]: mode },
   });
 }
+
+/**
+ * Kelulusan kursus (ADR-030).
+ *
+ * `markGraduated` sengaja tidak menimpa nilai yang sudah ada: tanggal kelulusan
+ * pertama adalah yang bermakna, dan mengulang `u6-review` sebulan kemudian tidak
+ * memindahkannya.
+ */
+export function graduatedAt(): number | null {
+  const at = read(STORAGE_KEYS.meta).graduatedAt;
+  return typeof at === 'number' ? at : null;
+}
+
+export function markGraduated(at: number = Date.now()): void {
+  const meta = read(STORAGE_KEYS.meta);
+  if (typeof meta.graduatedAt === 'number') return;
+  write(STORAGE_KEYS.meta, { ...meta, graduatedAt: at });
+}
