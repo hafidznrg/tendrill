@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { curriculum, keysIntroducedThrough } from '@/data/curriculum/en/index.ts';
 import type { Lesson } from '@/data/curriculum/en/types.ts';
 import type { KeystatsData } from '@/lib/storage/schema.ts';
-import { microDrillFor, resolveDrills } from '../drills.ts';
+import { microDrillFor, resolveDrills, resolveDrillTexts } from '../drills.ts';
 
 /**
  * Drill yang **dibangkitkan runtime** (dok. 09 §4).
@@ -50,7 +50,7 @@ describe('resolveDrills', () => {
       // Dijalankan dengan DAN tanpa statistik: bobot mengubah pilihan karakter,
       // jadi satu jalan saja tidak membuktikan apa pun.
       for (const stats of [{}, STATS]) {
-        const texts = await resolveDrills(lesson, stats);
+        const texts = await resolveDrillTexts(lesson, stats);
         expect(texts.length).toBeGreaterThanOrEqual(3);
         for (const text of texts) {
           for (const char of text) {
@@ -66,14 +66,14 @@ describe('resolveDrills', () => {
 
   it('placement memang boleh menyentuh seluruh keyboard', async () => {
     const placement = lessons.find((l) => l.kind === 'placement')!;
-    const texts = await resolveDrills(placement);
+    const texts = await resolveDrillTexts(placement);
     expect(texts).toHaveLength(1);
     expect(texts[0]!.length).toBeGreaterThan(200);
   });
 
   it('review session jalan dengan keystats kosong — bobot seragam (R-16)', async () => {
     const review = lessons.find((l) => l.id === 'u1-review')!;
-    const texts = await resolveDrills(review, {});
+    const texts = await resolveDrillTexts(review, {});
     expect(texts.length).toBeGreaterThanOrEqual(3);
     for (const text of texts) expect(text.length).toBeGreaterThan(0);
   });
@@ -81,8 +81,8 @@ describe('resolveDrills', () => {
   it('review session yang personal berbeda dari yang seragam', async () => {
     const review = lessons.find((l) => l.id === 'u1-review')!;
     // Drill dinamis pertama: tanpa statistik vs dengan "a" dan ";" yang buruk.
-    const plain = (await resolveDrills(review, {}, seeded(4)))[0]!;
-    const personal = (await resolveDrills(review, STATS, seeded(4)))[0]!;
+    const plain = (await resolveDrillTexts(review, {}, seeded(4)))[0]!;
+    const personal = (await resolveDrillTexts(review, STATS, seeded(4)))[0]!;
     expect(personal).not.toBe(plain);
     const share = (text: string) => [...text].filter((c) => c === 'a' || c === ';').length;
     expect(share(personal)).toBeGreaterThan(share(plain));
@@ -103,7 +103,7 @@ describe('resolveDrills', () => {
         { type: 'letters', generator: 'static', content: 'fff jjj' },
       ],
     };
-    expect(await resolveDrills(lesson)).toEqual(['fff jjj']);
+    expect(await resolveDrillTexts(lesson)).toEqual(['fff jjj']);
   });
 
   it('pool yang tidak dikenal jatuh ke drill huruf, bukan crash', async () => {
@@ -120,8 +120,55 @@ describe('resolveDrills', () => {
         { type: 'words', generator: 'weighted-random', length: 60, pool: 'tidak-ada' },
       ],
     };
-    const texts = await resolveDrills(lesson);
+    const texts = await resolveDrillTexts(lesson);
     expect(texts[0]).toHaveLength(60);
+  });
+
+  /**
+   * Penanda tes kelulusan (ADR-030) harus tetap menempel pada TEKSNYA setelah
+   * drill kosong dibuang. Dulu ini dua daftar terpisah, dan dua daftar yang bisa
+   * bergeser sendiri-sendiri adalah bentuk bug yang sudah dua kali memakan
+   * proyek ini.
+   */
+  it('penanda graduation ikut bergeser saat drill kosong dibuang', async () => {
+    const lesson: Lesson = {
+      id: 'x-3',
+      unitId: 'u1',
+      order: 1,
+      kind: 'review',
+      title: 'x',
+      newKeys: [],
+      reviewKeys: ['f', 'j'],
+      passCriteria: { minWpm: 10, minAccuracy: 90 },
+      drills: [
+        { type: 'letters', generator: 'static', content: '   ' },
+        { type: 'letters', generator: 'static', content: 'fff' },
+        { type: 'letters', generator: 'static', graduation: true, content: 'jjj' },
+      ],
+    };
+    expect(await resolveDrills(lesson)).toEqual([
+      { text: 'fff', graduation: false },
+      { text: 'jjj', graduation: true },
+    ]);
+  });
+
+  it('u6-review: tepat dua drill graduation, dan sisanya tetap dinilai', async () => {
+    const review = lessons.find((l) => l.id === 'u6-review')!;
+    const resolved = await resolveDrills(review, {});
+    expect(resolved.filter((d) => d.graduation)).toHaveLength(2);
+    expect(resolved.filter((d) => !d.graduation).length).toBeGreaterThan(0);
+    // Drill prosa yang penuh angka & simbol justru BUKAN tes kelulusan — persis
+    // yang dok. 04 §4a minta dikeluarkan.
+    const symbols = resolved.find((d) => d.text.includes('#4021'));
+    expect(symbols?.graduation).toBe(false);
+  });
+
+  it('lesson biasa tidak punya satu pun drill graduation', async () => {
+    for (const id of ['u1-l1', 'u3-review', 'u5-review', 'u6-l5']) {
+      const lesson = lessons.find((l) => l.id === id)!;
+      const resolved = await resolveDrills(lesson, {});
+      expect(resolved.some((d) => d.graduation), id).toBe(false);
+    }
   });
 });
 

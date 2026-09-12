@@ -5,7 +5,7 @@ import { persistSessionResult } from '@/features/typing/persistSession.ts';
 import {
   applyPlacement,
   loadUnitLessons,
-  resolveDrills,
+  resolveDrillTexts,
   useProgress,
   weakSkippedCluster,
   type PlacementTier,
@@ -53,7 +53,7 @@ export default function PlacementPage() {
     void loadUnitLessons('u0').then(async (lessons: Lesson[]) => {
       const placement = lessons[0];
       if (cancelled || !placement) return;
-      const texts = await resolveDrills(placement);
+      const texts = await resolveDrillTexts(placement);
       if (cancelled) return;
       setTarget(texts[0] ?? null);
     });

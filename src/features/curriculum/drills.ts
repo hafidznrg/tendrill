@@ -58,22 +58,45 @@ function oneDrill(
   return generateLetterDrill(shape);
 }
 
+/** Satu drill yang sudah menjadi teks, beserta perannya dalam penilaian. */
+export interface ResolvedDrill {
+  text: string;
+  /** Bagian tes kelulusan kursus, bukan penilaian lesson (dok. 04 §4a, ADR-030). */
+  graduation: boolean;
+}
+
 /**
  * Semua drill sebuah lesson, berurutan, siap diketik.
  *
  * Yang kosong dibuang: sebuah drill kosong akan menyelesaikan sesinya sendiri
  * tanpa satu pun keystroke, dan itu terlihat seperti drill yang dilewati.
+ *
+ * Penanda `graduation` ikut dikembalikan **bersama teksnya**, bukan sebagai
+ * daftar indeks terpisah: pembuangan drill kosong di atas menggeser indeks, dan
+ * dua sumber indeks yang bisa bergeser sendiri-sendiri adalah persis bentuk bug
+ * yang sudah dua kali memakan proyek ini (catatan penutup Fase 3).
  */
 export async function resolveDrills(
   lesson: Lesson,
   stats: DrillStats = {},
   random: () => number = Math.random,
-): Promise<string[]> {
+): Promise<ResolvedDrill[]> {
   const pools = needsPools(lesson) ? await loadPools() : {};
   return lesson.drills
-    .map((drill) => oneDrill(drill, lesson, stats, pools, random))
-    .map((text) => text.trim())
-    .filter((text) => text.length > 0);
+    .map((drill) => ({
+      text: oneDrill(drill, lesson, stats, pools, random).trim(),
+      graduation: drill.graduation === true,
+    }))
+    .filter((d) => d.text.length > 0);
+}
+
+/** Teksnya saja — untuk pemanggil yang tidak peduli pembagian penilaian. */
+export async function resolveDrillTexts(
+  lesson: Lesson,
+  stats: DrillStats = {},
+  random: () => number = Math.random,
+): Promise<string[]> {
+  return (await resolveDrills(lesson, stats, random)).map((d) => d.text);
 }
 
 /** Panjang drill mikro — sekitar 30 detik untuk pemula (dok. 04 §9 percobaan 3). */
