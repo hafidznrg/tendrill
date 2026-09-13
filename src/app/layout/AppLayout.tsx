@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
+import { RouteErrorBoundary } from './ErrorBoundary';
 import { ThemeToggle } from './ThemeToggle';
 import markUrl from '@/assets/brand/mark.svg';
 import { prefetchSessionPath } from '../prefetch.ts';
@@ -14,6 +15,7 @@ const NAV = [
 export function AppLayout() {
   // Jalur sesi disiapkan di latar sejak halaman mana pun dibuka (dok. 06 §6).
   useEffect(prefetchSessionPath, []);
+  const { pathname } = useLocation();
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
@@ -47,9 +49,13 @@ export function AppLayout() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <Suspense fallback={<p className="text-fg-dim">memuat…</p>}>
-          <Outlet />
-        </Suspense>
+        {/* Boundary di dalam layout, direset saat rute berganti (dok. 02 §9): navigasi tetap
+            hidup saat satu halaman gagal, dan pindah rute membersihkan error-nya. */}
+        <RouteErrorBoundary resetKey={pathname}>
+          <Suspense fallback={<p className="text-fg-dim">memuat…</p>}>
+            <Outlet />
+          </Suspense>
+        </RouteErrorBoundary>
       </main>
     </div>
   );

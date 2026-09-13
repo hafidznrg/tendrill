@@ -17,6 +17,8 @@ import {
   type SessionState,
   type SessionStatus,
 } from '@/lib/engine';
+import { read, STORAGE_KEYS } from '@/lib/storage';
+import type { Clicker } from '@/lib/sound/keyClick.ts';
 import { useKeyboardCapture } from './useKeyboardCapture.ts';
 
 /**
@@ -271,6 +273,22 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     setStatus(s.status);
   }, []);
 
+  // Suara ketik opsional (ADR-035): dibaca sekali saat layar sesi dibuka, dan
+  // modulnya hanya diunduh kalau menyala. Ref, bukan state — jalur keystroke
+  // tidak boleh memicu render.
+  const clickRef = useRef<Clicker | null>(null);
+  useEffect(() => {
+    if (!read(STORAGE_KEYS.settings).soundEnabled) return;
+    let cancelled = false;
+    void import('@/lib/sound/keyClick.ts').then((m) => {
+      if (!cancelled) clickRef.current = m.createClicker();
+    });
+    return () => {
+      cancelled = true;
+      clickRef.current = null;
+    };
+  }, []);
+
   const handlers = useMemo(
     () => ({
       onChar: (char: string) => {
@@ -288,6 +306,7 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
 
         paintDirty(outcome.dirty);
         if (outcome.cursorMoved) paintCaret();
+        clickRef.current?.();
 
         // Transisi status = perubahan struktural, bukan per-keystroke.
         if (wasIdle || wasPaused) setStatus('running');

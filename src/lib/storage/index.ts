@@ -1,5 +1,7 @@
 import { migrate } from './migrations.ts';
+import { readStoredTheme, writeTheme } from './theme.ts';
 import {
+  CURRENT_VERSION,
   DEFAULTS,
   MAX_CONFUSIONS,
   MAX_DAILY_DAYS,
@@ -381,6 +383,11 @@ export function clearAll(): void {
   pending.clear();
 }
 
+function themeField(): { theme?: 'light' | 'dark' } {
+  const theme = readStoredTheme();
+  return theme ? { theme } : {};
+}
+
 export function exportAll(): string {
   return JSON.stringify({
     app: EXPORT_APP,
@@ -390,7 +397,10 @@ export function exportAll(): string {
       progress: read(STORAGE_KEYS.progress),
       sessions: read(STORAGE_KEYS.sessions),
       keystats: read(STORAGE_KEYS.keystats),
-      settings: read(STORAGE_KEYS.settings),
+      // Tema aktif hidup di key `tendrill.theme` (dibaca skrip inline sebelum
+      // paint), bukan di `typing:settings`. Ia dicerminkan saat ekspor, bukan
+      // saat toggle — toggle ada di bundel awal, lapisan storage tidak (ADR-035).
+      settings: { ...read(STORAGE_KEYS.settings), ...themeField() },
       meta: read(STORAGE_KEYS.meta),
     },
   });
@@ -422,6 +432,19 @@ export function importAll(json: string): ImportOutcome {
   if (root['app'] !== EXPORT_APP) {
     return { ok: false, error: 'Berkas ini bukan ekspor tendrill.' };
   }
+  // dok. 05 §6: `schemaVersion` diperiksa sebelum menulis apa pun. Ekspor dari
+  // versi app yang lebih baru tidak bisa dibaca dengan jujur oleh versi ini.
+  const schemaVersion = root['schemaVersion'];
+  if (
+    typeof schemaVersion !== 'number' ||
+    !Number.isInteger(schemaVersion) ||
+    schemaVersion < 1
+  ) {
+    return { ok: false, error: 'Berkas ekspor tidak menyebut versi skema.' };
+  }
+  if (schemaVersion > CURRENT_VERSION) {
+    return { ok: false, error: 'Berkas ini dibuat versi tendrill yang lebih baru.' };
+  }
   if (typeof root['data'] !== 'object' || root['data'] === null) {
     return { ok: false, error: 'Berkas ekspor tidak memuat data.' };
   }
@@ -446,12 +469,23 @@ export function importAll(json: string): ImportOutcome {
     }
   }
 
-  // Semua lolos — baru sekarang menulis.
+  // Semua lolos — baru sekarang menulis. Tulisan idle yang masih menunggu
+  // dibuang dulu: kalau tidak, ia mendarat SESUDAH impor dan menimpanya.
+  pending.clear();
+  if (idleHandle !== null) {
+    cancelIdle(idleHandle);
+    idleHandle = null;
+  }
   for (const [key, value] of staged) {
     if (value === undefined) continue;
     const migrated = migrate(key, value as Record<string, unknown>);
     if (migrated.ok) write(key, migrated.data as unknown as StorageShape[StorageKey]);
   }
+
+  // Tema aktif hidup di key-nya sendiri (dibaca skrip inline index.html sebelum
+  // paint), jadi ia ikut dipulihkan dari `settings.theme` — ADR-035.
+  const theme = (data['settings'] as { theme?: unknown } | undefined)?.theme;
+  if (theme === 'light' || theme === 'dark') writeTheme(theme);
   return { ok: true };
 }
 

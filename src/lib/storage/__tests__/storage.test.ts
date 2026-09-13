@@ -207,8 +207,14 @@ describe('penulisan saat idle (dok. 09 §3, R-20)', () => {
   it('dua tulisan baca-ubah-tulis di satu jendela idle: tidak ada yang hilang', () => {
     vi.useFakeTimers();
     // Persis bentuk `persistSessionResult`: read → append → scheduleWrite.
-    scheduleWrite(STORAGE_KEYS.sessions, appendSession(read(STORAGE_KEYS.sessions), makeRecord(4)));
-    scheduleWrite(STORAGE_KEYS.sessions, appendSession(read(STORAGE_KEYS.sessions), makeRecord(5)));
+    scheduleWrite(
+      STORAGE_KEYS.sessions,
+      appendSession(read(STORAGE_KEYS.sessions), makeRecord(4)),
+    );
+    scheduleWrite(
+      STORAGE_KEYS.sessions,
+      appendSession(read(STORAGE_KEYS.sessions), makeRecord(5)),
+    );
     vi.runAllTimers();
 
     expect(read(STORAGE_KEYS.sessions).items.map((i) => i.id)).toEqual(['s4', 's5']);
@@ -311,6 +317,47 @@ describe('ekspor & impor (dok. 09 §3)', () => {
     const out = importAll(JSON.stringify({ app: 'aplikasi-lain', data: {} }));
     expect(out.ok).toBe(false);
     expect(read(STORAGE_KEYS.sessions).items).toHaveLength(1);
+  });
+
+  it('round-trip mencakup meta & keystats, dan memulihkan tema aktif (Fase 8 DoD)', () => {
+    const keystats = read(STORAGE_KEYS.keystats);
+    keystats.keys['e'] = { attempts: 40, errors: 3, totalMs: 9000, slowCount: 2 };
+    keystats.daily['2026-09-13'] = { sessions: 2, ms: 120_000, avgWpm: 31, avgAccuracy: 96 };
+    write(STORAGE_KEYS.keystats, keystats);
+    write(STORAGE_KEYS.meta, { ...read(STORAGE_KEYS.meta), streakDays: 4, graduatedAt: 123 });
+    write(STORAGE_KEYS.settings, { ...read(STORAGE_KEYS.settings), theme: 'dark' });
+
+    const dump = exportAll();
+    const snapshot = () => Object.values(STORAGE_KEYS).map((k) => [k, read(k)] as const);
+    const before = snapshot();
+
+    clearAll();
+    localStorage.setItem('tendrill.theme', 'light');
+    expect(importAll(dump)).toEqual({ ok: true });
+
+    expect(snapshot()).toEqual(before);
+    expect(localStorage.getItem('tendrill.theme')).toBe('dark');
+  });
+
+  it('tulisan idle yang tertunda tidak menimpa hasil impor', () => {
+    const dump = exportAll();
+    scheduleWrite(STORAGE_KEYS.sessions, appendSession(defaultSessions(), makeRecord(9)));
+
+    expect(importAll(dump).ok).toBe(true);
+    flushPendingWrites();
+    expect(read(STORAGE_KEYS.sessions).items).toEqual([]);
+  });
+
+  it('menolak ekspor tanpa schemaVersion atau dari versi yang lebih baru', () => {
+    write(STORAGE_KEYS.sessions, appendSession(defaultSessions(), makeRecord(1)));
+    const base = JSON.parse(exportAll()) as Record<string, unknown>;
+
+    for (const schemaVersion of [undefined, 'satu', 0, 99]) {
+      write(STORAGE_KEYS.sessions, defaultSessions());
+      const out = importAll(JSON.stringify({ ...base, schemaVersion }));
+      expect(out.ok).toBe(false);
+      expect(read(STORAGE_KEYS.sessions).items).toEqual([]);
+    }
   });
 
   it('menolak JSON rusak', () => {

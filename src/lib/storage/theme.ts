@@ -15,6 +15,16 @@ export function systemTheme(): Theme {
     : 'light';
 }
 
+/** Tema yang dipilih eksplisit, atau null kalau pengguna belum pernah memilih. */
+export function readStoredTheme(): Theme | null {
+  try {
+    const v = localStorage.getItem(KEY);
+    return v === 'light' || v === 'dark' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 export function readTheme(): Theme {
   try {
     const v = localStorage.getItem(KEY);

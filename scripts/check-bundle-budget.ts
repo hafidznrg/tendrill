@@ -24,7 +24,7 @@ const DIST = join(ROOT, 'dist');
  */
 const FRAMEWORK_BUDGET_KB = 85; // terkunci: menambah dependensi runtime wajib ADR
 const APP_BUDGET_KB = 20; // kode kita di bundel awal
-const INITIAL_BUDGET_KB = 105; // atap keduanya + CSS; belum diukur, lihat ADR-018
+const INITIAL_BUDGET_KB = 90; // dok. 08 Fase 8 DoD (ADR-035); 105 dari ADR-018 pensiun
 const TOTAL_BUDGET_KB = 250; // dok. 06 §6
 
 function walk(dir: string): string[] {

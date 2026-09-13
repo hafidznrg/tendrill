@@ -26,7 +26,9 @@ describe('peta rute (dok. 02 §1)', () => {
           <AppRoutes />
         </MemoryRouter>,
       );
-      expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+      expect(
+        await screen.findByRole('heading', { name: heading }, { timeout: 5000 }),
+      ).toBeInTheDocument();
     });
   }
 });

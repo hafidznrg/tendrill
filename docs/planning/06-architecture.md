@@ -198,6 +198,9 @@ memang hanya mengukur bundel **awal**. `npm run chunkgraph` menelusuri impor
 statis dari chunk tiap halaman sesi dan menolak `curriculum-map`, `unit-N`, serta
 `wordlists`; ia bagian dari `npm run verify`.
 
+> **Pembaruan Fase 8 (ADR-035): atap bundel awal diturunkan ke 90 KB** (terukur 88,9 KB).
+> Pengukuran Fast 3G di bawah tetap manual dan belum dijalankan.
+>
 > **Angka 105 belum diukur, dan itu utang.** Ia dinaikkan dari 90 karena kepentok
 > (ADR-018), bukan karena diturunkan dari pengukuran. Utangnya dibayar di Fase 8:
 > ukur waktu ke keystroke pertama di Fast 3G ter-throttle, lalu **turunkan** angka

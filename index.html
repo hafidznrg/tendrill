@@ -2,10 +2,17 @@
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/src/assets/brand/icon-32.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/src/assets/brand/icon-16.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/src/assets/brand/icon-32.svg" />
+    <link rel="apple-touch-icon" href="/src/assets/brand/icon-512.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="tendrill — belajar mengetik sepuluh jari, bertahap." />
-    <title>tendrill</title>
+    <meta name="description" content="tendrill — belajar mengetik sepuluh jari, bertahap. Tanpa akun, semua progres di browsermu." />
+    <meta name="theme-color" content="#EFF2EE" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#11150F" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="tendrill" />
+    <meta property="og:description" content="Belajar mengetik sepuluh jari, bertahap. Tanpa akun, semua progres di browsermu." />
+    <title>tendrill — belajar mengetik sepuluh jari</title>
     <script>
       /* Tema diterapkan sebelum paint pertama supaya tidak ada kedipan.
          Sengaja inline & duplikat kecil dari src/lib/storage/theme.ts —
@@ -26,6 +33,7 @@
     </script>
   </head>
   <body>
+    <noscript>tendrill butuh JavaScript untuk berjalan.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

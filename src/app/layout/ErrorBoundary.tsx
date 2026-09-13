@@ -7,6 +7,11 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
  */
 interface Props {
   children: ReactNode;
+  /**
+   * Error dibersihkan saat nilai ini berubah (pathname). Sengaja bukan `key`:
+   * `key` akan me-remount halaman yang sehat juga, termasuk pindah lesson.
+   */
+  resetKey?: string;
 }
 interface State {
   error: Error | null;
@@ -17,6 +22,11 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(error: Error): State {
     return { error };
+  }
+
+  override componentDidUpdate(prev: Props): void {
+    if (this.state.error && prev.resetKey !== this.props.resetKey)
+      this.setState({ error: null });
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo): void {

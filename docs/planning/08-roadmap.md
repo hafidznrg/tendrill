@@ -437,12 +437,22 @@ dashboard, pemilihan kata nyata berdasarkan tombol lemah.
 Ekspor/impor progres, suara opsional, halaman penolakan mobile, empty state, error boundary,
 favicon/meta, deploy.
 
+**Kode selesai 2026-09-13 (ADR-035):** `/settings` (tema, suara, ekspor/impor dengan
+konfirmasi, hapus data ber-`DELETE`, pernyataan privasi), suara ketik lazy, gerbang
+mobile, error boundary per rute, favicon/meta. Empty state sudah ada sejak Fase 6–7.
+
 **DoD**
-- [ ] Uji pakai ke ≥ 3 orang nyata, semuanya bisa mulai tanpa dibantu
-- [ ] Lighthouse Performance ≥ 95; bundel awal < 90 KB gzip
-- [ ] Uji performa Fase 1 diulang dan masih lulus
-- [ ] Ekspor lalu impor menghasilkan state yang identik
-- [ ] Ter-deploy dan bisa diakses lewat URL
+- [ ] Uji pakai ke ≥ 3 orang nyata, semuanya bisa mulai tanpa dibantu — **hanya pemilik**
+- [ ] Lighthouse Performance ≥ 95 — **belum diukur** (butuh URL ter-deploy / Chrome sungguhan)
+- [x] Bundel awal < 90 KB gzip — 88,9 KB, dan atap `npm run budget` kini 90 (sudah
+      pernah merah di 91,0 KB saat toggle tema menarik lapisan storage)
+- [ ] Uji performa Fase 1 diulang dan masih lulus — `perf:heap` dan `rerender.test.tsx`
+      hijau di `verify`; `autotype()` & `watchRealInput()` wajib diulang manual
+      (ADR-020, ADR-022)
+- [x] Ekspor lalu impor menghasilkan state yang identik — kelima key + tema,
+      `storage.test.ts` dan `settings.test.tsx`
+- [ ] Ter-deploy dan bisa diakses lewat URL — `vercel.json` siap; deploy menunggu
+      persetujuan pemilik
 
 ---
 

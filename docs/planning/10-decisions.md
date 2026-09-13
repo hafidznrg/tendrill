@@ -1549,3 +1549,66 @@ dikerjakan apa adanya terhadap data yang benar-benar ada:
 - (−) Bigram (langkah 5 dok. 04 §10) belum dipakai; `bigrams` hanya top-50.
 - (−) Apakah drillnya **terasa** menyasar kelemahan adalah penilaian pemilik pada data
   nyatanya — sama seperti heatmap Fase 6.
+
+---
+
+## ADR-035 — Polish Fase 8: suara, gerbang mobile, tema di ekspor, dan atap bundel awal 90 KB
+
+**Tanggal:** 2026-09-13 · **Status:** Diterima
+
+### Konteks
+
+Fase 8 menyentuh empat hal yang masing-masing bertabrakan diam-diam dengan aturan
+yang sudah mengikat:
+
+1. **Suara ketik** (dok. 01 P1) vs **nol alokasi heap per keystroke** (Fase 1 DoD).
+   Web Audio hanya bisa memutar buffer lewat `AudioBufferSourceNode` sekali pakai —
+   tidak ada cara memutar klik tanpa satu objek per keystroke.
+2. **Halaman penolakan mobile** (dok. 02 §8, viewport < 900 px) vs **ADR-028**:
+   jendela desktop yang dipersempit wajib membungkus ulang tanpa menghapus ketikan.
+   Gerbang yang bereaksi pada `resize` melepas layar sesi begitu lebar melewati 899 px.
+3. **Ekspor "state identik"** vs tema yang hidup di key `tendrill.theme` (dibaca skrip
+   inline sebelum paint), bukan di `typing:settings`. Ekspor lama tidak membawa tema.
+   Mencerminkannya di toggle tema menarik lapisan storage ke bundel awal:
+   **+2,4 KB, bundel awal 91,0 KB** — terukur, dan gerbang 90 KB merah karenanya.
+4. **ADR-018** berjanji 105 KB diturunkan di Fase 8; DoD Fase 8 menulis < 90 KB.
+
+### Keputusan
+
+1. **Suara dimuat lazy dan mati secara default.** `src/lib/sound/keyClick.ts` hanya
+   di-`import()` saat layar sesi dibuka dengan `soundEnabled` menyala; buffer
+   dibangkitkan sekali, per keystroke hanya satu `AudioBufferSourceNode`. Pelanggaran
+   nol-alokasi ini **disengaja dan dibatasi ke pengguna yang menyalakan suara**;
+   `perf:heap` dan `rerender.test.tsx` tetap mengukur jalur default. Satu bunyi untuk
+   benar maupun salah (dok. 01 prinsip 3).
+2. **`DesktopOnly` memutuskan sekali saat rute dipasang**, dengan
+   `(max-width: 899px), (hover: none) and (pointer: coarse)`. Tidak mendengarkan
+   `resize`. Membungkus `/learn/:id`, `/placement`, `/practice`, `/practice/adaptive`;
+   `/stats`, `/learn`, `/posture`, `/settings` tetap terbuka.
+3. **Tema dicerminkan saat ekspor, bukan saat toggle.** `exportAll` menimpa
+   `settings.theme` dengan `tendrill.theme` bila pengguna pernah memilih; `importAll`
+   menulis balik `tendrill.theme`. Impor juga kini **memeriksa `schemaVersion`**
+   (dok. 05 §6 mewajibkannya; kode sebelumnya tidak) dan **membuang tulisan idle yang
+   tertunda** — tanpanya, sesi yang baru selesai mendarat sesudah impor dan menimpanya.
+4. **Atap bundel awal 105 → 90 KB** (`check-bundle-budget.ts`). Terukur 88,9 KB.
+   Gerbangnya sudah pernah merah pada angka ini (poin 3), jadi ia bukan hiasan.
+5. `RouteErrorBoundary` dipindah **ke dalam** `AppLayout` dan direset saat `pathname`
+   berubah (bukan `key`, yang me-remount halaman sehat saat pindah lesson). Dulu
+   boundary membungkus seluruh `Routes`: satu error menghilangkan navigasi dan
+   bertahan di rute mana pun.
+
+### Konsekuensi
+
+- (+) `storage.test.ts`: round-trip kelima key + tema, schemaVersion hilang/asing/masa
+  depan ditolak tanpa menulis, tulisan tertunda tidak menimpa impor.
+  `settings.test.tsx`, `desktopOnly.test.tsx` (dengan kontrol negatif viewport lebar),
+  `sound.test.tsx` (dibuktikan merah dengan melepas pemanggilan klik),
+  `errorBoundary.test.tsx`.
+- (−) **Utang R-24 ADR-018 belum lunas seluruhnya.** Angka 90 datang dari DoD dan
+  keluaran build, bukan dari waktu-ke-keystroke-pertama di Fast 3G. Pengukuran itu
+  tetap manual (panel otomasi tidak pernah paint — lihat catatan Fase 1).
+- (−) Margin bundel awal tinggal 1,1 KB. Apa pun yang baru di shell wajib lazy.
+- (−) Pengguna desktop yang membuka sesi di jendela < 900 px mendapat halaman
+  penolakan sampai jendelanya dilebarkan dan rute dibuka ulang — harga poin 2.
+- (−) `/settings` belum memuat sakelar virtual keyboard & panduan jari (dok. 02 §7);
+  field-nya ada di skema tapi belum dibaca layar sesi. Dicatat, tidak dikerjakan.

@@ -23,7 +23,14 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 7 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
+Status sekarang: **Fase 8 — kode selesai (2026-09-13), DoD menunggu pemilik**: uji
+pakai ≥ 3 orang, Lighthouse, ulang `autotype()`/`watchRealInput()`, dan deploy.
+Yang mengikat dari Fase 8 (ADR-035): suara ketik **lazy dan mati default** (satu-satunya
+alokasi per keystroke yang disengaja), `DesktopOnly` diputuskan **sekali saat mount**
+(bukan `resize` — ADR-028), tema dicerminkan ke ekspor di `exportAll` (bukan di toggle —
+itu menarik storage ke bundel awal), dan atap bundel awal **90 KB**.
+
+Sebelumnya: **Fase 7 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
 butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
 apakah kriteria lulusnya adil), Fase 6 menambah satu (apakah heatmap latensi
 menyorot tombol yang *terasa* lambat), dan Fase 7 satu lagi (apakah drill adaptif
@@ -172,7 +179,7 @@ lengkap — aturan yang benar di sumber tapi batal di keluaran bundler selama ti
 | ------------- | ----------- | ------------------------------------------------------------------ |
 | framework     | 85 KB gzip  | **terkunci** — menambah/mengganti dependensi runtime wajib ADR     |
 | kode aplikasi | 20 KB gzip  | ini yang menggigit tiap hari; kalau jebol, pindahkan ke chunk lazy |
-| bundel awal   | 105 KB gzip | atap keduanya + CSS                                                |
+| bundel awal   | 90 KB gzip  | atap keduanya + CSS (ADR-035, turun dari 105)                      |
 | total         | 250 KB gzip | seluruh chunk                                                      |
 
 Kalau ada kode yang tidak dibutuhkan sebelum keystroke pertama, ia **tidak boleh** ada

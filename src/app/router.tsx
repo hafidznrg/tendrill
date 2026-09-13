@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { Route, Routes } from 'react-router';
 import { AppLayout } from './layout/AppLayout';
-import { RouteErrorBoundary } from './layout/ErrorBoundary';
+import { DesktopOnly } from './layout/DesktopOnly';
 
 /**
  * Setiap rute = satu chunk terpisah (dok. 08 Fase 0 DoD, dok. 06 §6).
@@ -26,21 +26,47 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 
 export function AppRoutes() {
   return (
-    <RouteErrorBoundary>
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="learn" element={<LearnPage />} />
-          <Route path="learn/:lessonId" element={<LessonPage />} />
-          <Route path="placement" element={<PlacementPage />} />
-          <Route path="posture" element={<PosturePage />} />
-          <Route path="practice" element={<PracticePage />} />
-          <Route path="practice/adaptive" element={<AdaptivePage />} />
-          <Route path="stats" element={<StatsPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="*" element={<HomePage />} />
-        </Route>
-      </Routes>
-    </RouteErrorBoundary>
+    <Routes>
+      <Route path="/" element={<AppLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="learn" element={<LearnPage />} />
+        <Route
+          path="learn/:lessonId"
+          element={
+            <DesktopOnly>
+              <LessonPage />
+            </DesktopOnly>
+          }
+        />
+        <Route
+          path="placement"
+          element={
+            <DesktopOnly>
+              <PlacementPage />
+            </DesktopOnly>
+          }
+        />
+        <Route path="posture" element={<PosturePage />} />
+        <Route
+          path="practice"
+          element={
+            <DesktopOnly>
+              <PracticePage />
+            </DesktopOnly>
+          }
+        />
+        <Route
+          path="practice/adaptive"
+          element={
+            <DesktopOnly>
+              <AdaptivePage />
+            </DesktopOnly>
+          }
+        />
+        <Route path="stats" element={<StatsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="*" element={<HomePage />} />
+      </Route>
+    </Routes>
   );
 }
