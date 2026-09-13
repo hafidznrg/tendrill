@@ -23,10 +23,18 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 5 — kode selesai (2026-09-12). Fase 4 masih menyisakan dua
+Status sekarang: **Fase 6 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
 butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
-apakah kriteria lulusnya adil); Fase 5 dikerjakan lebih dulu atas permintaan pemilik,
-dan kedua butir itu **tidak hilang**.
+apakah kriteria lulusnya adil), dan Fase 6 menambah satu (apakah heatmap latensi
+menyorot tombol yang *terasa* lambat); Fase 5 dan 6 dikerjakan lebih dulu atas
+permintaan pemilik, dan butir-butir itu **tidak hilang**.
+
+Yang mengikat dari Fase 6: `/stats` hanya **membaca** `typing:sessions` dan
+`typing:keystats` — tidak ada penyimpanan baru. Skala heatmap (ADR-033): error
+absolut, latensi **relatif terhadap median pengguna**, pita dibulatkan ke bawah.
+Chunk `StatsPage` dijaga `npm run chunkgraph` (`LAZY_ONLY`). Jangan "memperbaiki"
+`attempts` kurang satu tanpa membaca catatan Fase 6 di backlog dok. 10 — perbaikan
+naifnya merusak heatmap kelambatan.
 
 Yang mengikat dari Fase 5: batas waktu `/practice` adalah **waktu aktif**, dan sesi
 berbatas waktu **dinilai atas seluruh durasinya** — bukan sampai keystroke terakhir

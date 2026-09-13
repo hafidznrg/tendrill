@@ -765,6 +765,11 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       `keystats` baru benar-benar menggerakkan sesuatu (heatmap, latihan adaptif),
       jadi di situ pula perbaikannya bisa **diukur** akibatnya, bukan sekadar
       dibenarkan secara aritmetika.
+      **Catatan Fase 6 (2026-09-13):** perbaikan naif (menambah satu `attempts`
+      untuk keystroke pertama) **merusak** heatmap kelambatan — `totalMs / attempts`
+      hari ini konsisten justru karena penyebutnya melewatkan keystroke yang sama
+      dengan pembilangnya. Perbaikan yang benar butuh hitungan latensi terpisah
+      (mis. `latencyCount`), yaitu perubahan skema. Tetap ditunda ke Fase 7.
 - [ ] **Spasi sebelum keystroke pertama menggulung halaman** — temuan audit yang sama.
       `preventDefault` untuk spasi digerbangi `isActive()`, yang baru true setelah
       sesi berstatus `running` — yaitu setelah tombol pertama. Jadi spasi yang salah
@@ -1443,3 +1448,43 @@ akal:
   percuma. Diterima: pembangkitannya pure dan di luar jalur input, dan
   alternatifnya (menyambung teks di tengah sesi) adalah persis mutasi target yang
   ADR-028 larang.
+
+---
+
+## ADR-033 — Skala kedua heatmap: error absolut, latensi relatif terhadap median pengguna
+
+**Tanggal:** 2026-09-13 · **Status:** Diterima
+
+### Konteks
+
+Dok. 07 §9 menetapkan **apa** yang diukur kedua heatmap (`errors / attempts` dan
+`totalMs / attempts`) dan bahwa tombol < 10 kemunculan netral, tetapi tidak
+menetapkan **skala warnanya**. Keputusan itu menentukan apakah DoD Fase 6
+"heatmap latensi berbeda dari heatmap error" bisa terpenuhi sama sekali.
+
+### Keputusan
+
+1. **Heatmap kesalahan berskala absolut.** 15% meleset = menyala penuh. 2% salah
+   memang kecil siapa pun penggunanya.
+2. **Heatmap kelambatan berskala relatif** terhadap median `meanMs` tombol
+   pengguna sendiri (hanya tombol ≥ 10 kemunculan). 1,6× median = menyala penuh.
+   Skala absolut membuat pemula 15 WPM melihat seluruh keyboard menyala dan
+   pengguna 80 WPM melihatnya padam — keduanya tidak menjawab "tombol mana yang
+   memperlambat**ku**".
+3. **Empat pita sama lebar, dibulatkan ke bawah** — seperempat pertama tetap 0.
+   Versi pertama memakai `ceil`, dan kontrol negatif "pengguna lambat seragam"
+   langsung merah: tombol 0,5% di atas median sudah menyala. Itu derau yang dibaca
+   sebagai diagnosis, persis yang dilarang dok. 07 §9.
+4. Karakter digabung per **tombol fisik** (`a` + `A` → `a`): heatmap bicara soal
+   jari, bukan soal Shift.
+
+### Konsekuensi
+
+- (+) Profil dok. 07 §9 (akurat, kelingking lambat) menghasilkan dua peta yang
+  tidak beririsan — dijaga `stats.test.ts`.
+- (−) Heatmap latensi **selalu** menemukan tombol "paling lambat" selama ada
+  sebaran > 15% dari median, bahkan pada pengguna yang sudah sangat rata. Diterima:
+  itu tetap jawaban jujur atas pertanyaannya.
+- (−) Apakah yang disorot **terasa** lambat bagi pemakainya adalah penilaian manusia,
+  sama seperti "diagnosis bermakna" di Fase 2. Test membuktikan skalanya bekerja
+  pada profil sintetis, bukan pada tangan sungguhan.

@@ -108,14 +108,51 @@ for (const entry of SESSION_ENTRIES) {
   }
 }
 
+/**
+ * Chunk yang wajib LAZY: tidak boleh tercapai statis dari entri aplikasi
+ * (dok. 08 Fase 6 DoD: "chunk `stats` tidak masuk bundel awal").
+ *
+ * Kenapa diperiksa dari graf, bukan dari nama berkas: kalau `StatsPage`
+ * diimpor statis di `router.tsx`, Rollup MELEBURKANNYA ke chunk entri — tidak
+ * ada berkas `StatsPage-*.js` sama sekali, dan anggaran bundel awal hanya naik
+ * beberapa KB tanpa merah. Jadi dua syarat: chunk-nya ada, dan entri tidak
+ * mencapainya.
+ */
+const LAZY_ONLY = ['StatsPage'];
+
+let entry: string | undefined;
+try {
+  const html = readFileSync(join(ASSETS, '..', 'index.html'), 'utf8');
+  entry = /src="\/assets\/([^"]+\.js)"/.exec(html)?.[1];
+} catch {
+  /* ditangani di bawah */
+}
+if (!entry) {
+  problems.push('chunk entri tidak ditemukan di dist/index.html');
+} else {
+  const fromEntry = reachable(entry);
+  fromEntry.add(entry);
+  for (const name of LAZY_ONLY) {
+    const file = files.find((f) => basename(f).startsWith(`${name}-`));
+    if (!file) {
+      problems.push(`chunk ${name} tidak ada — ia ikut dilebur ke bundel awal (impor statis?)`);
+    } else if (fromEntry.has(file)) {
+      problems.push(`chunk ${name} tercapai statis dari entri — ia masuk bundel awal`);
+    }
+  }
+}
+
 if (problems.length > 0) {
   console.error(`\n${problems.length} pelanggaran graf chunk:\n`);
   for (const p of problems) console.error(`  - ${p}`);
-  console.error('\nHalaman sesi hanya boleh memuat unit yang diminta, lewat import() dinamis.');
+  console.error(
+    '\nHalaman sesi hanya boleh memuat unit yang diminta, dan halaman LAZY_ONLY hanya lewat import() dinamis.',
+  );
   process.exit(1);
 }
 
 console.log('Graf chunk aman — halaman sesi tidak menarik peta kurikulum.');
+console.log(`  ${LAZY_ONLY.join(', ')}: lazy, di luar bundel awal`);
 for (const entry of SESSION_ENTRIES) {
   const file = files.find((f) => basename(f).startsWith(`${entry}-`))!;
   console.log(`  ${entry}: ${reachable(file).size} chunk statis`);

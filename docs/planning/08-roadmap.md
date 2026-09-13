@@ -390,12 +390,23 @@ membuktikan produk. Storage-nya sudah selesai sejak Fase 1, jadi tinggal UI.
 Halaman `/stats`: grafik WPM/akurasi (SVG tulis tangan), **dua** heatmap — error dan
 latensi (R-18) — agregat harian, grid hari berlatih 30 hari.
 
-**DoD**
-- [ ] Grafik benar untuk 0, 1, dan 200 sesi
-- [ ] Heatmap latensi menyorot tombol yang memang terasa lambat, dan **berbeda** dari
-      heatmap error — kalau keduanya identik, salah satunya tidak berguna
-- [ ] Nol `NaN` / grafik kosong yang jelek saat data sedikit
-- [ ] Chunk `stats` tidak masuk bundel awal
+**DoD** — kode selesai 2026-09-13
+- [x] Grafik benar untuk 0, 1, dan 200 sesi — `stats.test.ts` (geometri) dan
+      `statsPage.test.tsx` (halaman dirender dengan ketiganya). Bug pertama yang
+      tertangkap: seluruh sumbu Y `NaN` untuk data apa pun.
+- [x] Heatmap latensi **berbeda** dari heatmap error — profil dok. 07 §9 menghasilkan
+      dua daftar tombol terlemah yang tidak beririsan, dengan kontrol negatif
+      (pengguna lambat seragam → nol tombol menyala), yang merah pada versi pertama
+      skalanya (ADR-033).
+- [ ] Heatmap latensi menyorot tombol yang **memang terasa** lambat — penilaian
+      pemilik pada data nyatanya sendiri; test hanya membuktikan skalanya bekerja
+      pada profil sintetis.
+- [x] Nol `NaN` / grafik kosong yang jelek saat data sedikit — setiap atribut SVG
+      dan teks halaman diperiksa; 0 sesi menampilkan empty state yang menunjuk ke
+      `/learn` dan `/practice`, 1 sesi satu titik (bukan `x = NaN`).
+- [x] Chunk `stats` tidak masuk bundel awal — `npm run chunkgraph` (`LAZY_ONLY`).
+      Dibuktikan merah dengan impor statis di `router.tsx`; saat itu **anggaran
+      bundel tetap hijau** (9,2 / 20 KB), jadi gerbang ini bukan duplikasinya.
 
 ---
 

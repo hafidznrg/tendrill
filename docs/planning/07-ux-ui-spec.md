@@ -179,6 +179,11 @@ pada data nyata, salah satunya tidak berguna dan harus ditinjau ulang.
 Tombol dengan kemunculan < 10 ditampilkan netral, bukan ekstrem — data kecil jangan
 dibaca sebagai diagnosis.
 
+**Skala warna (ADR-033).** Kesalahan berskala absolut (15% = penuh); kelambatan
+berskala relatif terhadap median tombol pengguna sendiri (1,6× median = penuh). Empat
+pita dibulatkan ke bawah, jadi selisih kecil dari acuan tetap netral. Karakter digabung
+per tombol fisik (`a` + `A`). Kesalahan memakai `--error`, kelambatan `--caret`.
+
 ## 10. Streak yang tidak menghukum (R-24)
 
 Streak harian mudah berubah menjadi sumber rasa bersalah, dan itu bertentangan dengan

@@ -84,6 +84,10 @@ src/
 │   │   └── useProgress.ts          # satu-satunya yang menyentuh storage
 │   │
 │   └── stats/
+│       ├── stats.ts                     # PURE: geometri grafik, skala heatmap (ADR-033)
+│       ├── load.ts                      # satu-satunya yang menyentuh storage
+│       ├── components/HeatmapKeyboard.tsx # dasar bersama kedua heatmap
+│       ├── components/PracticeGrid.tsx  # grid 30 hari (dok. 07 §10)
 │       ├── components/WpmChart.tsx      # SVG tulis tangan, tanpa library
 │       ├── components/KeyHeatmap.tsx    # heatmap error
 │       └── components/LatencyHeatmap.tsx # heatmap latensi (R-18)
