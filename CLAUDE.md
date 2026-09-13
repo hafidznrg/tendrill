@@ -23,11 +23,18 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 6 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
+Status sekarang: **Fase 7 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
 butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
-apakah kriteria lulusnya adil), dan Fase 6 menambah satu (apakah heatmap latensi
-menyorot tombol yang *terasa* lambat); Fase 5 dan 6 dikerjakan lebih dulu atas
-permintaan pemilik, dan butir-butir itu **tidak hilang**.
+apakah kriteria lulusnya adil), Fase 6 menambah satu (apakah heatmap latensi
+menyorot tombol yang *terasa* lambat), dan Fase 7 satu lagi (apakah drill adaptif
+*terasa* menyasar kelemahan); Fase 5–7 dikerjakan lebih dulu atas permintaan
+pemilik, dan butir-butir itu **tidak hilang**.
+
+Yang mengikat dari Fase 7 (ADR-034): skor tombol lemah **memakai `keyWeights`
+generator**, bukan rumus kedua; sumbernya `keystats` kumulatif (sesi tidak menyimpan
+statistik per tombol). Jangan mengganti pemilihan kata per tombol dengan
+`generateWordDrill` — rata-rata bobot per kata membuat drill tidak terukur lebih berat
+ke tombol lemah. `AdaptivePage` memuat wordlist lewat `import()`, dijaga `chunkgraph`.
 
 Yang mengikat dari Fase 6: `/stats` hanya **membaca** `typing:sessions` dan
 `typing:keystats` — tidak ada penyimpanan baru. Skala heatmap (ADR-033): error

@@ -89,7 +89,7 @@ untuk `sessions[].lessonId` yang menggantung.
     at: number;              // epoch ms
     source: "lesson" | "practice";
     lessonId?: string;
-    mode?: "15s" | "30s" | "60s" | "full";
+    mode?: "15s" | "30s" | "60s" | "full" | "adaptive"; // adaptive: Fase 7, ADR-034
     durationMs: number;
     netWpm: number;
     grossWpm: number;

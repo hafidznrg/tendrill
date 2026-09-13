@@ -63,7 +63,13 @@ export interface ProgressData {
 // --- sessions ---------------------------------------------------------------
 
 export type SessionSource = 'lesson' | 'practice';
-export type PracticeMode = '15s' | '30s' | '60s' | 'full';
+/**
+ * `adaptive` (Fase 7, ADR-034): latihan adaptif tersimpan sebagai sesi
+ * `practice` — ia tetap tidak menyentuh kurikulum — tetapi dengan mode sendiri
+ * supaya riwayat tidak menyebutnya "sampai selesai". Aditif, jadi TANPA migrasi:
+ * validator sesi tidak pernah memeriksa `mode`.
+ */
+export type PracticeMode = '15s' | '30s' | '60s' | 'full' | 'adaptive';
 
 export interface SessionRecord {
   id: string;

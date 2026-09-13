@@ -415,10 +415,20 @@ latensi (R-18) — agregat harian, grid hari berlatih 30 hari.
 Generator berbobot dari `keystats` (error × latensi), tombol "Latih kelemahanmu" di
 dashboard, pemilihan kata nyata berdasarkan tombol lemah.
 
-**DoD**
-- [ ] Drill yang dihasilkan memang didominasi tombol lemah
-- [ ] Hasilnya bisa diketik dengan wajar, bukan aliran huruf acak
-- [ ] Tidak crash saat statistik masih sedikit (< 10 kemunculan per tombol)
+**DoD** — kode selesai 2026-09-13 (ADR-034)
+- [x] Drill yang dihasilkan memang didominasi tombol lemah — `adaptive.test.ts`: ≥ 70%
+      token tiap drill memuat tombol lemah, porsi hurufnya ≥ 2× teks biasa, dan kelima
+      tombol mendapat giliran. Kontrol negatif: teks tanpa tombol lemah gagal ambang yang
+      sama, dan porsi slot yang diturunkan 0,8 → 0,3 membuat gerbangnya merah.
+- [x] Hasilnya bisa diketik dengan wajar, bukan aliran huruf acak — kata nyata, satu
+      spasi, tanpa tiga huruf sama berturut-turut, tanpa kata yang sama berurutan; tombol
+      tanpa kata nyata (`z`, `q`, `x`, `j`) jatuh ke suku kata konsonan-vokal.
+- [x] Tidak crash saat statistik masih sedikit (< 10 kemunculan per tombol) — < 5 sesi,
+      `keystats` kosong, tombol 9 kemunculan, dan `NaN`/negatif; di fungsi pure dan di
+      halaman (`adaptiveFlow.test.tsx`). `AdaptivePage` masuk `SESSION_ENTRIES`
+      `npm run chunkgraph`, dibuktikan merah dengan impor wordlist statis.
+- [ ] Drill **terasa** menyasar kelemahan — penilaian pemilik pada data nyatanya, bukan
+      test (sama dengan butir heatmap Fase 6).
 
 ---
 

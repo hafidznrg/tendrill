@@ -20,6 +20,7 @@ const LessonPage = lazy(() => import('@/pages/LessonPage'));
 const PlacementPage = lazy(() => import('@/pages/PlacementPage'));
 const PosturePage = lazy(() => import('@/pages/PosturePage'));
 const PracticePage = lazy(() => import('@/pages/PracticePage'));
+const AdaptivePage = lazy(() => import('@/pages/AdaptivePage'));
 const StatsPage = lazy(() => import('@/pages/StatsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 
@@ -34,6 +35,7 @@ export function AppRoutes() {
           <Route path="placement" element={<PlacementPage />} />
           <Route path="posture" element={<PosturePage />} />
           <Route path="practice" element={<PracticePage />} />
+          <Route path="practice/adaptive" element={<AdaptivePage />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<HomePage />} />

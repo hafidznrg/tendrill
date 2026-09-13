@@ -770,6 +770,8 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       hari ini konsisten justru karena penyebutnya melewatkan keystroke yang sama
       dengan pembilangnya. Perbaikan yang benar butuh hitungan latensi terpisah
       (mis. `latencyCount`), yaitu perubahan skema. Tetap ditunda ke Fase 7.
+      **Catatan Fase 7 (2026-09-13):** latihan adaptif tidak terganggu secara berarti —
+      `meanMs` tidak bergeser dan `errorRate` < 1% (ADR-034). Tetap ditunda.
 - [ ] **Spasi sebelum keystroke pertama menggulung halaman** — temuan audit yang sama.
       `preventDefault` untuk spasi digerbangi `isActive()`, yang baru true setelah
       sesi berstatus `running` — yaitu setelah tombol pertama. Jadi spasi yang salah
@@ -1488,3 +1490,62 @@ menetapkan **skala warnanya**. Keputusan itu menentukan apakah DoD Fase 6
 - (−) Apakah yang disorot **terasa** lambat bagi pemakainya adalah penilaian manusia,
   sama seperti "diagnosis bermakna" di Fase 2. Test membuktikan skalanya bekerja
   pada profil sintetis, bukan pada tangan sungguhan.
+
+---
+
+## ADR-034 — Latihan adaptif: statistik kumulatif, huruf saja, dan kata dipilih per tombol
+
+**Tanggal:** 2026-09-13 · **Status:** Diterima
+
+### Konteks
+
+Dok. 04 §10 menulis resepnya dalam lima langkah, dan dua di antaranya tidak bisa
+dikerjakan apa adanya terhadap data yang benar-benar ada:
+
+1. "Ambil `errorsByKey` dan `latencyByKey` teragregasi dari **20 sesi terakhir**."
+   `SessionRecord` tidak pernah menyimpan statistik per tombol (dok. 05) — yang ada
+   hanya `typing:keystats`, yang **kumulatif**. Mewujudkan "20 sesi terakhir" berarti
+   menyimpan data per tombol di tiap sesi: perubahan skema, dan 200 sesi × ~40 tombol
+   di `localStorage`.
+2. "Pakai kata nyata yang mengandung tombol-tombol itu." `generateWordDrill` sudah ada,
+   tetapi memberi tiap kata **rata-rata** bobot hurufnya. Satu huruf lemah di kata lima
+   huruf nyaris tidak menggeser peluang kata itu, dan drill yang dihasilkan tidak
+   terukur lebih berat ke tombol lemah daripada teks biasa — DoD butir 1 tidak akan
+   pernah terpenuhi lewat jalan itu.
+
+### Keputusan
+
+1. **Sumbernya `keystats` kumulatif**, bukan 20 sesi terakhir. Gerbang "≥ 5 sesi" dan
+   "≥ 10 kemunculan per tombol" tetap. Harganya: kelemahan yang sudah membaik lambat
+   hilang dari daftar. Diterima untuk sekarang — latihan adaptif sendiri menambah
+   kemunculan tombol itu dengan cepat, jadi rasionya ikut turun.
+2. **Skor = `keyWeights` generator** dengan bobot dasar 1 (error × latensi, latensi
+   relatif terhadap median pengguna). Tidak ada rumus kedua. Tombol disebut lemah
+   hanya kalau skornya **≥ 1,15** — tanpa ambang, tombol 1% lebih lambat dari median
+   sudah jadi "kelemahan" (alasan yang sama dengan ADR-033 poin 3).
+3. **Huruf `a–z` saja, kapital dilipat.** Kosakatanya kata Inggris; angka dan simbol
+   tidak punya kata untuk dilatih. Heatmap `/stats` tetap menampilkannya.
+4. **Kata dipilih per tombol.** 80% slot: pilih satu tombol lemah berbobot skornya,
+   lalu satu kata yang memuatnya (berbobot 1 + jumlah huruf lemah di kata itu). 20%
+   sisanya kata acak dari kosakata — itulah "huruf frekuensi tinggi sebagai pengisi".
+   Tombol dengan < 3 kata nyata (`j`, `q`, `x`; `z` nol) dilatih lewat suku kata
+   konsonan-vokal tiga huruf, bukan huruf acak.
+5. **Kosakata** = kata unik dari `common-200` + kedua pool kalimat. Kata bertanda baca
+   di tengah (`haven't`) dilewati, bukan dipecah menjadi `haven` dan `ve`.
+6. Tersimpan sebagai sesi `practice` dengan `mode: 'adaptive'` (aditif, tanpa migrasi).
+   Halamannya `/practice/adaptive`; pintunya kartu "tombol terlemah" di dashboard
+   (dok. 02 §3) yang hanya muncul kalau datanya sudah cukup.
+
+### Konsekuensi
+
+- (+) `adaptive.test.ts`: ≥ 70% token tiap drill memuat tombol lemah, dan porsi huruf
+  lemahnya ≥ 2× teks biasa. Gerbangnya dibuktikan merah (porsi slot 0,8 → 0,3).
+- (+) `keystats` kosong, tombol < 10 kemunculan, dan data rusak (`NaN`, negatif) jatuh
+  ke layar penjelasan — di fungsi pure dan di halaman.
+- (−) `attempts` yang kurang satu per sesi (backlog) tetap ada. Ia menggeser
+  `errorRate` < 1% dan **tidak** menggeser `meanMs` (pembilang dan penyebutnya sama-sama
+  melewatkan keystroke pertama), jadi urutan tombol lemah tidak berubah secara
+  berarti. Tetap ditunda — perbaikannya perubahan skema.
+- (−) Bigram (langkah 5 dok. 04 §10) belum dipakai; `bigrams` hanya top-50.
+- (−) Apakah drillnya **terasa** menyasar kelemahan adalah penilaian pemilik pada data
+  nyatanya — sama seperti heatmap Fase 6.

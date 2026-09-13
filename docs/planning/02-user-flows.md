@@ -15,6 +15,7 @@
 /posture          → Panduan postur & anchoring, sekali tampil, selalu bisa dilewati
                     (ADR-027 — ditambahkan setelah uji pemula 2026-09-12)
 /practice         → Latihan bebas (pilih durasi & sumber teks)
+/practice/adaptive → Latih kelemahanmu (ADR-034), dari kartu tombol terlemah di "/"
 /stats            → Statistik & heatmap kelemahan
 /settings         → Tema, suara, layout keyboard, reset/ekspor data
 ```

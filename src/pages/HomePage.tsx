@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { weakKeyLabel } from '@/features/adaptive/adaptive.ts';
+import { loadAdaptiveReadiness } from '@/features/adaptive/load.ts';
 import { nextLessonId, useProgress } from '@/features/curriculum';
 import { hasSeenPosture } from '@/lib/storage/flags.ts';
 import { prefetchSessionPath } from '@/app/prefetch.ts';
@@ -18,6 +20,9 @@ import { prefetchSessionPath } from '@/app/prefetch.ts';
 export default function HomePage() {
   const { progress } = useProgress();
   const [nextId, setNextId] = useState<string | null>(null);
+  // dok. 02 §3: "3 tombol terlemah + [Latih ini]". Dibaca sekali saat render
+  // pertama — dua `read()` kecil, bukan pekerjaan yang menahan paint.
+  const [adaptive] = useState(loadAdaptiveReadiness);
 
   useEffect(() => {
     prefetchSessionPath();
@@ -34,7 +39,8 @@ export default function HomePage() {
 
   // Pengguna baru lewat panduan anchoring dulu (dok. 02 §2, ADR-027). Yang sudah
   // pernah melihatnya tidak pernah disodori lagi — termasuk kalau ia melewatinya.
-  const startHref = started || hasSeenPosture() ? (nextId ? `/learn/${nextId}` : '/learn') : '/posture';
+  const startHref =
+    started || hasSeenPosture() ? (nextId ? `/learn/${nextId}` : '/learn') : '/posture';
 
   return (
     <section>
@@ -56,6 +62,25 @@ export default function HomePage() {
           Kurikulum
         </Link>
       </div>
+
+      {adaptive.ready && (
+        <section className="mt-6 max-w-[60ch]" aria-labelledby="home-weak">
+          <h2 id="home-weak" className="font-mono text-[13px] font-bold">
+            Tombol terlemah
+          </h2>
+          <p className="mt-1 text-fg-dim">
+            {adaptive.weak.slice(0, 3).map((k, i) => (
+              <span key={k.char}>
+                {i > 0 && ' · '}
+                <kbd className="font-mono text-fg">{k.char}</kbd> {weakKeyLabel(k)}
+              </span>
+            ))}
+          </p>
+          <Link to="/practice/adaptive" className="ul-cta mt-3">
+            Latih kelemahanmu
+          </Link>
+        </section>
+      )}
 
       {progress.placement && (
         <p className="mt-6 max-w-[60ch] text-fg-dim">

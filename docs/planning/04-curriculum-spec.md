@@ -353,6 +353,13 @@ Setelah pengguna punya ≥ 5 sesi tersimpan:
    daripada huruf acak.
 5. (P1+) Kalau data bigram tersedia, sisipkan kata yang mengandung transisi paling lambat.
 
+> **Implementasi Fase 7 (ADR-034).** Langkah 1 memakai `keystats` **kumulatif** — sesi
+> tidak pernah menyimpan statistik per tombol, jadi "20 sesi terakhir" tidak ada datanya.
+> Skor gabungan = `keyWeights` §8 dengan bobot dasar 1; tombol baru disebut lemah pada
+> skor ≥ 1,15. Hanya huruf `a–z` (kapital dilipat). Langkah 4: 80% slot memilih satu
+> tombol lemah lalu satu kata yang memuatnya, 20% kata acak sebagai pengisi; tombol
+> dengan < 3 kata nyata dilatih lewat suku kata konsonan-vokal. Langkah 5 belum dikerjakan.
+
 ## 11. Sumber konten (bahasa Inggris)
 
 | Kebutuhan | Sumber | Catatan lisensi |
