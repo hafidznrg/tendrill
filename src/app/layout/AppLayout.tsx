@@ -13,11 +13,12 @@ const NAV = [
 ] as const;
 
 /**
- * Rute yang butuh lebar lebih dari `max-w-3xl`. Hanya `/posture` (ADR-038 poin 12):
- * panduan + keyboard di kiri, peta jari di kanan. Halaman lain sengaja tetap sempit —
- * layar sesi mengukur lebar teksnya sendiri (ADR-028) dan tidak boleh ikut melebar.
+ * Rute yang butuh lebar lebih dari `max-w-3xl`: `/posture` (ADR-038 poin 12 — panduan +
+ * keyboard di kiri, peta jari di kanan) dan beranda `/` (ADR-039 — hero dua kolom,
+ * isinya sendiri dibatasi 1040 px). Halaman lain sengaja tetap sempit — layar sesi
+ * mengukur lebar teksnya sendiri (ADR-028) dan tidak boleh ikut melebar.
  */
-const WIDE_ROUTES = new Set(['/posture']);
+const WIDE_ROUTES = new Set(['/', '/posture']);
 
 export function AppLayout() {
   // Jalur sesi disiapkan di latar sejak halaman mana pun dibuka (dok. 06 §6).

@@ -1800,3 +1800,60 @@ gambar yang memperlihatkan semuanya sekaligus, dan memilih **kartu per jari**.
     butir. Urutan DOM tetap panduan → peta, jadi urutan baca screen reader dan Tab tidak
     berubah.
 
+
+## ADR-039 — Beranda: hero untuk semua pengguna, dashboard progres di bawahnya
+
+**Tanggal:** 2026-09-15 · **Status:** Diterima
+
+### Konteks
+
+`/` berisi judul, satu kalimat, dan tiga tombol; kartu tombol terlemah dan hasil placement
+menempel sebagai paragraf lepas. Pengguna baru dan lama melihat halaman yang hampir sama,
+padahal dok. 02 §3 menjanjikan dashboard (Lanjutkan, streak, 3 tombol terlemah, grafik
+mini WPM 7 hari). Pemilik menyetujui mockup dua tampilan (2026-09-15) dengan satu koreksi:
+**hero tetap tampil untuk pengguna yang kembali** — dashboard berada di bawahnya, bukan
+menggantikannya.
+
+### Keputusan
+
+1. **Satu hero untuk semua.** Judul "Sepuluh jari. Satu baris dulu.", kalimat pengantar,
+   dan panel home row statis (`a s d f · j k l ;`, tonjolan di `f`/`j`, `d`/`l` beraksen
+   — dok. 12). Panel ini **HTML/CSS statis**, bukan `VirtualKeyboard` dan bukan siluet:
+   data pose tetap `LAZY_ONLY`, dan beranda tidak memasang listener keyboard.
+2. **Tombol hero bergantung progres:**
+   - baru → **Mulai dari nol** (utama; ke `/posture` sekali, ADR-027) + **Sudah bisa? Tes
+     60 detik** (`/placement`);
+   - kembali (sudah punya progres lesson) → **Lanjutkan** (utama; lesson berikutnya) +
+     **Latihan bebas** (`/practice`).
+   - Bagian "Progresmu" tampil untuk siapa pun yang punya progres lesson **atau** sesi
+     tersimpan — pengguna yang baru latihan bebas juga pengguna yang kembali.
+   - Keduanya: tautan teks "lihat seluruh kurikulum". Hanya **satu** tombol utama.
+3. **Pengguna baru** mendapat tiga fakta satu baris di bawah hero (lesson berjenjang,
+   drill adaptif, tanpa akun). **Pengguna kembali** mendapat bagian "Progresmu":
+   - kartu lesson berikutnya: unit, judul lesson, posisi di unit, syarat lulus, dan
+     percobaan terbaik kalau ada; bar progres enam unit. Tombolnya bergaris ("Buka
+     lesson"), bukan tombol utama kedua. Kalau kurikulum selesai, kartu mengatakannya.
+   - kartu WPM 7 hari: rata-rata `avgWpm` hari berlatih + garis mini SVG buatan sendiri
+     (tanpa library chart).
+   - kartu tombol terlemah (tetap `adaptiveReadiness`, tetap tersembunyi sebelum datanya
+     cukup — Fase 7).
+   - kartu hari berlatih: **"N dari 7 hari"** sebagai angka utama, grid 7 hari, beruntun
+     sebagai angka sekunder — mengikuti dok. 07 §10, **bukan** angka streak besar seperti
+     di mockup.
+4. **Tidak ada penyimpanan baru.** Semua turunan `typing:progress`, `typing:sessions`, dan
+   `typing:keystats.daily`, dibaca sekali saat mount. Perhitungan ada di
+   `src/features/home/dashboard.ts` (pure, dites) dan memakai ulang `practiceDays` /
+   `currentStreak` dari `stats.ts` — bukan rumus kedua.
+5. **Lebar:** `/` ikut `WIDE_ROUTES` (`max-w-6xl`), tetapi isinya dibatasi 1040 px. Di
+   bawah ~900 px hero dan kartu menumpuk satu kolom. Layar sesi tetap sempit (ADR-028).
+6. Tetap berlaku dari dok. 02 §2: tanpa modal, tanpa tur, tombol utama ada sejak paint
+   pertama. Kartu progres yang butuh peta kurikulum dimuat di efek (seperti sebelumnya);
+   ruangnya dipesan dengan tinggi minimum supaya kedatangannya tidak menggeser halaman.
+
+### Konsekuensi
+
+- (+) Pengguna kembali satu klik dari lesson berikutnya, dengan konteks yang terlihat.
+- (+) Dok. 02 §3 akhirnya ditepati tanpa storage baru.
+- (−) Beranda menjadi halaman kedua yang lebar; `WIDE_ROUTES` tidak lagi "hanya /posture".
+- (−) **Butir DoD pemilik:** apakah hero yang sama setiap kunjungan terasa membantu atau
+  justru mendorong dashboard terlalu ke bawah di layar laptop pendek.

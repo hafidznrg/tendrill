@@ -1,0 +1,477 @@
+/* Beranda (ADR-039, dok. 07 §10a). Setiap ruang dipesan sejak paint pertama:
+   kartu lesson yang menunggu peta kurikulum punya tinggi minimum. */
+
+.hp-root {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hp-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+.hp-mono {
+  font-family: var(--font-mono);
+}
+
+.hp-dim {
+  margin: 0;
+  color: var(--fg-dim);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --- hero --- */
+
+.hp-hero {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3.5rem;
+  align-items: center;
+  margin-bottom: 2.75rem;
+}
+
+.hp-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.hp-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 44px;
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.hp-title span {
+  display: block;
+}
+
+.hp-lede {
+  margin: 0;
+  max-width: 42ch;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--fg-dim);
+  text-wrap: pretty;
+}
+
+.hp-lede kbd {
+  font-family: var(--font-mono);
+  color: var(--fg);
+}
+
+.hp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.hp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 11px 18px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hp-btn:hover {
+  border-color: var(--fg-dim);
+}
+
+.hp-btn-primary {
+  padding: 12px 20px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 14px;
+}
+
+.hp-btn-primary:hover {
+  border-color: var(--accent);
+  filter: brightness(1.08);
+}
+
+.hp-btn-primary::after,
+.hp-btn-outline::after {
+  content: '→';
+  opacity: 0.7;
+}
+
+.hp-btn-outline {
+  padding: 9px 16px;
+  border-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+}
+
+.hp-btn-small {
+  align-self: flex-start;
+  padding: 8px 14px;
+  background: var(--bg);
+}
+
+.hp-textlink {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+
+.hp-textlink:hover {
+  color: var(--fg);
+}
+
+/* --- panel home row --- */
+
+.hp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 36px 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+.hp-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.hp-cap {
+  flex: 0 1 52px;
+  min-width: 0;
+  height: 56px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-bottom-width: 3px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* celah antara dua tangan */
+.hp-cap:nth-child(5) {
+  margin-left: clamp(4px, 2vw, 20px);
+}
+
+.hp-cap[data-bump='true'] {
+  border-top-color: var(--fg);
+  border-left-color: var(--fg);
+  border-right-color: var(--fg);
+  font-weight: 700;
+}
+
+.hp-cap[data-bump='true']::after {
+  content: '';
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--fg);
+}
+
+.hp-cap[data-brand='true'] {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.hp-baseline {
+  height: 3px;
+  margin: 4px 24px 0;
+  border-radius: 2px;
+  background: var(--fg);
+  opacity: 0.15;
+}
+
+.hp-panel-note {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+
+.hp-panel-note b {
+  font-family: var(--font-mono);
+  color: var(--fg);
+}
+
+.hp-sample {
+  margin: 0.75rem 0 0;
+  padding: 16px 20px;
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  white-space: pre-wrap;
+}
+
+.hp-sample-rest {
+  border-left: 2px solid var(--caret);
+  color: var(--fg-dim);
+}
+
+/* --- pengguna baru: tiga fakta --- */
+
+.hp-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+  padding: 1.75rem 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.hp-facts li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hp-facts strong {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.hp-facts span {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+
+/* --- pengguna kembali: progres --- */
+
+.hp-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hp-rule {
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.hp-next,
+.hp-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+.hp-next {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+  align-items: center;
+  min-height: 12rem;
+  box-sizing: border-box;
+  padding: 32px 36px;
+}
+
+.hp-next-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.hp-next-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.hp-units {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hp-units-head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.hp-unit-bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hp-unit-bars li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+
+.hp-unit-bars li[data-current='true'] {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.hp-bar {
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(var(--accent), var(--accent)) no-repeat var(--line);
+}
+
+.hp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.hp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 22px 24px;
+}
+
+.hp-big {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-unit {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.hp-spark {
+  width: 100%;
+  height: 56px;
+}
+
+.hp-spark-base {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.hp-spark-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.hp-spark-dot {
+  fill: var(--accent);
+}
+
+.hp-weak {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hp-weak li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.hp-weak .hp-dim {
+  font-size: 11px;
+}
+
+.hp-key {
+  width: 48px;
+  height: 50px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hp-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* dok. 07 §10: hari kosong hanya kotak kosong, tanpa warna menyala. */
+.hp-days li {
+  height: 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.hp-days li[data-practiced='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+/* ADR-039 poin 5: menumpuk satu kolom di layar sempit. */
+@media (max-width: 56rem) {
+  .hp-hero,
+  .hp-next,
+  .hp-cards,
+  .hp-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hp-hero {
+    gap: 2rem;
+  }
+}

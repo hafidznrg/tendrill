@@ -259,6 +259,27 @@ prinsip produk #3 ("jangan menghukum kesalahan secara emosional").
 - **Tanpa animasi patah, tanpa warna menyala, tanpa notifikasi.** Streak yang putus
   hanya berhenti dihitung.
 
+## 10a. Beranda `/` (ADR-039)
+
+```
+┌ header ─────────────────────────────────────────────────────────────┐
+│  LABEL                             ┌ panel home row statis ───────┐ │
+│  Sepuluh jari.                     │ a s d f   j k l ;            │ │
+│  Satu baris dulu.                  │ (tonjolan f/j, d l beraksen) │ │
+│  pengantar                         │ fjfj dkdk ▌jf kd             │ │
+│  [tombol utama] [tombol kedua]     └──────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────────┤
+│  baru:    tiga fakta satu baris                                     │
+│  kembali: PROGRESMU — kartu lesson berikutnya (lebar penuh)         │
+│           [WPM 7 hari] [tombol terlemah] [hari berlatih]            │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+- Isi dibatasi 1040 px; menumpuk satu kolom di bawah ~900 px.
+- Satu tombol utama (isi `--accent`); tombol lain bergaris `--line`.
+- Kartu: `--surface-2`, garis `--line`, radius 6 px; label kartu mono 11 px huruf besar.
+- Garis mini WPM digambar SVG sendiri; hari tanpa latihan tidak diberi titik.
+
 ## 11. Nada tulisan
 
 - Ringkas dan faktual. "27 WPM · 92% — butuh 95% untuk lanjut."

@@ -65,11 +65,13 @@ kursor untuk melihat pose jarinya — tetap di layar yang sama, tanpa langkah ta
 ```
 Buka "/"
   └─ Ada progres tersimpan
-       └─ Dashboard:
-            • Kartu "Lanjutkan" → lesson berikutnya yang belum lulus
-            • Streak hari ini (P1)
-            • 3 tombol terlemah + tombol [Latih ini] (P1, adaptif)
+       └─ Hero yang sama dengan pengguna baru (ADR-039), tombolnya:
+            [Lanjutkan] → lesson berikutnya · [Latihan bebas] → /practice
+       └─ Di bawahnya, "Progresmu":
+            • Kartu lesson berikutnya (unit, judul, syarat lulus, bar progres unit)
             • Grafik mini WPM 7 hari terakhir
+            • 3 tombol terlemah + tombol [Latih kelemahanmu] (P1, adaptif)
+            • Hari berlatih 7 hari + beruntun sebagai angka sekunder (dok. 07 §10)
 ```
 
 ## 4. Anatomi sesi latihan (inti produk)
