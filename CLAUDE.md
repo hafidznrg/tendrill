@@ -46,6 +46,13 @@ tangan** — ubah SVG-nya lalu jalankan ulang generator). Pose disimpan di ruang
 tombolnya — digerbangi generator dan `hands.test.ts` (dengan kontrol negatif). Data pose
 ~28 KB **hanya lewat `loadHandPoses()`**, dijaga `chunkgraph` (`LAZY_ONLY`).
 
+**`/posture` dapat dijelajah (ADR-038, 2026-09-15)**: keyboard fisik + hover lewat hook
+`useKeyExplorer` — **hanya `/posture` yang memasangnya**, jangan dijadikan mode di
+`VirtualKeyboard` (layar sesi tidak boleh mendapat listener baru). Tab/Enter/Ctrl/Alt/Meta
+tidak pernah ditangkap; di tombol, Spasi dilepas tapi huruf tetap ditangkap. "Lihat
+bedanya" hanya di butir 4 dan 5, tanpa putar otomatis. Butir DoD pemilik: apakah
+menjelajah membantu pemula, atau mengalihkan dari "raba, jangan lihat".
+
 Sebelumnya: **Fase 7 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
 butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
 apakah kriteria lulusnya adil), Fase 6 menambah satu (apakah heatmap latensi

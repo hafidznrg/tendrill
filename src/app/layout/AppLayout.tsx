@@ -12,6 +12,13 @@ const NAV = [
   { to: '/settings', label: 'pengaturan' },
 ] as const;
 
+/**
+ * Rute yang butuh lebar lebih dari `max-w-3xl`. Hanya `/posture` (ADR-038 poin 12):
+ * panduan + keyboard di kiri, peta jari di kanan. Halaman lain sengaja tetap sempit —
+ * layar sesi mengukur lebar teksnya sendiri (ADR-028) dan tidak boleh ikut melebar.
+ */
+const WIDE_ROUTES = new Set(['/posture']);
+
 export function AppLayout() {
   // Jalur sesi disiapkan di latar sejak halaman mana pun dibuka (dok. 06 §6).
   useEffect(prefetchSessionPath, []);
@@ -48,7 +55,9 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10">
+      <main
+        className={`mx-auto ${WIDE_ROUTES.has(pathname) ? 'max-w-6xl' : 'max-w-3xl'} px-6 py-10`}
+      >
         {/* Boundary di dalam layout, direset saat rute berganti (dok. 02 §9): navigasi tetap
             hidup saat satu halaman gagal, dan pindah rute membersihkan error-nya. */}
         <RouteErrorBoundary resetKey={pathname}>

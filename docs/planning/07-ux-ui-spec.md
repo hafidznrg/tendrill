@@ -127,6 +127,30 @@ yang memperlihatkan telunjuk kanan bertumpu di `j`.
   | `/practice`, `/practice/adaptive` | pilihan pengguna, **default mati**; sakelar di bawah keyboard dan di `/settings` |
   | `/placement` | tidak — placement mengukur, bukan mengajar |
 
+### `/posture` dapat dijelajah per tombol (ADR-038)
+
+- **Tekan tombol di keyboard fisik** atau **arahkan kursor ke tombol di layar**: tombol
+  itu disorot, tangan berpindah ke posenya, panah jangkauan tampil. Shift + huruf
+  menampilkan kedua tangan.
+- Kursor keluar dari keyboard → kembali ke tombol fisik terakhir, atau posisi istirahat.
+- Tab, Enter, dan kombinasi Ctrl/Alt/Meta tidak ditangkap, begitu pula apa pun selama
+  fokus di isian teks. Selama fokus di tombol/tautan, Spasi dilepas; huruf tetap ditangkap.
+- Satu baris keterangan `aria-live="polite"` di bawah keyboard: "**E** — jari tengah kiri,
+  dijangkau dari **D**"; untuk tombol istirahat: "**J** — tempat istirahat telunjuk
+  kanan". Sebelum ada pilihan: ajakan "Tekan tombol apa pun, atau arahkan kursor ke
+  tombol, untuk melihat jarinya."
+- **"Lihat bedanya"** (tombol teks, bukan tautan navigasi) hanya di butir 4 (`h` lalu
+  `j`) dan butir 5 (Backspace). Tanpa animasi berulang.
+- Hanya `/posture`. Layar sesi tidak pernah memasang mode ini.
+- **Peta jari per tombol** (sesudah keenam butir): 9 kartu 3×3 — kiri, lalu telunjuk
+  kiri · jempol · telunjuk kanan, lalu kanan. Tiap kartu: keyboard mini statis dengan
+  tombol milik jari itu berwarna jari, siluet pose jari itu di tombol istirahatnya, dan
+  chip tombol (klik → tampil di keyboard interaktif). Tanpa pengukuran DOM; ruang
+  siluet dipesan lewat `viewBox`.
+- **Tata letak `/posture`** (ADR-038 poin 12): satu-satunya halaman selebar `max-w-6xl`.
+  ≥ 1100 px dua kolom — kiri panduan + keyboard (lebar tetap), kanan peta jari *sticky*;
+  di bawahnya satu kolom dengan peta sesudah butir.
+
 ### Pemetaan jari (QWERTY)
 ```
 Kelingking kiri : ` 1 q a z  Tab CapsLock Shift

@@ -750,6 +750,9 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       yang lebih murah (panduan anchoring sebelum `u1-l1`) dikerjakan lebih dulu, dan
       kalau itu sudah cukup, siluet jadi tidak perlu. Evaluasi ulang di uji pemula
       berikutnya.
+- [x] **`/posture` bisa dijelajah per tombol** — dinaikkan 2026-09-15 atas permintaan
+      pemilik, lihat ADR-038. Pose siluet per tombol (ADR-037) sudah ada, tapi `/posture`
+      hanya pernah menampilkan posisi istirahat.
 - [ ] **Sorot Backspace saat ada karakter salah yang bisa dikoreksi** — uji yang sama
       menemukan pemula berhenti dan **melihat keyboard** untuk mencari Backspace, jadi
       satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard". Murah
@@ -1708,3 +1711,89 @@ kurva rumus ADR-036, lalu meminta versi bertema (`finger-svg-tendrill/`) dipasan
   menunggu, kini untuk bentuk baru.
 - (−) Tidak ada pose jempol kiri; spasi selalu jempol kanan.
 - Sumber `finger-svg/` bergelar "VocaType" — asal/lisensinya dikonfirmasi pemilik.
+
+## ADR-038 — `/posture` dapat dijelajah per tombol: keyboard fisik + hover, dan "lihat bedanya"
+
+**Tanggal:** 2026-09-15 · **Status:** Diterima
+
+### Konteks
+
+ADR-037 memberi setiap tombol pose tangannya sendiri, tetapi `/posture` memasang keyboard
+dengan pelukis kosong (`onReady={noop}`): tangan selalu beristirahat. Pengguna baru tidak
+punya cara melihat *jari mana* menekan `e` dan *bagaimana tangan bergerak* ke sana sebelum
+lesson dimulai. Pemilik meminta halaman ini dipertajam, dan memutuskan: keyboard fisik
+**dan** hover; tautan "lihat bedanya" di butir yang lahir dari kegagalan; **tanpa** mode
+putar otomatis.
+
+### Keputusan
+
+1. **Hook `useKeyExplorer`, dipasang hanya oleh `/posture`.** `VirtualKeyboard` cukup
+   menyerahkan pelukis berbasis hint sebagai argumen kedua `onReady`; listener hover dan
+   keyboard fisik hidup di hook, bukan di komponen keyboard. Layar sesi tidak memasang
+   hook itu, jadi tidak ada listener baru di sana (dijaga test).
+2. **Dua jalan, satu pelukis.** Keduanya menghasilkan `KeyHint` lalu memanggil pelukis
+   yang sudah ada (sorotan tombol + pose + panah):
+   - **keyboard fisik** lewat `KeyboardEvent.code` → id tombol (`keyIdFromCode`), jadi
+     layout OS tidak berpengaruh. Shift yang ditahan + huruf = pose dua tangan, persis
+     seperti mengetik. Pose bertahan sampai tombol lain ditekan.
+   - **hover** di tombol layar: pose selama kursor di atasnya; keluar dari keyboard
+     kembali ke pose tombol fisik terakhir, atau istirahat.
+3. **Keyboard fisik tidak boleh merusak halaman:** Tab dan Enter tidak pernah ditangkap,
+   begitu pula kombinasi Ctrl/Alt/Meta dan apa pun selama fokus di isian teks. Selama fokus
+   di tombol/tautan, **Spasi** juga dilepas (ia menekan tombol) — huruf tetap ditangkap,
+   supaya keyboard fisik tidak mati setelah pengguna mengeklik "lihat bedanya". Spasi,
+   Backspace, `'` dan `/` (pencarian cepat Firefox) dicegah aksi bawaannya saat ditangkap.
+4. **Tombol non-karakter punya hint sendiri** (`hintForKey`): Tab, CapsLock, Shift,
+   Backspace, Enter tidak bisa lewat `hintFor(char)`.
+5. **Keterangan** satu baris `aria-live="polite"` di bawah keyboard, disusun dari
+   `FINGER_LABEL`/`FINGER_HOME` — tidak ditulis per tombol: "**E** — jari tengah kiri,
+   dijangkau dari **D**". Keyboard sendiri tetap `aria-hidden`.
+6. **"Lihat bedanya"** hanya di dua butir yang lahir dari kegagalan uji pemula (ADR-027):
+   butir 4 menampilkan pose `h` (dijangkau) lalu `j` (tempat istirahat); butir 5
+   menampilkan pose Backspace dengan panahnya dari `;`. Tautan berupa `<button>`, bisa
+   dipakai tanpa mouse. Tidak ada animasi berulang — konsisten dengan "tanpa mode
+   otomatis".
+7. **Nol re-render tidak diwajibkan di `/posture`** (bukan layar sesi): keterangan boleh
+   memakai state React. Pelukis tangan tetap imperatif karena memang itu satu-satunya
+   jalurnya.
+8. Tetap berlaku dari ADR-027: satu layar, tombol lewati di atas sejak paint pertama,
+   keyboard di atas teks, keenam butir tidak dirapikan.
+
+### Konsekuensi
+
+- (+) 54 pose yang sudah dibayar (26 KB lazy) akhirnya bisa dilihat sebelum lesson.
+- (+) Kesalahan paling mahal (telunjuk di `h`) kini terlihat, bukan hanya terbaca.
+- (−) Menjelajah bisa menunda lesson. Penangkalnya tetap: CTA dan tombol lewati di atas.
+- (−) **Butir DoD pemilik:** apakah menjelajah per tombol membuat pemula lebih paham, atau
+  justru mengalihkan dari "raba, jangan lihat"?
+
+### Tambahan (2026-09-15): peta jari per tombol
+
+Keyboard interaktif hanya menampilkan **satu** tombol pada satu waktu; pemilik meminta
+gambar yang memperlihatkan semuanya sekaligus, dan memilih **kartu per jari**.
+
+9. **Sembilan kartu, grid 3×3** — kelingking/manis/tengah kiri; telunjuk kiri, jempol,
+   telunjuk kanan; tengah/manis/kelingking kanan — jadi baris tengah memisahkan dua
+   telunjuk yang paling sering tertukar (`g h`). Tiap kartu:
+   - **keyboard mini SVG statis** dipotong ke sisi tangannya, tombol milik jari itu
+     diwarnai `--f1…--f8`, tombol istirahat bergaris aksen. Digambar langsung di ruang
+     keyboard pose (ADR-037) — **tanpa pengukuran DOM**, jadi tanpa layout shift dan
+     tanpa `ResizeObserver`;
+   - **siluet pose jari itu di tombol istirahatnya** (jempol: spasi), dari data pose yang
+     sama (lazy); ruangnya dipesan lewat `viewBox` sejak paint pertama;
+   - **deretan tombolnya sebagai chip** yang diturunkan dari `ALL_KEYS`, tombol istirahat
+     ditandai. Chip adalah `<button>`: menekannya menampilkan tombol itu di keyboard
+     interaktif (sama dengan "lihat bedanya").
+10. Letaknya **sesudah keenam butir**, sebelum CTA penutup — peta rujukan, bukan
+    penghalang menuju lesson. Tombol lewati tetap di atas.
+11. Setiap tombol layout muncul di **tepat satu** kartu (dijaga test) — kartu tidak boleh
+    menyimpang dari `fingerMap.ts`.
+12. **Dua kolom di layar lebar** (revisi poin 10, 2026-09-15, atas permintaan pemilik:
+    satu kolom 768 px membuat halaman terlalu panjang). Hanya `/posture` yang melebar ke
+    `max-w-6xl` (`WIDE_ROUTES` di `AppLayout`); halaman lain tetap `max-w-3xl`. Mulai
+    1100 px: kolom kiri = panduan + keyboard interaktif (lebarnya **tidak berubah**, jadi
+    keyboard tidak mengecil), kolom kanan = peta jari, `position: sticky` sehingga tetap
+    terlihat saat butir panduan digulir. Di bawah 1100 px kembali satu kolom, peta di bawah
+    butir. Urutan DOM tetap panduan → peta, jadi urutan baca screen reader dan Tab tidak
+    berubah.
+

@@ -1,0 +1,150 @@
+/* Peta jari per tombol (ADR-038 poin 9–11). Palet jari dok. 12 §5.
+   Semua ruang dipesan sejak paint pertama: kartu bertinggi dari `viewBox` SVG
+   (aspect-ratio bawaan), bukan dari siluet yang datang belakangan. */
+
+.fc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fc-card {
+  --fc: var(--fg-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.fc-card[data-finger='f1'] {
+  --fc: var(--f1);
+}
+.fc-card[data-finger='f2'] {
+  --fc: var(--f2);
+}
+.fc-card[data-finger='f3'] {
+  --fc: var(--f3);
+}
+.fc-card[data-finger='f4'] {
+  --fc: var(--f4);
+}
+.fc-card[data-finger='f5'] {
+  --fc: var(--f5);
+}
+.fc-card[data-finger='f6'] {
+  --fc: var(--f6);
+}
+.fc-card[data-finger='f7'] {
+  --fc: var(--f7);
+}
+.fc-card[data-finger='f8'] {
+  --fc: var(--f8);
+}
+
+.fc-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fc-swatch {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 2px;
+  background: var(--fc);
+}
+
+.fc-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fc-key {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.fc-own {
+  fill: var(--fc);
+  fill-opacity: 0.35;
+  stroke: var(--fc);
+}
+
+.fc-home {
+  stroke: var(--accent);
+  stroke-width: 2px;
+}
+
+.fc-skin {
+  fill: var(--fg-dim);
+  fill-opacity: 0.3;
+}
+
+.fc-line,
+.fc-glow,
+.fc-hl {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.fc-line {
+  stroke: var(--fg);
+  stroke-opacity: 0.3;
+  stroke-width: 1px;
+}
+
+.fc-glow {
+  stroke: var(--accent);
+  stroke-opacity: 0.22;
+  stroke-width: 6px;
+}
+
+.fc-hl {
+  stroke: var(--accent);
+  stroke-width: 1.75px;
+}
+
+.fc-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin: 0;
+}
+
+.fc-chip {
+  padding: 0 0.28rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.fc-chip:hover,
+.fc-chip:focus-visible {
+  border-color: var(--fc);
+}
+
+.fc-chip-home {
+  border-color: var(--accent);
+  font-weight: 700;
+}

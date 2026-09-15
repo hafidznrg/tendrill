@@ -6,8 +6,29 @@
    berubah ukuran adalah virtual keyboard, dan ia memakai sizing yang sama
    dengan layar sesi. */
 
-.pg-root {
+.pg-main {
   max-width: 68ch;
+}
+
+/* Dua kolom mulai 1100 px (ADR-038 poin 12). Kolom kiri tetap 68ch — lebar yang sama
+   dengan satu kolom — jadi keyboard tidak mengecil saat peta pindah ke kanan. */
+@media (min-width: 68.75rem) {
+  .pg-root {
+    display: grid;
+    grid-template-columns: minmax(0, 68ch) minmax(22rem, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .pg-root .pg-map {
+    max-width: none;
+    position: sticky;
+    top: 1.5rem;
+    margin-top: 0;
+    /* Layar pendek: peta menggulir sendiri, bukan terpotong. */
+    max-height: calc(100dvh - 3rem);
+    overflow-y: auto;
+  }
 }
 
 .pg-title {
@@ -93,4 +114,60 @@
   margin: 0.7rem 0 0;
   color: var(--fg-dim);
   font-size: 13px;
+}
+
+/* Keterangan penjelajah (ADR-038). Tinggi dua baris DIPESAN sejak paint pertama:
+   kalimat yang berganti panjang tidak boleh mendorong teks di bawahnya. */
+.pg-explore {
+  margin: 0.7rem 0 0;
+  min-height: 3.2em;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.pg-keys .vk-key {
+  cursor: default;
+}
+
+.pg-look {
+  margin-top: 0.5rem !important;
+  color: var(--fg-dim);
+  font-size: 13px;
+}
+
+.pg-look-btn {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.pg-look-btn:hover,
+.pg-look-btn:focus-visible {
+  border-color: var(--accent);
+}
+
+/* Peta jari per tombol (ADR-038 poin 9–12). Satu kolom: selebar panduan, jangan
+   sampai kartu membengkak di jendela 900–1100 px. */
+.pg-map {
+  max-width: 68ch;
+  margin-top: 2.25rem;
+}
+
+.pg-map-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pg-map-lead {
+  margin: 0.3rem 0 0;
+  color: var(--fg-dim);
+  font-size: 13px;
+  line-height: 1.6;
 }

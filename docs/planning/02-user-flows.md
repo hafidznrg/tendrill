@@ -57,6 +57,8 @@ bukan kuesioner. Pengguna mulai mengetik dalam tiga detik di jalur mana pun.
 `/posture` adalah satu-satunya layar yang berdiri di antara CTA dan keystroke pertama,
 dan ia tunduk pada aturan yang sama: **satu layar, bukan tur; tombol lewati ada sejak
 paint pertama**, bukan di balik gulir; dan ia hanya muncul sekali seumur perangkat.
+Keyboard di halaman itu **dapat dijelajah** (ADR-038): tekan tombol fisik atau arahkan
+kursor untuk melihat pose jarinya — tetap di layar yang sama, tanpa langkah tambahan.
 
 ## 3. Flow utama — pengguna kembali
 

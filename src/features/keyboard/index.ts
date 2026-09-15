@@ -1,4 +1,7 @@
 export { VirtualKeyboard } from './components/VirtualKeyboard.tsx';
+export { FingerCards } from './components/FingerCards.tsx';
+export { useKeyExplorer, hintFromKeyEvent, type PaintHint } from './useKeyExplorer.ts';
+export { describeHint, keyName, type HintDescription } from './describe.ts';
 export {
   fingerFor,
   hintFor,
