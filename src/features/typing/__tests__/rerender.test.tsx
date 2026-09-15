@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Profiler, useState, type ProfilerOnRenderCallback } from 'react';
-import { act, render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { TypingArea } from '../components/TypingArea.tsx';
 import { useTypingSession } from '../hooks/useTypingSession.ts';
 import { VirtualKeyboard } from '@/features/keyboard';
@@ -39,8 +39,20 @@ function Harness({ onRender }: { onRender: ProfilerOnRenderCallback }) {
         onMeasureEl={(node) => setEl(node)}
         key={el ? 'ready' : 'init'}
       />
-      <VirtualKeyboard onReady={session.registerNextKeyPainter} />
+      {/* Siluet menyala: ia ikut jalur keystroke dan wajib ikut nol re-render (ADR-036). */}
+      <VirtualKeyboard onReady={session.registerNextKeyPainter} showHands />
     </Profiler>
+  );
+}
+
+/**
+ * Data pose siluet dimuat lewat import() dinamis (ADR-037) dan memicu satu commit
+ * saat tiba. Itu bukan keystroke — tunggu sampai tangan tergambar sebelum mulai
+ * menghitung, supaya commit itu tidak menyelinap ke hitungan.
+ */
+async function handsReady(): Promise<void> {
+  await waitFor(() =>
+    expect(document.querySelector('[data-hand="left"][data-pose]')).not.toBeNull(),
   );
 }
 
@@ -51,13 +63,14 @@ function press(key: string): void {
 }
 
 describe('nol re-render per keystroke (dok. 09 §5, ADR-021)', () => {
-  it('mengetik seluruh drill tidak memicu satu commit pun', () => {
+  it('mengetik seluruh drill tidak memicu satu commit pun', async () => {
     const commits: { phase: string; duration: number }[] = [];
     const onRender: ProfilerOnRenderCallback = (_id, phase, duration) => {
       commits.push({ phase, duration });
     };
 
     render(<Harness onRender={onRender} />);
+    await handsReady();
 
     // Render awal + pemasangan span/keyboard memang memakai React. Yang dijaga
     // adalah apa yang terjadi SESUDAHNYA.
@@ -74,7 +87,7 @@ describe('nol re-render per keystroke (dok. 09 §5, ADR-021)', () => {
     expect(commits.every((c) => c.phase === 'update')).toBe(true);
   });
 
-  it('keystroke di tengah sesi benar-benar nol commit', () => {
+  it('keystroke di tengah sesi benar-benar nol commit', async () => {
     const commits: string[] = [];
     render(
       <Harness
@@ -83,6 +96,7 @@ describe('nol re-render per keystroke (dok. 09 §5, ADR-021)', () => {
         }}
       />,
     );
+    await handsReady();
 
     // Keystroke pertama memulai sesi (idle → running): satu transisi status.
     press('f');
@@ -96,7 +110,7 @@ describe('nol re-render per keystroke (dok. 09 §5, ADR-021)', () => {
     expect(commits).toEqual([]);
   });
 
-  it('backspace juga tidak merender ulang', () => {
+  it('backspace juga tidak merender ulang', async () => {
     const commits: string[] = [];
     render(
       <Harness
@@ -105,6 +119,7 @@ describe('nol re-render per keystroke (dok. 09 §5, ADR-021)', () => {
         }}
       />,
     );
+    await handsReady();
 
     press('f');
     press('f');

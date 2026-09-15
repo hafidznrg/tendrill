@@ -145,6 +145,11 @@ export interface SettingsData {
    * untuk cara ia belajar, bukan untuk satu drill.
    */
   inputMode?: Record<InputModeSurface, InputMode>;
+  /**
+   * Siluet tangan di `/practice` dan `/practice/adaptive` (ADR-036). Opsional &
+   * aditif, tanpa migrasi; tidak ada = mati. `/learn` selalu menampilkannya.
+   */
+  showHandsInPractice?: boolean;
 }
 
 /** dok. 02 §4: strict di `/learn`, non-strict di `/practice`. */

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
+import { HandsToggle, InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
 import { persistSessionResult } from '@/features/typing/persistSession.ts';
 import {
   DURATIONS,
@@ -13,7 +13,12 @@ import {
 } from '@/features/practice';
 import type { SessionResult } from '@/lib/engine';
 import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
-import { readInputMode, writeInputMode } from '@/lib/storage/flags.ts';
+import {
+  readInputMode,
+  readShowHandsInPractice,
+  writeInputMode,
+  writeShowHandsInPractice,
+} from '@/lib/storage/flags.ts';
 import type { InputMode, PracticeMode, SessionRecord } from '@/lib/storage/schema.ts';
 import './practice-page.css';
 
@@ -49,6 +54,11 @@ export default function PracticePage() {
   const [voided, setVoided] = useState(false);
   const [history, setHistory] = useState<SessionRecord[]>([]);
   const [mode, setMode] = useState<InputMode>(() => readInputMode('practice'));
+  const [hands, setHands] = useState(readShowHandsInPractice);
+  const changeHands = useCallback((next: boolean) => {
+    setHands(next);
+    writeShowHandsInPractice(next);
+  }, []);
 
   /** Pool yang sudah terunduh, supaya "ulangi" tidak mengimpor ulang. */
   const poolsRef = useRef<Record<string, string[]> | null>(null);
@@ -117,10 +127,12 @@ export default function PracticePage() {
           onExit={exit}
           active={!finished}
           strict={mode === 'strict'}
+          showHands={hands}
           limitMs={duration.limitMs}
           footer={
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <InputModeToggle mode={mode} onChange={changeMode} />
+              <HandsToggle shown={hands} onChange={changeHands} />
               <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
                 tanpa kriteria lulus · Tab — ulangi · Esc — kembali
               </p>
@@ -152,8 +164,8 @@ export default function PracticePage() {
     <section className="pr-root">
       <h1 className="pr-title">Latihan bebas</h1>
       <p className="pr-lead">
-        Tanpa kriteria lulus dan tanpa pengaruh ke kurikulum. Hasilnya tetap masuk ke
-        statistik tombolmu.
+        Tanpa kriteria lulus dan tanpa pengaruh ke kurikulum. Hasilnya tetap masuk ke statistik
+        tombolmu.
       </p>
 
       <fieldset className="pr-group">

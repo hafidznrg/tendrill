@@ -32,6 +32,29 @@ export function handOf(finger: Finger): 'left' | 'right' | 'thumb' {
     : 'right';
 }
 
+/**
+ * Tombol istirahat tiap jari — tempat ujung jari siluet bertumpu dan titik awal
+ * panah jangkauan (ADR-036). Satu-satunya pemetaan baru yang dibutuhkan siluet:
+ * karakter → jari sudah ada di `CHAR_INDEX`.
+ */
+export const FINGER_HOME: Record<Finger, string> = {
+  f1: 'a',
+  f2: 's',
+  f3: 'd',
+  f4: 'f',
+  thumb: 'Space',
+  f5: 'j',
+  f6: 'k',
+  f7: 'l',
+  f8: ';',
+};
+
+/** Kelingking yang menekan Shift di sisi itu. */
+export const SHIFT_FINGER: Record<'ShiftLeft' | 'ShiftRight', Finger> = {
+  ShiftLeft: 'f1',
+  ShiftRight: 'f8',
+};
+
 export interface KeyDef {
   /** Identitas tombol fisik. Untuk huruf = karakter kecilnya. */
   id: string;
@@ -160,6 +183,49 @@ export interface KeyHint {
    */
   shiftKeyId: 'ShiftLeft' | 'ShiftRight' | null;
   finger: Finger;
+}
+
+const KEY_BY_ID = new Map(ALL_KEYS.map((key) => [key.id, key]));
+
+/** Id tombol → definisinya; undefined kalau tidak ada di layout. */
+export function keyById(keyId: string): KeyDef | undefined {
+  return KEY_BY_ID.get(keyId);
+}
+
+/**
+ * Petunjuk untuk menekan TOMBOL (bukan mengetik karakter) — Tab, CapsLock, Shift,
+ * Backspace, dan Enter tidak bisa lewat `hintFor(char)`. Dipakai `/posture` (ADR-038).
+ */
+export function hintForKey(keyId: string): KeyHint | null {
+  const key = KEY_BY_ID.get(keyId);
+  return key ? { keyId: key.id, shiftKeyId: null, finger: key.finger } : null;
+}
+
+const CODE_TO_ID: Record<string, string> = {
+  Backquote: '`',
+  Minus: '-',
+  Equal: '=',
+  BracketLeft: '[',
+  BracketRight: ']',
+  Backslash: '\\',
+  Semicolon: ';',
+  Quote: "'",
+  Comma: ',',
+  Period: '.',
+  Slash: '/',
+};
+
+/**
+ * `KeyboardEvent.code` (posisi fisik) → id tombol di layout ini. Memakai `code`,
+ * bukan `key`, supaya layout OS pengguna tidak mengubah tombol yang ditunjuk.
+ * null untuk tombol yang tidak ada di virtual keyboard (F1, panah, numpad, …).
+ */
+export function keyIdFromCode(code: string): string | null {
+  let id: string;
+  if (code.startsWith('Key') && code.length === 4) id = code.slice(3).toLowerCase();
+  else if (code.startsWith('Digit') && code.length === 6) id = code.slice(5);
+  else id = CODE_TO_ID[code] ?? code;
+  return KEY_BY_ID.has(id) ? id : null;
 }
 
 /** Tombol mana yang harus disorot untuk mengetik `char`. */

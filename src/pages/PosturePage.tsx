@@ -59,7 +59,7 @@ export default function PosturePage() {
           tombolnya, lalu membaca rinciannya di bawah. Urutan sebaliknya membuat
           gambar acuannya tertutup enam paragraf. */}
       <div className="pg-keys" aria-hidden="true">
-        <VirtualKeyboard onReady={noop} emphasis="home" />
+        <VirtualKeyboard onReady={noop} emphasis="home" showHands />
       </div>
       <p className="pg-caption">
         Baris awal disorot. Warna menunjukkan jari yang bertanggung jawab atas tiap

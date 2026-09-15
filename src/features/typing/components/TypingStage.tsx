@@ -42,6 +42,8 @@ export interface TypingStageProps {
   strict?: boolean;
   /** Batas waktu dalam milidetik waktu aktif (ADR-032). null = tanpa batas. */
   limitMs?: number | null;
+  /** Siluet tangan di keyboard (ADR-036). Halaman yang memutuskan permukaannya. */
+  showHands?: boolean;
 }
 
 export function TypingStage({
@@ -54,6 +56,7 @@ export function TypingStage({
   active = true,
   strict = false,
   limitMs = null,
+  showHands = false,
 }: TypingStageProps) {
   const [textEl, setTextEl] = useState<HTMLElement | null>(null);
   const { charWidth, lineHeight, width, ready } = useCharMetrics(textEl);
@@ -101,7 +104,7 @@ export function TypingStage({
       </div>
 
       <div className="mt-8">
-        <VirtualKeyboard onReady={registerNextKeyPainter} />
+        <VirtualKeyboard onReady={registerNextKeyPainter} showHands={showHands} />
       </div>
 
       {footer}

@@ -151,7 +151,10 @@ generator adaptif (dok. 04 §8).
   inputMode?: {
     learn: "strict" | "non-strict",      // default "strict"
     practice: "strict" | "non-strict"    // default "non-strict"
-  }
+  },
+  // ADR-036 — siluet tangan di /practice & /practice/adaptive. Opsional & aditif,
+  // tanpa migrasi; tidak ada = false. /learn selalu menampilkannya, jadi tidak disimpan.
+  showHandsInPractice?: boolean
 }
 ```
 

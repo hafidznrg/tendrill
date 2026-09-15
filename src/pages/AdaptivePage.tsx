@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
+import { HandsToggle, InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
 import { persistSessionResult } from '@/features/typing/persistSession.ts';
 import {
   MIN_KEY_OCCURRENCES,
@@ -13,7 +13,12 @@ import {
 } from '@/features/adaptive';
 import type { SessionResult } from '@/lib/engine';
 import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
-import { readInputMode, writeInputMode } from '@/lib/storage/flags.ts';
+import {
+  readInputMode,
+  readShowHandsInPractice,
+  writeInputMode,
+  writeShowHandsInPractice,
+} from '@/lib/storage/flags.ts';
 import type { InputMode } from '@/lib/storage/schema.ts';
 import './practice-page.css';
 
@@ -42,6 +47,11 @@ export default function AdaptivePage() {
   const [finished, setFinished] = useState(false);
   const [voided, setVoided] = useState(false);
   const [mode, setMode] = useState<InputMode>(() => readInputMode('practice'));
+  const [hands, setHands] = useState(readShowHandsInPractice);
+  const changeHands = useCallback((next: boolean) => {
+    setHands(next);
+    writeShowHandsInPractice(next);
+  }, []);
 
   useEffect(installFlushOnHide, []);
 
@@ -101,10 +111,12 @@ export default function AdaptivePage() {
           onExit={exit}
           active={!finished}
           strict={mode === 'strict'}
+          showHands={hands}
           limitMs={null}
           footer={
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <InputModeToggle mode={mode} onChange={changeMode} />
+              <HandsToggle shown={hands} onChange={changeHands} />
               <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
                 tanpa kriteria lulus · Tab — ulangi · Esc — kembali
               </p>

@@ -743,7 +743,7 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 - [ ] Router tulis sendiri (−13 KB) — jalan keluar kalau anggaran mengikat (ADR-018)
 - [ ] Preact via `compat` (−60 KB) — jalan keluar darurat, evaluasi setelah Fase 2 (ADR-018)
 - [x] **Mode strict/non-strict bisa dipilih** — diputuskan 2026-09-12, lihat ADR-029
-- [ ] **Siluet tangan/jari di virtual keyboard** — usul pemula di uji 2026-09-12: "biar
+- [x] **Siluet tangan/jari di virtual keyboard** — dinaikkan 2026-09-14, lihat ADR-036. — usul pemula di uji 2026-09-12: "biar
       tahu harus pakai jari apa". Warna jari sudah ada, tapi ia memberi tahu *jari mana
       yang bertanggung jawab*, bukan *di mana tangan beristirahat* — dan `h` dan `j`
       berwarna sama persis karena memang satu jari. Ditunda, bukan ditolak: perbaikan
@@ -1612,3 +1612,99 @@ yang sudah mengikat:
   penolakan sampai jendelanya dilebarkan dan rute dibuka ulang — harga poin 2.
 - (−) `/settings` belum memuat sakelar virtual keyboard & panduan jari (dok. 02 §7);
   field-nya ada di skema tapi belum dibaca layar sesi. Dicatat, tidak dikerjakan.
+
+## ADR-036 — Siluet tangan di virtual keyboard, digambar dari geometri tombol
+
+**Tanggal:** 2026-09-14 · **Status:** Diterima — keputusan 1 (bentuk prosedural) digantikan ADR-037
+
+### Konteks
+
+Butir backlog sejak uji pemula 2026-09-12 ("biar tahu harus pakai jari apa"). ADR-027
+menundanya demi `/posture`. Pemilik menaikkannya sekarang, dengan tiga keputusan:
+naik dari backlog tanpa menunggu uji pemula Fase 8; tampil di kurikulum (`/learn`),
+opsional di `/practice`; **panah jangkauan wajib sejak awal**.
+
+### Keputusan
+
+1. **Digambar prosedural dari posisi tombol yang diukur**, bukan aset SVG statis.
+   Gambar statis hanya pas di satu lebar; keyboard ini flex dan membungkus ulang saat
+   zoom/resize (ADR-028). Posisi tombol dibaca lewat `offsetLeft/Top/Width/Height`
+   saat mount dan pada `ResizeObserver` — tidak pernah di jalur input (dok. 06 §2 poin 7).
+   Pemetaan baru satu-satunya adalah **jari → tombol istirahat** (`FINGER_HOME` di
+   `fingerMap.ts`); karakter → jari sudah ada. Layout lain (backlog Dvorak/Colemak)
+   tetap cukup mengganti tabel itu.
+2. **Jalur keystroke tetap imperatif dan tanpa alokasi baru.** String `d` panah per
+   tombol dihitung sekali per pengukuran dan disimpan di `Map`; per keystroke hanya
+   ≤ 2 penulisan `class` jari + ≤ 2 penulisan atribut `d`. Tidak ada state React.
+3. **Permukaan**: `/learn/:id` dan `/posture` selalu; `/practice` dan
+   `/practice/adaptive` lewat `settings.showHandsInPractice` (default mati — tangan
+   yang selalu terlihat bertentangan dengan "jangan melihat keyboard"); `/placement`
+   tidak. Sakelarnya tampil di bawah keyboard (seperti mode input, ADR-029) dan di
+   `/settings`.
+4. **Ruang telapak dipesan dengan class saat render**, bukan setelah ukuran diketahui
+   — pelajaran "ruang yang tidak dipesan sejak paint pertama" (Fase 2).
+
+### Konsekuensi
+
+- (+) `h`/`j` akhirnya berbeda secara visual: telunjuk kanan terlihat bertumpu di `j`.
+- (+) Tidak ada dependensi dan tidak ada aset; semuanya di chunk keyboard yang sudah lazy.
+- (−) Keyboard dengan siluet lebih tinggi ~4,5 rem; `/learn` kehilangan ruang vertikal.
+- (−) jsdom tidak punya layout, jadi test hanya membuktikan jari & panah yang **benar**
+  disorot. Apakah bentuknya pas di atas tombol, dan apakah siluet membantu pemula,
+  **dinilai pemilik** (butir DoD baru, lihat CLAUDE.md).
+
+## ADR-037 — Siluet hibrida: gambar pose per tombol, letaknya tetap dari geometri tombol
+
+**Tanggal:** 2026-09-15 · **Status:** Diterima · **Menggantikan:** ADR-036 keputusan 1 (bentuknya saja)
+
+### Konteks
+
+Pemilik menambahkan 58 SVG siluet tangan (`finger-svg/`) yang jauh lebih organik daripada
+kurva rumus ADR-036, lalu meminta versi bertema (`finger-svg-tendrill/`) dipasang dengan
+**opsi hibrida** — dan letak jari wajib sesuai layout keyboard. Analisis sumbernya:
+
+- Tiap file adalah **pose tangan berbeda** per tombol (tangan menjangkau), bukan tangan diam
+  yang jarinya diwarnai.
+- Semuanya digambar di atas satu keyboard QWERTY yang ukurannya tidak diketahui, di kanvas
+  tetap 716×380. Tidak ada Backspace/CapsLock; ada baris Alt yang tidak kita punya.
+- Beberapa pose meleset dari keyboard-nya sendiri: `x` `z` `c` ke kiri, `,` `.` `/` ke kanan.
+
+### Keputusan
+
+1. **Keyboard sumber direkonstruksi, bukan ditebak.** Generator
+   (`scripts/build-hand-poses.ts`) mencocokkan ujung jari aktif tiap pose ke pusat
+   tombolnya (satuan tombol), mem-fit satu affine dengan kuadrat terkecil, membuang
+   pencilan estimator, lalu memindah semua titik ke **ruang keyboard** (1 tombol = 32
+   satuan) sebagai integer. Hasil fit: 29,2 px/tombol, 28,2 px/baris, 45 sampel.
+2. **Runtime tetap dari tombol yang diukur** (ADR-036 poin 1 bertahan untuk *letak*):
+   `hands.ts` mem-fit affine ruang-keyboard → posisi tombol terukur, sekali per
+   pengukuran, dan menuliskannya sebagai satu `matrix()` di grup tangan.
+3. **Ujung jari dijamin di tombolnya.** Pose yang ujungnya (titik teratas garis sorotan)
+   keluar dari tombol **diputar di pergelangan** sampai jatuh di tengah tombol — memutar,
+   bukan menggeser, supaya pergelangan diam dan jari lain ikut miring seperti tangan
+   sungguhan. Backspace/CapsLock memakai cara yang sama dari pose berjari sama (`-`,
+   `a`). Gerbangnya dua: generator gagal kalau ada ujung di luar tombol, dan
+   `hands.test.ts` memeriksa ulang di ruang tombol terukur untuk seluruh 55 pose.
+4. **Estimator ujung = titik teratas**, bukan "terjauh dari pangkal": yang kedua salah untuk
+   jari yang menekuk ke baris bawah (dicek visual — gambarnya benar, estimatornya yang
+   salah).
+5. **Data pose lazy**: `src/data/hands/poses.ts` (~28 KB gzip) hanya lewat `import()`,
+   dijaga `chunkgraph` (`LAZY_ONLY`). Koordinat relatif dari titik yang sudah dibulatkan
+   (tanpa drift) — ~40% lebih kecil daripada absolut.
+6. **Jalur keystroke**: per tangan ≤ 4 penulisan `d` (kulit, garis, pita + garis sorotan) + 1 `data-pose`, hanya kalau posenya
+   berganti; string berasal dari modul data, tidak dibuat per ketukan.
+7. Warna tema: kulit `--fg-dim`, garis `--fg`, jari aktif `--accent` + lapisan aksen lebar
+   tipis; tebal garis `non-scaling-stroke`.
+
+### Konsekuensi
+
+- (+) Jari terlihat menjangkau ke tombolnya, bukan hanya berganti warna.
+- (+) Tetap pas di lebar/zoom mana pun — affine dihitung ulang pada `ResizeObserver`.
+- (−) Chunk lazy baru ~28 KB gzip; total bundel naik sebesar itu.
+- (−) Affine boleh berbeda skala X/Y: kalau tinggi baris Tendrill tidak sebanding dengan
+  sumber (28,2/29,2), tangan sedikit memipih/memanjang. Letak jari yang diutamakan.
+- (−) Sebelas pose diputar (terbesar Backspace 13°, `c` 11°). Apakah itu *terlihat* wajar
+  dinilai pemilik — butir DoD ADR-036 ("apakah bentuknya pas di atas tombol") tetap
+  menunggu, kini untuk bentuk baru.
+- (−) Tidak ada pose jempol kiri; spasi selalu jempol kanan.
+- Sumber `finger-svg/` bergelar "VocaType" — asal/lisensinya dikonfirmasi pemilik.

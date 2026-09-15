@@ -118,7 +118,8 @@ for (const entry of SESSION_ENTRIES) {
  * beberapa KB tanpa merah. Jadi dua syarat: chunk-nya ada, dan entri tidak
  * mencapainya.
  */
-const LAZY_ONLY = ['StatsPage'];
+// `poses`: data siluet tangan ~28 KB (ADR-037) — hanya lewat loadHandPoses().
+const LAZY_ONLY = ['StatsPage', 'poses'];
 
 let entry: string | undefined;
 try {

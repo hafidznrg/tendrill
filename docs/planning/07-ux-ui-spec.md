@@ -87,6 +87,46 @@ Konsekuensinya:
 - Saat karakter butuh Shift, kedua tombol disorot: huruf dan Shift **di sisi berlawanan** (mengajarkan kebiasaan Shift yang benar sejak awal).
 - Bisa dimatikan di settings — pengguna tingkat lanjut akan mematikannya, dan pemula harus didorong mematikannya setelah Unit 3.
 
+### Siluet tangan (ADR-036)
+
+Warna jari menjawab *jari mana yang bertanggung jawab*; siluet menjawab *di mana tangan
+beristirahat* dan *ke mana jari menjangkau*. `h` dan `j` berwarna sama — hanya siluet
+yang memperlihatkan telunjuk kanan bertumpu di `j`.
+
+- **Bentuk** (ADR-037, menggantikan bentuk prosedural ADR-036): dua tangan dari **gambar
+  pose per tombol** (`finger-svg-tendrill/` → `src/data/hands/poses.ts`), bukan kurva
+  rumus. Tiap tombol punya pose sendiri — tangannya benar-benar menjangkau, bukan tangan
+  diam yang jarinya diwarnai. Tanpa karakter aktif: pose istirahat kedua tangan.
+- **Letak tetap diturunkan dari geometri tombol** (hibrida): pose disimpan di *ruang
+  keyboard* (1 tombol = 32 satuan) dan dipetakan ke tombol yang diukur lewat satu affine
+  per pengukuran. Ujung jari aktif tiap pose **dijamin di dalam tombolnya** — oleh
+  generator dan oleh `hands.test.ts`.
+- **Warna**: kulit `--fg-dim` transparan, garis tepi `--fg` tipis, jari aktif garis
+  `--accent` pekat dengan lapisan aksen lebar tipis di bawahnya. Tebal garis tidak ikut
+  skala (`vector-effect: non-scaling-stroke`). Pergelangan memudar ke bawah.
+- **Jari aktif**: pose tangan yang mengetik huruf; untuk karakter ber-Shift, tangan
+  sisi berlawanan memakai pose Shift-nya. Spasi memakai pose jempol kanan.
+- **Panah jangkauan** (garis melengkung + mata panah) dari ujung jari di home row ke
+  tombol tujuan. Tidak tampil kalau tujuan = tombol istirahat jari itu, atau spasi.
+- **Tidak menghalangi**: label tombol tetap terbaca, `pointer-events: none`,
+  `aria-hidden` (ikut keyboard).
+- **Ruang dipesan sejak paint pertama**: telapak tangan menjulur di bawah keyboard ke
+  ruang yang tingginya sudah ditetapkan saat render — bukan setelah pengukuran.
+- **Jalur keystroke**: sama seperti sorotan tombol — penulisan atribut `d` imperatif pada
+  elemen yang dicari sekali saat mount, dengan string pose yang sudah ada di modul data
+  (≤ 4 `d` + 1 `data-pose` per tangan, hanya kalau posenya berganti). Affine dihitung saat mount/resize,
+  bukan per keystroke. Data pose (~28 KB gzip) dimuat lewat `import()` dinamis hanya
+  saat siluet diminta. Pengukuran posisi tombol (`offsetLeft`) hanya di mount dan
+  `ResizeObserver`, **tidak pernah** di jalur input.
+- **Di mana tampil**:
+
+  | Halaman | Siluet |
+  |---|---|
+  | `/learn/:id` (lesson & review) | selalu |
+  | `/posture` | selalu |
+  | `/practice`, `/practice/adaptive` | pilihan pengguna, **default mati**; sakelar di bawah keyboard dan di `/settings` |
+  | `/placement` | tidak — placement mengukur, bukan mengajar |
+
 ### Pemetaan jari (QWERTY)
 ```
 Kelingking kiri : ` 1 q a z  Tab CapsLock Shift

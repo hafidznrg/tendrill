@@ -325,6 +325,9 @@ export default function LessonPage() {
         onExit={goBack}
         active={!finished}
         strict={mode === 'strict'}
+        // Kurikulum selalu menampilkan siluet (ADR-036): di sinilah pemula belajar
+        // di mana tangan beristirahat.
+        showHands
         footer={
           // Mode yang aktif terlihat DI SINI, tanpa membuka pengaturan
           // (ADR-029) — tepat di bawah keyboard, tempat mata pemula berada.

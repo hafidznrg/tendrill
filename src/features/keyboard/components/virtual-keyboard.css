@@ -114,3 +114,70 @@
 .vk-emphasis-home .vk-home {
   border-color: var(--accent);
 }
+
+/* Siluet tangan (ADR-036, dok. 07 §4).
+   Bingkai menjadi acuan posisi: `offsetLeft` tombol diukur relatif terhadapnya,
+   dan SVG ditumpuk di atasnya dengan koordinat yang sama. */
+.vk-frame {
+  position: relative;
+}
+
+/* Ruang telapak dipesan lewat class saat render — BUKAN setelah pengukuran —
+   supaya siluet yang muncul belakangan tidak menggeser apa pun (pelajaran Fase 2). */
+.vk-with-hands {
+  padding-bottom: 4.5rem;
+}
+
+.vk-hands {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Pose tangan (ADR-037). Satu tangan = satu path kulit, jadi opasitas cukup di
+   isinya — tidak ada sambungan yang bisa menggelap. `d` ditulis pelukis.
+   Tebal garis tidak ikut affine: keyboard lebar tidak boleh menebalkan tepi. */
+.vk-skin {
+  fill: var(--fg-dim);
+  fill-opacity: 0.28;
+}
+
+.vk-line,
+.vk-glow,
+.vk-hl {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.vk-line {
+  stroke: var(--fg);
+  stroke-opacity: 0.32;
+  stroke-width: 1px;
+}
+
+/* Jari aktif: garis aksen pekat di atas pita aksen lebar yang tipis — terbaca
+   dari jauh tanpa warna yang berteriak. */
+.vk-glow {
+  stroke: var(--accent);
+  stroke-opacity: 0.22;
+  stroke-width: 9px;
+}
+
+.vk-hl {
+  stroke: var(--accent);
+  stroke-width: 2.5px;
+}
+
+.vk-reach {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3px;
+  stroke-linecap: round;
+}
+
+.vk-reach-head {
+  fill: var(--accent);
+}

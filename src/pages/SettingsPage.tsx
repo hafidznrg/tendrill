@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { clearAll, exportAll, importAll, read, write, STORAGE_KEYS } from '@/lib/storage';
+import { readShowHandsInPractice, writeShowHandsInPractice } from '@/lib/storage/flags.ts';
 import { useSettingsStore } from '@/store/settingsStore';
 
 /**
@@ -29,6 +30,7 @@ export default function SettingsPage() {
   const setTheme = useSettingsStore((s) => s.setTheme);
 
   const [sound, setSound] = useState(() => read(STORAGE_KEYS.settings).soundEnabled);
+  const [hands, setHands] = useState(readShowHandsInPractice);
   const [pendingImport, setPendingImport] = useState<{ name: string; text: string } | null>(
     null,
   );
@@ -40,6 +42,12 @@ export default function SettingsPage() {
     const next = !sound;
     write(STORAGE_KEYS.settings, { ...read(STORAGE_KEYS.settings), soundEnabled: next });
     setSound(next);
+  };
+
+  const toggleHands = () => {
+    const next = !hands;
+    writeShowHandsInPractice(next);
+    setHands(next);
   };
 
   const onExport = () => {
@@ -81,6 +89,7 @@ export default function SettingsPage() {
     }
     const imported = read(STORAGE_KEYS.settings);
     setSound(imported.soundEnabled);
+    setHands(readShowHandsInPractice());
     if (imported.theme === 'light' || imported.theme === 'dark') setTheme(imported.theme);
     setNotice({ kind: 'ok', text: 'Progres dipulihkan.' });
   };
@@ -89,6 +98,7 @@ export default function SettingsPage() {
     clearAll();
     setConfirmText('');
     setSound(read(STORAGE_KEYS.settings).soundEnabled);
+    setHands(readShowHandsInPractice());
     setNotice({ kind: 'ok', text: 'Semua data dihapus.' });
   };
 
@@ -117,6 +127,13 @@ export default function SettingsPage() {
           <span className="w-32 text-fg-dim">Suara ketik</span>
           <input type="checkbox" checked={sound} onChange={toggleSound} />
           <span>{sound ? 'nyala' : 'mati'}</span>
+        </label>
+        <label className="flex items-center gap-3">
+          <span className="w-32 text-fg-dim">Siluet tangan</span>
+          <input type="checkbox" checked={hands} onChange={toggleHands} />
+          <span>
+            {hands ? 'tampil' : 'sembunyi'} di latihan bebas — di kurikulum selalu tampil
+          </span>
         </label>
       </div>
 

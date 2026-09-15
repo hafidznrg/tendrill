@@ -43,6 +43,18 @@ export function writeInputMode(surface: InputModeSurface, mode: InputMode): void
 }
 
 /**
+ * Siluet tangan di latihan bebas & adaptif (ADR-036). Hanya `true` yang
+ * menyalakan — nilai asing dari `localStorage` yang diedit tangan berarti mati.
+ */
+export function readShowHandsInPractice(): boolean {
+  return read(STORAGE_KEYS.settings).showHandsInPractice === true;
+}
+
+export function writeShowHandsInPractice(shown: boolean): void {
+  write(STORAGE_KEYS.settings, { ...read(STORAGE_KEYS.settings), showHandsInPractice: shown });
+}
+
+/**
  * Kelulusan kursus (ADR-030).
  *
  * `markGraduated` sengaja tidak menimpa nilai yang sudah ada: tanggal kelulusan

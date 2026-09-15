@@ -30,6 +30,22 @@ alokasi per keystroke yang disengaja), `DesktopOnly` diputuskan **sekali saat mo
 (bukan `resize` — ADR-028), tema dicerminkan ke ekspor di `exportAll` (bukan di toggle —
 itu menarik storage ke bundel awal), dan atap bundel awal **90 KB**.
 
+**Siluet tangan (ADR-036, 2026-09-14)** — naik dari backlog atas permintaan pemilik.
+Geometrinya diturunkan dari posisi tombol yang diukur (`hands.ts`, pure), bukan gambar
+statis; pengukuran hanya saat mount/`ResizeObserver`, jalur keystroke hanya menulis
+atribut dengan string yang sudah dihitung. Selalu di `/learn/:id` dan `/posture`,
+opsional di `/practice` (`showHandsInPractice`, default mati), tidak pernah di
+`/placement`. Satu butir DoD menunggu pemilik: **apakah siluet membantu pemula
+menaruh tangan, dan apakah bentuknya pas di atas tombol di layar sungguhan.**
+
+**Siluet hibrida (ADR-037, 2026-09-15)** menggantikan *bentuk* prosedural ADR-036, bukan
+*letaknya*: pose per tombol dari `finger-svg-tendrill/` dibangkitkan ke
+`src/data/hands/poses.ts` oleh `scripts/build-hand-poses.ts` (**jangan disunting
+tangan** — ubah SVG-nya lalu jalankan ulang generator). Pose disimpan di ruang keyboard;
+`hands.ts` mem-fit affine ke tombol terukur. Ujung jari aktif setiap pose wajib di dalam
+tombolnya — digerbangi generator dan `hands.test.ts` (dengan kontrol negatif). Data pose
+~28 KB **hanya lewat `loadHandPoses()`**, dijaga `chunkgraph` (`LAZY_ONLY`).
+
 Sebelumnya: **Fase 7 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
 butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
 apakah kriteria lulusnya adil), Fase 6 menambah satu (apakah heatmap latensi
