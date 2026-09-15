@@ -6,3 +6,6 @@ coverage
 .env*
 
 *.tsbuildinfo
+
+# SVG siluet mentah dari pemilik (ADR-037). Yang dipakai & di-commit hanya finger-svg-tendrill/.
+finger-svg/

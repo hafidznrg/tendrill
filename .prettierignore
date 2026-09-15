@@ -5,3 +5,6 @@ package-lock.json
 # Mirror verbatim dari docs/planning/12-brand-identity.md §5 —
 # Prettier me-lowercase nilai heksnya dan membuat diff palsu terhadap dok. 12.
 src/assets/brand/
+
+# Dihasilkan scripts/build-hand-poses.ts (ADR-037) — keluaran generator adalah sumber kebenaran.
+src/data/hands/poses.ts

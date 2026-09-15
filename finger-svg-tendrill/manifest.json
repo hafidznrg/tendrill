@@ -1,0 +1,396 @@
+[
+  {
+    "key": "Backquote",
+    "filename": "backquote.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Backslash",
+    "filename": "backslash.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Backspace",
+    "filename": "backspace.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1,
+    "derivedFrom": "Minus"
+  },
+  {
+    "key": "BracketLeft",
+    "filename": "bracket_left.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "BracketRight",
+    "filename": "bracket_right.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "CapsLock",
+    "filename": "caps_lock.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1,
+    "derivedFrom": "KeyA"
+  },
+  {
+    "key": "Comma",
+    "filename": "comma.svg",
+    "hand": "right",
+    "finger": "f6",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit0",
+    "filename": "digit0.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit1",
+    "filename": "digit1.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit2",
+    "filename": "digit2.svg",
+    "hand": "left",
+    "finger": "f2",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit3",
+    "filename": "digit3.svg",
+    "hand": "left",
+    "finger": "f3",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit4",
+    "filename": "digit4.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit5",
+    "filename": "digit5.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit6",
+    "filename": "digit6.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit7",
+    "filename": "digit7.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit8",
+    "filename": "digit8.svg",
+    "hand": "right",
+    "finger": "f6",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Digit9",
+    "filename": "digit9.svg",
+    "hand": "right",
+    "finger": "f7",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Enter",
+    "filename": "enter.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Equal",
+    "filename": "equal.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyA",
+    "filename": "key_a.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyB",
+    "filename": "key_b.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyC",
+    "filename": "key_c.svg",
+    "hand": "left",
+    "finger": "f3",
+    "highlightSegments": 2
+  },
+  {
+    "key": "KeyD",
+    "filename": "key_d.svg",
+    "hand": "left",
+    "finger": "f3",
+    "highlightSegments": 2
+  },
+  {
+    "key": "KeyE",
+    "filename": "key_e.svg",
+    "hand": "left",
+    "finger": "f3",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyF",
+    "filename": "key_f.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyG",
+    "filename": "key_g.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyH",
+    "filename": "key_h.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyI",
+    "filename": "key_i.svg",
+    "hand": "right",
+    "finger": "f6",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyJ",
+    "filename": "key_j.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyK",
+    "filename": "key_k.svg",
+    "hand": "right",
+    "finger": "f6",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyL",
+    "filename": "key_l.svg",
+    "hand": "right",
+    "finger": "f7",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyM",
+    "filename": "key_m.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyN",
+    "filename": "key_n.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyO",
+    "filename": "key_o.svg",
+    "hand": "right",
+    "finger": "f7",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyP",
+    "filename": "key_p.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyQ",
+    "filename": "key_q.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyR",
+    "filename": "key_r.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyS",
+    "filename": "key_s.svg",
+    "hand": "left",
+    "finger": "f2",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyT",
+    "filename": "key_t.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyU",
+    "filename": "key_u.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyV",
+    "filename": "key_v.svg",
+    "hand": "left",
+    "finger": "f4",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyW",
+    "filename": "key_w.svg",
+    "hand": "left",
+    "finger": "f2",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyX",
+    "filename": "key_x.svg",
+    "hand": "left",
+    "finger": "f2",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyY",
+    "filename": "key_y.svg",
+    "hand": "right",
+    "finger": "f5",
+    "highlightSegments": 1
+  },
+  {
+    "key": "KeyZ",
+    "filename": "key_z.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Minus",
+    "filename": "minus.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "NeutralLeft",
+    "filename": "neutral_left.svg",
+    "hand": "left",
+    "finger": "rest",
+    "highlightSegments": 0
+  },
+  {
+    "key": "NeutralRight",
+    "filename": "neutral_right.svg",
+    "hand": "right",
+    "finger": "rest",
+    "highlightSegments": 0
+  },
+  {
+    "key": "Period",
+    "filename": "period.svg",
+    "hand": "right",
+    "finger": "f7",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Quote",
+    "filename": "quote.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Semicolon",
+    "filename": "semicolon.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "ShiftLeft",
+    "filename": "shift_left.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  },
+  {
+    "key": "ShiftRight",
+    "filename": "shift_right.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Slash",
+    "filename": "slash.svg",
+    "hand": "right",
+    "finger": "f8",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Space",
+    "filename": "space.svg",
+    "hand": "right",
+    "finger": "thumb",
+    "highlightSegments": 1
+  },
+  {
+    "key": "Tab",
+    "filename": "tab.svg",
+    "hand": "left",
+    "finger": "f1",
+    "highlightSegments": 1
+  }
+]
