@@ -22,12 +22,17 @@
 
   .pg-root .pg-map {
     max-width: none;
+    margin-top: 0;
+  }
+}
+
+/* Sticky HANYA kalau peta (±680 px) muat utuh di layar. Peta tidak pernah diberi
+   gulir sendiri: scrollbar di dalam kolom sempit terbaca sebagai konten terpotong.
+   Di layar pendek ia ikut halaman seperti biasa. */
+@media (min-width: 68.75rem) and (min-height: 46rem) {
+  .pg-root .pg-map {
     position: sticky;
     top: 1.5rem;
-    margin-top: 0;
-    /* Layar pendek: peta menggulir sendiri, bukan terpotong. */
-    max-height: calc(100dvh - 3rem);
-    overflow-y: auto;
   }
 }
 

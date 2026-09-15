@@ -1793,7 +1793,10 @@ gambar yang memperlihatkan semuanya sekaligus, dan memilih **kartu per jari**.
     `max-w-6xl` (`WIDE_ROUTES` di `AppLayout`); halaman lain tetap `max-w-3xl`. Mulai
     1100 px: kolom kiri = panduan + keyboard interaktif (lebarnya **tidak berubah**, jadi
     keyboard tidak mengecil), kolom kanan = peta jari, `position: sticky` sehingga tetap
-    terlihat saat butir panduan digulir. Di bawah 1100 px kembali satu kolom, peta di bawah
+    terlihat saat butir panduan digulir — **hanya kalau layar ≥ 46rem tingginya** (peta
+    muat utuh). Peta tidak pernah diberi gulir sendiri: versi pertama memakai
+    `max-height` + `overflow: auto`, dan pemilik mendapati scrollbar di kolom sempit
+    yang tidak perlu. Di bawah 1100 px kembali satu kolom, peta di bawah
     butir. Urutan DOM tetap panduan → peta, jadi urutan baca screen reader dan Tab tidak
     berubah.
 

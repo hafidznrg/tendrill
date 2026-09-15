@@ -148,7 +148,7 @@ yang memperlihatkan telunjuk kanan bertumpu di `j`.
   chip tombol (klik → tampil di keyboard interaktif). Tanpa pengukuran DOM; ruang
   siluet dipesan lewat `viewBox`.
 - **Tata letak `/posture`** (ADR-038 poin 12): satu-satunya halaman selebar `max-w-6xl`.
-  ≥ 1100 px dua kolom — kiri panduan + keyboard (lebar tetap), kanan peta jari *sticky*;
+  ≥ 1100 px dua kolom — kiri panduan + keyboard (lebar tetap), kanan peta jari *sticky* (hanya kalau layar ≥ 46rem tingginya; tidak pernah bergulir sendiri);
   di bawahnya satu kolom dengan peta sesudah butir.
 
 ### Pemetaan jari (QWERTY)

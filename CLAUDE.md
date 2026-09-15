@@ -23,35 +23,51 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang: **Fase 8 — kode selesai (2026-09-13), DoD menunggu pemilik**: uji
-pakai ≥ 3 orang, Lighthouse, ulang `autotype()`/`watchRealInput()`, dan deploy.
+Status sekarang (2026-09-15): **Fase 8 — kode selesai, DoD menunggu pemilik.** Sesudahnya,
+atas permintaan pemilik, siluet tangan (ADR-036→037) dan `/posture` yang dapat dijelajah
+(ADR-038) dikerjakan dan **sudah di-push** ke `origin/main` (`071fc00`, `b605264`,
+`c5a475f`). Tidak ada pekerjaan kode yang menggantung; yang tersisa hanya butir yang
+**tidak bisa dikerjakan agent**:
+
+| Butir yang menunggu pemilik | Asal |
+|---|---|
+| Uji pakai ≥ 3 orang, Lighthouse, ulang `autotype()`/`watchRealInput()`, deploy | Fase 8 |
+| Apakah siluet membantu pemula, dan bentuknya pas di layar sungguhan (termasuk 11 pose yang diputar generator) | ADR-036/037 |
+| Apakah menjelajah `/posture` membantu, atau mengalihkan dari "raba, jangan lihat" | ADR-038 |
+| Konfirmasi lisensi aset siluet (sumber bergelar "VocaType") | ADR-037 |
+| Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
+| Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
+| Drill adaptif *terasa* menyasar kelemahan | Fase 7 |
+
 Yang mengikat dari Fase 8 (ADR-035): suara ketik **lazy dan mati default** (satu-satunya
 alokasi per keystroke yang disengaja), `DesktopOnly` diputuskan **sekali saat mount**
 (bukan `resize` — ADR-028), tema dicerminkan ke ekspor di `exportAll` (bukan di toggle —
 itu menarik storage ke bundel awal), dan atap bundel awal **90 KB**.
 
-**Siluet tangan (ADR-036, 2026-09-14)** — naik dari backlog atas permintaan pemilik.
-Geometrinya diturunkan dari posisi tombol yang diukur (`hands.ts`, pure), bukan gambar
-statis; pengukuran hanya saat mount/`ResizeObserver`, jalur keystroke hanya menulis
-atribut dengan string yang sudah dihitung. Selalu di `/learn/:id` dan `/posture`,
-opsional di `/practice` (`showHandsInPractice`, default mati), tidak pernah di
-`/placement`. Satu butir DoD menunggu pemilik: **apakah siluet membantu pemula
-menaruh tangan, dan apakah bentuknya pas di atas tombol di layar sungguhan.**
+**Siluet tangan (ADR-036 → ADR-037).** *Bentuk* datang dari pose SVG per tombol, *letak*
+tetap dari tombol yang diukur:
+- `finger-svg/` (aset mentah) **di-ignore**; yang di-commit hanya `finger-svg-tendrill/`.
+  Alurnya: `scripts/build-hand-svg-theme.mjs` → `scripts/build-hand-poses.ts` →
+  `src/data/hands/poses.ts` (**jangan disunting tangan**, ada di `.prettierignore`).
+- `hands.ts` (pure) mem-fit affine ruang keyboard → tombol terukur, hanya saat
+  mount/`ResizeObserver`. Jalur keystroke hanya menulis `d` dengan string yang sudah ada,
+  dan hanya kalau pose berganti. Pose istirahat dilukis di layout effect.
+- Ujung jari aktif setiap pose wajib di dalam tombolnya — digerbangi generator dan
+  `hands.test.ts` (dengan kontrol negatif).
+- Data pose ~27 KB **hanya lewat `loadHandPoses()`**, dijaga `chunkgraph` (`LAZY_ONLY`).
+- Selalu di `/learn/:id` dan `/posture`; opsional di `/practice` (`showHandsInPractice`,
+  default mati); tidak pernah di `/placement`.
 
-**Siluet hibrida (ADR-037, 2026-09-15)** menggantikan *bentuk* prosedural ADR-036, bukan
-*letaknya*: pose per tombol dari `finger-svg-tendrill/` dibangkitkan ke
-`src/data/hands/poses.ts` oleh `scripts/build-hand-poses.ts` (**jangan disunting
-tangan** — ubah SVG-nya lalu jalankan ulang generator). Pose disimpan di ruang keyboard;
-`hands.ts` mem-fit affine ke tombol terukur. Ujung jari aktif setiap pose wajib di dalam
-tombolnya — digerbangi generator dan `hands.test.ts` (dengan kontrol negatif). Data pose
-~28 KB **hanya lewat `loadHandPoses()`**, dijaga `chunkgraph` (`LAZY_ONLY`).
-
-**`/posture` dapat dijelajah (ADR-038, 2026-09-15)**: keyboard fisik + hover lewat hook
-`useKeyExplorer` — **hanya `/posture` yang memasangnya**, jangan dijadikan mode di
-`VirtualKeyboard` (layar sesi tidak boleh mendapat listener baru). Tab/Enter/Ctrl/Alt/Meta
-tidak pernah ditangkap; di tombol, Spasi dilepas tapi huruf tetap ditangkap. "Lihat
-bedanya" hanya di butir 4 dan 5, tanpa putar otomatis. Butir DoD pemilik: apakah
-menjelajah membantu pemula, atau mengalihkan dari "raba, jangan lihat".
+**`/posture` (ADR-038).**
+- Keyboard fisik + hover lewat hook `useKeyExplorer` — **hanya `/posture` yang
+  memasangnya**; jangan dijadikan mode di `VirtualKeyboard` (layar sesi tidak boleh
+  mendapat listener baru). Tab/Enter/Ctrl/Alt/Meta tidak pernah ditangkap; di tombol,
+  Spasi dilepas tapi huruf tetap ditangkap; `code` kosong jatuh ke `event.key`.
+- "Lihat bedanya" hanya di butir 4 dan 5, tanpa putar otomatis.
+- Peta jari (`FingerCards`): kartu diturunkan dari `fingerMap.ts`, setiap tombol di tepat
+  satu kartu (dijaga test).
+- `/posture` satu-satunya rute `max-w-6xl` (`WIDE_ROUTES`). ≥ 1100 px dua kolom; peta
+  *sticky* hanya kalau layar ≥ 46rem tingginya, dan **tidak pernah diberi gulir sendiri**.
 
 Sebelumnya: **Fase 7 — kode selesai (2026-09-13). Fase 4 masih menyisakan dua
 butir DoD yang menunggu tangan pemilik** (menyelesaikan sendiri Unit 1–3, dan menilai
