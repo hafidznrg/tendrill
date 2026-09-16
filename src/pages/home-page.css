@@ -55,10 +55,8 @@
   line-height: 1.12;
   font-weight: 800;
   letter-spacing: -0.035em;
-}
-
-.hp-title span {
-  display: block;
+  /* Judul satu kalimat (ADR-040) membungkus sendiri; balance supaya barisnya seimbang. */
+  text-wrap: balance;
 }
 
 .hp-lede {

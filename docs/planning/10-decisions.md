@@ -1857,3 +1857,55 @@ menggantikannya.
 - (−) Beranda menjadi halaman kedua yang lebar; `WIDE_ROUTES` tidak lagi "hanya /posture".
 - (−) **Butir DoD pemilik:** apakah hero yang sama setiap kunjungan terasa membantu atau
   justru mendorong dashboard terlalu ke bawah di layar laptop pendek.
+
+> Salinan teks hero dan tiga fakta di butir 1–3 **digantikan ADR-040**; keputusan
+> strukturnya (hero untuk semua, dashboard di bawah, tanpa storage baru) tetap berlaku.
+
+## ADR-040 — Salinan teks beranda ditulis ulang: kalimat pendek, netral, pasif
+
+**Tanggal:** 2026-09-16 · **Status:** Diterima
+
+### Konteks
+
+Pemilik membaca beranda hasil ADR-039 dan menilai teksnya "terlalu AI generated". Tiga
+pola yang dinamai: fragmen paralel bertitik sebagai judul ("Sepuluh jari. Satu baris
+dulu."), tanda pisah yang menutup kalimat dengan aforisme ("Akurasi dulu — kecepatan
+menyusul sendiri"), dan judul berupa frasa benda abstrak ("Menyasar kelemahanmu").
+
+Usulan perbaikan pertama justru **memanjangkan** kalimat demi menjadi kalimat utuh, dan
+pemilik menilainya lebih formal. Usulan kedua memendekkan kalimat tapi memakai ragam
+lisan ("nggak", "udah"). Pemilik memilih jalan tengah dan menambahkan satu preferensi:
+**bentuk pasif lebih disukai daripada aktif.**
+
+### Keputusan
+
+1. **Yang menghangatkan teks adalah panjang kalimat, bukan kelengkapan gramatikalnya.**
+   Satu gagasan satu kalimat. Kalimat majemuk bertingkat dipecah, bukan disambung dengan
+   tanda pisah.
+2. **Kosakata netral**, bukan ragam lisan Jakarta. "tidak", bukan "nggak"; tapi "tanpa
+   lihat keyboard", bukan "tanpa melihat keyboard".
+3. **Bentuk pasif dipakai kalau yang penting hasilnya** dan bukan siapa pelakunya —
+   "Progres disimpan di browser ini saja", bukan "Kami menyimpan progresmu".
+4. Salinan teks beranda menjadi:
+   - judul: **"Mengetik tanpa lihat keyboard"** (satu baris, bukan dua fragmen);
+   - pengantar: "Mulai dari `f` dan `j` saja. Tombol lain ditambahkan satu per satu.
+     Kecepatan tidak dikejar dulu. Yang dilatih letak jarinya.";
+   - tombol pengguna baru: **"Mulai dari awal"** (bukan "Mulai dari nol" — menghakimi)
+     dan **"Sudah bisa mengetik? Tes 60 detik"**;
+   - tautan teks: **"lihat dulu daftar lesson-nya"**;
+   - tiga fakta: **"36 lesson, urut"**, **"Ikut tombol yang sering salah"**,
+     **"Tidak perlu akun"**, masing-masing dengan satu kalimat penjelas;
+   - kartu tombol terlemah yang belum punya data, dan kartu kurikulum selesai, ditulis
+     ulang dengan aturan yang sama.
+5. **"Latih kelemahanmu" tidak diganti.** Itu nama halaman `/practice/adaptive`
+   (ADR-034, dok. 02 §3, dok. 04 §10); tombol di beranda harus menyebut nama yang sama
+   dengan halaman tujuannya.
+6. Aturannya dicatat di dok. 07 §11 supaya berlaku untuk layar lain, bukan cuma beranda.
+
+### Konsekuensi
+
+- (+) Aturan nadanya bisa diuji pada teks baru mana pun, bukan selera per halaman.
+- (−) Dok. 07 §11 sekarang punya empat butir bentuk bahasa; teks lama di layar lain belum
+  disisir mengikutinya.
+- (−) **Butir DoD pemilik:** apakah teks barunya masih terasa punya karakter, atau justru
+  jadi datar karena kalimatnya dipendekkan semua.

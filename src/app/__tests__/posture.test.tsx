@@ -127,13 +127,13 @@ describe('CTA beranda (dok. 02 §2)', () => {
 
   it('pengguna baru diarahkan ke panduan dulu', () => {
     renderHome();
-    expect(screen.getByText('Mulai dari nol').getAttribute('href')).toBe('/posture');
+    expect(screen.getByText('Mulai dari awal').getAttribute('href')).toBe('/posture');
   });
 
   it('yang sudah pernah melihat panduan langsung ke latihan', () => {
     markPostureSeen();
     renderHome();
-    expect(screen.getByText('Mulai dari nol').getAttribute('href')).not.toBe('/posture');
+    expect(screen.getByText('Mulai dari awal').getAttribute('href')).not.toBe('/posture');
   });
 
   it('pengguna yang sudah punya progres tidak pernah disodori panduan lagi', () => {

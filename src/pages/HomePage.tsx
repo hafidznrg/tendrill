@@ -58,15 +58,15 @@ export default function HomePage() {
         <div className="hp-hero-text">
           <p className="hp-label">belajar mengetik sepuluh jari</p>
           <h1 className="hp-title">
-            <span>Sepuluh jari.</span> <span>Satu baris dulu.</span>
+            Mengetik tanpa lihat keyboard
           </h1>
           <p className="hp-lede">
-            Mulai dari <kbd>f</kbd> dan <kbd>j</kbd>, naik sampai seluruh keyboard. Akurasi dulu
-            — kecepatan menyusul sendiri.
+            Mulai dari <kbd>f</kbd> dan <kbd>j</kbd> saja. Tombol lain ditambahkan satu per satu.
+            Kecepatan tidak dikejar dulu. Yang dilatih letak jarinya.
           </p>
           <div className="hp-actions">
             <Link to={startHref} className="hp-btn hp-btn-primary">
-              {started ? 'Lanjutkan' : 'Mulai dari nol'}
+              {started ? 'Lanjutkan' : 'Mulai dari awal'}
             </Link>
             {started ? (
               <Link to="/practice" className="hp-btn">
@@ -74,12 +74,12 @@ export default function HomePage() {
               </Link>
             ) : (
               <Link to="/placement" className="hp-btn">
-                Sudah bisa? Tes 60 detik
+                Sudah bisa mengetik? Tes 60 detik
               </Link>
             )}
           </div>
           <Link to="/learn" className="hp-textlink">
-            atau lihat seluruh kurikulum
+            lihat dulu daftar lesson-nya
           </Link>
         </div>
         <HomeRowPanel />
@@ -126,7 +126,8 @@ export default function HomePage() {
                   Tombol terlemah
                 </h3>
                 <p className="hp-dim">
-                  Muncul sesudah beberapa sesi — cukup data untuk tahu tombol mana yang meleset.
+                  Latihan dulu beberapa kali. Sesudah itu baru kelihatan tombol mana yang sering
+                  meleset.
                 </p>
               </article>
             )}
@@ -154,16 +155,16 @@ export default function HomePage() {
       ) : (
         <ul className="hp-facts">
           <li>
-            <strong>36 lesson berjenjang</strong>
-            <span>Tidak ada tombol yang muncul sebelum diajarkan.</span>
+            <strong>36 lesson, urut</strong>
+            <span>Tombol baru tidak pernah ditampilkan sebelum letaknya diajarkan.</span>
           </li>
           <li>
-            <strong>Menyasar kelemahanmu</strong>
-            <span>Drill adaptif dari tombol yang paling sering meleset.</span>
+            <strong>Ikut tombol yang sering salah</strong>
+            <span>Tombol yang sering meleset dicatat, lalu dijadikan bahan latihan.</span>
           </li>
           <li>
-            <strong>Tanpa akun</strong>
-            <span>Semua progres tersimpan di perangkat ini saja.</span>
+            <strong>Tidak perlu akun</strong>
+            <span>Progres disimpan di browser ini saja. Tidak dikirim ke mana-mana.</span>
           </li>
         </ul>
       )}
@@ -244,7 +245,7 @@ function NextLesson({
           </>
         ) : (
           <>
-            <h3 className="hp-next-title">Seluruh kurikulum sudah lulus</h3>
+            <h3 className="hp-next-title">Semua lesson sudah selesai</h3>
             <p className="hp-dim">Latihan bebas dan drill kelemahan tetap terbuka.</p>
           </>
         )}

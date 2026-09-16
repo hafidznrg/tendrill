@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { AppRoutes } from '../router';
 
 const CASES: Array<[string, string]> = [
-  ['/', 'Sepuluh jari. Satu baris dulu.'],
+  ['/', 'Mengetik tanpa lihat keyboard'],
   ['/learn', 'Kurikulum'],
   // Judul lesson datang dari kurikulum, bukan dari nomor urut — "Lesson 1"
   // hanya benar selama halaman ini masih hardcode (Fase 2). Sejak Fase 3 ia
@@ -15,7 +15,7 @@ const CASES: Array<[string, string]> = [
   ['/practice', 'Latihan bebas'],
   ['/stats', 'Statistik'],
   ['/settings', 'Pengaturan'],
-  ['/rute-yang-tidak-ada', 'Sepuluh jari. Satu baris dulu.'],
+  ['/rute-yang-tidak-ada', 'Mengetik tanpa lihat keyboard'],
 ];
 
 describe('peta rute (dok. 02 §1)', () => {
