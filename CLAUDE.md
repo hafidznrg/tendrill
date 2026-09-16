@@ -23,11 +23,12 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang (2026-09-15): **Fase 8 — kode selesai, DoD menunggu pemilik.** Sesudahnya,
-atas permintaan pemilik, siluet tangan (ADR-036→037) dan `/posture` yang dapat dijelajah
-(ADR-038) dikerjakan dan **sudah di-push** ke `origin/main` (`071fc00`, `b605264`,
-`c5a475f`). Tidak ada pekerjaan kode yang menggantung; yang tersisa hanya butir yang
-**tidak bisa dikerjakan agent**:
+Status sekarang (2026-09-16): **Fase 8 — kode selesai, DoD menunggu pemilik.** Sesudahnya,
+atas permintaan pemilik, dikerjakan berturut-turut dan **sudah di-push** ke `origin/main`:
+siluet tangan (ADR-036→037, `071fc00`/`b605264`), `/posture` yang dapat dijelajah (ADR-038,
+`c5a475f`), beranda dengan dashboard progres (ADR-039, `abb8c5e`) dan salinan teksnya
+(ADR-040, `f777f9d`), lalu tata ulang layar sesi (ADR-041, `8425b51`). Tidak ada pekerjaan
+kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan agent**:
 
 | Butir yang menunggu pemilik | Asal |
 |---|---|
@@ -35,6 +36,9 @@ atas permintaan pemilik, siluet tangan (ADR-036→037) dan `/posture` yang dapat
 | Apakah siluet membantu pemula, dan bentuknya pas di layar sungguhan (termasuk 11 pose yang diputar generator) | ADR-036/037 |
 | Apakah menjelajah `/posture` membantu, atau mengalihkan dari "raba, jangan lihat" | ADR-038 |
 | Konfirmasi lisensi aset siluet (sumber bergelar "VocaType") | ADR-037 |
+| Apakah hero yang sama tiap kunjungan membantu, atau mendorong dashboard terlalu ke bawah | ADR-039 |
+| Apakah teks beranda yang dipendekkan masih punya karakter, atau jadi datar | ADR-040 |
+| Apakah hasil yang menutup teks membantu atau mengagetkan, dan apakah intro satu baris di bawah keyboard masih terbaca pemula | ADR-041 |
 | Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
 | Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
 | Drill adaptif *terasa* menyasar kelemahan | Fase 7 |
@@ -43,6 +47,19 @@ Yang mengikat dari Fase 8 (ADR-035): suara ketik **lazy dan mati default** (satu
 alokasi per keystroke yang disengaja), `DesktopOnly` diputuskan **sekali saat mount**
 (bukan `resize` — ADR-028), tema dicerminkan ke ekspor di `exportAll` (bukan di toggle —
 itu menarik storage ke bundel awal), dan atap bundel awal **90 KB**.
+
+**Tata letak layar sesi (ADR-041).** Dua aturan yang mudah dirusak tanpa sadar, karena
+keduanya soal *posisi* dan kodenya tetap "jalan" kalau dilanggar:
+- **Di atas area teks hanya ada bilah metrik.** Intro lesson dan pengantar `/placement`
+  hidup di slot `footer` `TypingStage` — di bawah keyboard. Yang muncul/hilang di sana tidak
+  menggeser panggung; blok di atasnya menggeser semuanya. Intro **tidak** disembunyikan pada
+  keystroke pertama: itu satu re-render React di jalur input.
+- **Layar hasil adalah `overlay`, bukan blok sesudah panggung**, dan panggungnya **tidak
+  di-unmount** — meng-unmount-nya membuang sesi engine dan memaksa `VirtualKeyboard`
+  mengukur ulang rect tombol yang dipakai siluet tangan. Panel menggulir di dalam dirinya
+  sendiri, tidak pernah menggulir halaman. Berlaku di `/learn/:id`, `/practice`,
+  `/practice/adaptive`; `/placement` hasilnya halaman sendiri.
+Keduanya dijaga `learnFlow.test.tsx` (urutan DOM dan induk overlay, dengan kontrol negatif).
 
 **Siluet tangan (ADR-036 → ADR-037).** *Bentuk* datang dari pose SVG per tombol, *letak*
 tetap dari tombol yang diukur:
