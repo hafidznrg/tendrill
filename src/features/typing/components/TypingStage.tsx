@@ -31,8 +31,16 @@ export interface TypingStageProps {
   runId?: number;
   onFinish: (result: SessionResult | null) => void;
   onExit?: () => void;
-  /** Baris bantuan di bawah keyboard — beda per halaman. */
+  /** Baris bantuan di bawah keyboard — beda per halaman. Di sinilah intro lesson
+   * tinggal (ADR-041): di bawah keyboard, tidak ada yang boleh menggeser area teks. */
   footer?: ReactNode;
+  /**
+   * Panel yang dilukis DI ATAS area teks + keyboard (ADR-041) — dipakai layar
+   * hasil. Panggung sengaja tetap ter-mount di belakangnya: meng-unmount-nya
+   * membuang sesi engine dan memaksa `VirtualKeyboard` mengukur ulang rect
+   * tombol yang dipakai siluet tangan (ADR-036).
+   */
+  overlay?: ReactNode;
   /** false → sesi tidak menerima input (mis. layar hasil sedang tampil). */
   active?: boolean;
   /**
@@ -53,6 +61,7 @@ export function TypingStage({
   onFinish,
   onExit,
   footer,
+  overlay,
   active = true,
   strict = false,
   limitMs = null,
@@ -89,22 +98,30 @@ export function TypingStage({
     <>
       <LiveMetrics metrics={session.metrics} title={title} />
 
-      <div className="relative mt-8">
-        <TypingArea session={session} charWidth={charWidth} onMeasureEl={setTextEl} />
+      {/* Pembungkus `relative` melingkupi teks DAN keyboard supaya overlay hasil
+          menutupi keduanya (ADR-041). Overlay jeda tetap hanya di atas teks — ia
+          tombol "klik untuk lanjut", dan menutupi keyboard membuatnya berbohong
+          tentang apa yang bisa diklik. */}
+      <div className="relative">
+        <div className="relative mt-8">
+          <TypingArea session={session} charWidth={charWidth} onMeasureEl={setTextEl} />
 
-        {session.status === 'paused' && (
-          <button
-            type="button"
-            onClick={session.resumeNow}
-            className="absolute inset-0 flex items-center justify-center bg-bg/85 font-mono text-[13px] text-fg-dim"
-          >
-            klik atau ketik untuk lanjut
-          </button>
-        )}
-      </div>
+          {session.status === 'paused' && (
+            <button
+              type="button"
+              onClick={session.resumeNow}
+              className="absolute inset-0 flex items-center justify-center bg-bg/85 font-mono text-[13px] text-fg-dim"
+            >
+              klik atau ketik untuk lanjut
+            </button>
+          )}
+        </div>
 
-      <div className="mt-8">
-        <VirtualKeyboard onReady={registerNextKeyPainter} showHands={showHands} />
+        <div className="mt-8">
+          <VirtualKeyboard onReady={registerNextKeyPainter} showHands={showHands} />
+        </div>
+
+        {overlay}
       </div>
 
       {footer}

@@ -31,7 +31,8 @@
 │              [ virtual keyboard ]                    │  ← bisa disembunyikan
 │                                                      │
 ├──────────────────────────────────────────────────────┤
-│   Tab restart · Esc keluar                           │  ← petunjuk, sangat redup
+│   Telunjuk kiri di F, kanan di J.       [selengkapnya]│  ← intro, satu baris (ADR-041)
+│   [strict|bebas]  12wpm · 90% · Tab ulangi · Esc keluar│  ← petunjuk, sangat redup
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -46,6 +47,34 @@ Aturan:
   Lebih panjang dari 60 membuat mata kesulitan kembali ke awal baris; lebih pendek dari
   50 hanya terjadi di jendela sempit, dan itu lebih baik daripada caret yang salah.
 - Metrik live diletakkan **jauh dari teks** supaya tidak mencuri perhatian saat mengetik.
+
+### Apa yang boleh berada di atas area teks (ADR-041)
+
+**Tidak ada, selain bilah metrik.** Intro lesson dan paragraf pengantar `/placement` berada
+di **bawah** keyboard, bergabung dengan baris footer. Alasannya mekanis, bukan kerapian:
+apa pun yang muncul atau hilang di bawah keyboard tidak menggeser area teks, sedangkan blok
+di atasnya menggeser seluruh panggung — kelas bug yang tiga kali lolos di Fase 2 (dok. 08).
+
+- Intro ditulis **satu baris**, 13 px, `--fg-dim`, bar aksen kiri dipertahankan. Kalimat
+  berikutnya disembunyikan di balik `<details>`; ringkasannya selalu satu baris.
+- Intro **tidak** disembunyikan pada keystroke pertama: itu satu re-render React di jalur
+  input, dan gerbang nol re-render (dok. 08 Fase 1) lebih mahal daripada sebaris teks redup.
+- Rute sesi memakai `py-6`, bukan `py-10`.
+
+### Layar hasil adalah overlay, bukan blok berikutnya (ADR-041)
+
+`ResultScreen` dirender **di atas** area teks + keyboard, di dalam pembungkus `relative`
+yang sama — pola yang sudah dipakai overlay `status === 'paused'`. Panggung tetap
+ter-*mount*: meng-unmount-nya membuang sesi engine dan memaksa `VirtualKeyboard` mengukur
+ulang rect tombol yang dipakai siluet tangan (ADR-036).
+
+- Scrim `--bg` 94% — konteks di belakang masih terbaca samar.
+- Panel: `max-height: 100%` + `overflow-y: auto`. Cabang assist ladder terpanjang menggulir
+  **di dalam panel**, tidak pernah menggulir halaman.
+- `role="dialog"`, `aria-modal="false"`, fokus pindah ke panel saat muncul. Pintasan
+  Enter / N / Esc tidak berubah.
+- Berlaku di `/learn/:id`, `/practice`, `/practice/adaptive`. `/placement` hasilnya halaman
+  sendiri dan tidak memakai overlay.
 
 ### Pembungkusan baris bersifat deterministik, bukan CSS (R-07)
 
@@ -264,9 +293,9 @@ prinsip produk #3 ("jangan menghukum kesalahan secara emosional").
 ```
 ┌ header ─────────────────────────────────────────────────────────────┐
 │  LABEL                             ┌ panel home row statis ───────┐ │
-│  Sepuluh jari.                     │ a s d f   j k l ;            │ │
-│  Satu baris dulu.                  │ (tonjolan f/j, d l beraksen) │ │
-│  pengantar                         │ fjfj dkdk ▌jf kd             │ │
+│  Mengetik tanpa lihat keyboard     │ a s d f   j k l ;            │ │
+│                                    │ (tonjolan f/j, d l beraksen) │ │
+│  pengantar (4 kalimat pendek)      │ fjfj dkdk ▌jf kd             │ │
 │  [tombol utama] [tombol kedua]     └──────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────────┤
 │  baru:    tiga fakta satu baris                                     │
@@ -279,10 +308,18 @@ prinsip produk #3 ("jangan menghukum kesalahan secara emosional").
 - Satu tombol utama (isi `--accent`); tombol lain bergaris `--line`.
 - Kartu: `--surface-2`, garis `--line`, radius 6 px; label kartu mono 11 px huruf besar.
 - Garis mini WPM digambar SVG sendiri; hari tanpa latihan tidak diberi titik.
+- Salinan teksnya mengikuti ADR-040: kalimat pendek, kosakata netral, bentuk pasif
+  kalau yang penting hasilnya dan bukan siapa pelakunya.
 
 ## 11. Nada tulisan
 
 - Ringkas dan faktual. "27 WPM · 92% — butuh 95% untuk lanjut."
+- Kalimat pendek, satu gagasan satu kalimat. Kalimat majemuk bertingkat dipecah, bukan
+  disambung dengan tanda pisah.
+- Bentuk pasif dipakai kalau yang penting hasilnya: "Progres disimpan di browser ini saja",
+  bukan "Kami menyimpan progresmu di browser ini saja".
+- Judul dan label tidak ditulis sebagai frasa benda abstrak ("Menyasar kelemahanmu");
+  sebutkan hal yang terjadi ("Ikut tombol yang sering salah").
 - Diagnostik, bukan menghakimi. "Huruf `y` sering meleset" — bukan "Kamu buruk di `y`".
 - Tanpa gamifikasi berlebihan: tanpa confetti, tanpa lencana, tanpa poin.
 - Nada untuk lesson yang lulus dengan bantuan (dok. 04 §9) tetap jujur dan tidak menghibur

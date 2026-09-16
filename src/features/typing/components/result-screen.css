@@ -2,6 +2,39 @@
    Tanpa confetti, tanpa lencana, tanpa warna menyala untuk "lulus" —
    informasi, bukan perayaan. */
 
+/* Overlay hasil (ADR-041). Dilukis di atas area teks + keyboard, di dalam
+   pembungkus `relative` milik `TypingStage`. Panggung di belakangnya tetap
+   ter-mount — scrim 94% sengaja tidak pekat supaya teks yang baru diketik masih
+   terbaca samar. */
+.rs-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  /* color-mix supaya satu nilai bekerja di kedua tema — `--bg` sudah ditukar. */
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+}
+
+/* Panel menggulir DI DALAM dirinya, tidak pernah menggulir halaman: cabang
+   assist ladder terpanjang (diagnosis tebal + catatan target diturunkan + drill
+   mikro + "lanjut saja" + putusan kelulusan ADR-030) harus muat tanpa
+   memindahkan apa pun di belakangnya. */
+.rs-overlay > .rs-root {
+  margin-top: 0;
+  width: 100%;
+  max-width: 34rem;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.13);
+}
+
+.rs-overlay > .rs-root:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .rs-root {
   margin-top: 2rem;
   padding: 1.25rem 1.4rem;

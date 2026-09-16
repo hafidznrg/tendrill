@@ -20,6 +20,20 @@ const NAV = [
  */
 const WIDE_ROUTES = new Set(['/', '/posture']);
 
+/**
+ * Rute sesi memakai padding vertikal lebih kecil (ADR-041): panggungnya paling
+ * tinggi di aplikasi ini (teks + keyboard + siluet), dan 32 px yang dihemat di
+ * sini dipakai menaikkan area teks ke posisi baca yang nyaman di layar 900 px.
+ */
+function isSessionRoute(pathname: string): boolean {
+  return (
+    pathname === '/placement' ||
+    pathname === '/practice' ||
+    pathname === '/practice/adaptive' ||
+    pathname.startsWith('/learn/')
+  );
+}
+
 export function AppLayout() {
   // Jalur sesi disiapkan di latar sejak halaman mana pun dibuka (dok. 06 §6).
   useEffect(prefetchSessionPath, []);
@@ -57,7 +71,9 @@ export function AppLayout() {
       </header>
 
       <main
-        className={`mx-auto ${WIDE_ROUTES.has(pathname) ? 'max-w-6xl' : 'max-w-3xl'} px-6 py-10`}
+        className={`mx-auto ${WIDE_ROUTES.has(pathname) ? 'max-w-6xl' : 'max-w-3xl'} px-6 ${
+          isSessionRoute(pathname) ? 'py-6' : 'py-10'
+        }`}
       >
         {/* Boundary di dalam layout, direset saat rute berganti (dok. 02 §9): navigasi tetap
             hidup saat satu halaman gagal, dan pindah rute membersihkan error-nya. */}

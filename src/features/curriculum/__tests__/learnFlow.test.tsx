@@ -179,7 +179,7 @@ describe('assist ladder aktif di layar hasil (dok. 04 §9)', () => {
 
     // Target yang ditampilkan sebelum mengetik sudah memakai angka yang turun:
     // 18 WPM → 14 (u1-l1 = 18/95, ×0,8 dibulatkan).
-    expect(screen.getByText(/target 14 wpm · 95%/)).toBeTruthy();
+    expect(screen.getByText(/14wpm · 95%/)).toBeTruthy();
 
     await playLesson(false);
     const note = screen.getByText(/Target kecepatan diturunkan/);
@@ -223,5 +223,61 @@ describe('lesson yang tidak ada', () => {
 
     expect(screen.getByText('Lesson tidak ditemukan')).toBeTruthy();
     expect(read(STORAGE_KEYS.progress).lessons['u1-l1']).toBeDefined();
+  });
+});
+
+/**
+ * Tata letak layar sesi (ADR-041).
+ *
+ * Kedua aturannya bersifat posisi, bukan keberadaan: "intro ada di halaman" dan
+ * "layar hasil ada di halaman" sudah benar sebelum ADR ini, dan keluhannya tetap
+ * nyata. Yang diuji karena itu **urutan DOM** dan **induk** — dengan kontrol
+ * negatif di tiap kasus, karena gerbang yang tidak bisa merah tidak menjaga apa
+ * pun (dok. 08 penutup Fase 2).
+ */
+describe('tata letak layar sesi (ADR-041)', () => {
+  beforeEach(() => {
+    _resetForTests();
+    write(STORAGE_KEYS.progress, defaultProgress());
+  });
+
+  it('intro lesson berada SESUDAH keyboard, bukan di atas area teks', async () => {
+    await renderLesson();
+
+    const intro = screen.getByText(/Telunjuk kiri/);
+    const text = document.querySelector('.ta-text');
+    const keyboard = document.querySelector('.vk-frame');
+    const metrics = document.querySelector('.lm-root');
+    expect(text).toBeTruthy();
+    expect(keyboard).toBeTruthy();
+    expect(metrics).toBeTruthy();
+
+    // 4 = DOCUMENT_POSITION_FOLLOWING: intro datang sesudah area teks DAN
+    // sesudah keyboard — itu seluruh isi keputusannya.
+    expect(text!.compareDocumentPosition(intro) & 4).toBe(4);
+    expect(keyboard!.compareDocumentPosition(intro) & 4).toBe(4);
+
+    // Kontrol negatif untuk perbandingan itu sendiri: bilah metrik memang berada
+    // di ATAS area teks, jadi arah yang sama harus memberi hasil sebaliknya.
+    // Tanpa baris ini, `& 4` yang selalu bernilai 4 akan lolos diam-diam.
+    expect(text!.compareDocumentPosition(metrics!) & 4).not.toBe(4);
+  });
+
+  it('layar hasil dilukis sebagai overlay, dan panggung tetap ter-mount', async () => {
+    await renderLesson();
+    // Kontrol negatif: sebelum sesi selesai, overlay TIDAK boleh ada.
+    expect(document.querySelector('.rs-overlay')).toBeNull();
+
+    await playLesson(true);
+
+    const overlay = document.querySelector('.rs-overlay');
+    expect(overlay).toBeTruthy();
+    // Panel hasil benar-benar anak overlay, bukan blok sesudah panggung.
+    expect(overlay!.querySelector('.rs-root')).toBeTruthy();
+    // Panggung tidak di-unmount: meng-unmount-nya membuang sesi engine dan
+    // memaksa pengukuran ulang rect tombol yang dipakai siluet tangan.
+    expect(document.querySelector('.ta-text')).toBeTruthy();
+    // Panel menerima fokus supaya Tab tidak melanjutkan dari tombol di belakangnya.
+    expect(document.activeElement).toBe(overlay!.querySelector('.rs-root'));
   });
 });

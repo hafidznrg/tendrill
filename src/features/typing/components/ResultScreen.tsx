@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { SessionResult } from '@/lib/engine';
 import { diagnose, topProblemKeys } from '../diagnosis.ts';
 import './result-screen.css';
@@ -87,6 +87,27 @@ export function ResultScreen({
     return () => document.removeEventListener('keydown', onKey);
   }, [onRetry, onNext, onExit]);
 
+  // Panel hasil menutupi panggung (ADR-041), jadi ia harus menerima fokus — kalau
+  // tidak, Tab berikutnya melanjutkan dari tombol yang tersembunyi di belakangnya.
+  // Yang difokuskan adalah panelnya, BUKAN tombol pertama: Enter di tombol yang
+  // fokus akan menyalakan klik DAN pintasan Enter di atas, dua kali "ulangi".
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    panel.current?.focus();
+  }, []);
+
+  // `aria-modal="false"`: panggung di belakangnya memang masih terbaca, dan
+  // mengakuinya lebih jujur daripada menyembunyikannya dari screen reader.
+  const panelProps = {
+    ref: panel,
+    className: 'rs-root',
+    role: 'dialog' as const,
+    'aria-modal': false,
+    'aria-label': 'Hasil sesi',
+    tabIndex: -1,
+    'aria-live': 'polite' as const,
+  };
+
   const diagnosis = useMemo(() => (result ? diagnose(result) : null), [result]);
   const problemKeys = useMemo(() => (result ? topProblemKeys(result) : []), [result]);
 
@@ -94,7 +115,7 @@ export function ResultScreen({
   // yang dijeda lima menit membingungkan lebih daripada membantu.
   if (voided || !result) {
     return (
-      <section className="rs-root" aria-live="polite">
+      <section {...panelProps}>
         <h2 className="rs-verdict">Sesi tidak dihitung</h2>
         <p className="rs-note">
           Ada jeda lebih dari 30 detik di tengah sesi, jadi kecepatannya tidak lagi
@@ -110,7 +131,7 @@ export function ResultScreen({
     (result.netWPM >= criteria.minWpm && result.accuracy >= criteria.minAccuracy);
 
   return (
-    <section className="rs-root" aria-live="polite">
+    <section {...panelProps}>
       <h2 className={`rs-verdict${passed ? '' : ' rs-verdict-short'}`}>
         {criteria === null ? 'Selesai' : passed ? 'Lulus' : 'Belum lulus'}
       </h2>

@@ -303,6 +303,52 @@ export default function LessonPage() {
     : `Unit ${unit.order} · ${lesson.title} · drill ${drillIndex + 1}/${drills.length}`;
   const finished = attemptResult !== null || voided || microDone;
 
+  // Kedua panel hasil dibangun di sini dan dikirim sebagai `overlay` ke
+  // `TypingStage` (ADR-041): ia dilukis DI ATAS teks + keyboard, bukan sesudahnya,
+  // supaya WPM terlihat tanpa menggulir. Panggungnya sengaja tidak di-unmount.
+  const microPanel = microDone ? (
+    <ResultScreen
+      result={microResult}
+      voided={microResult === null}
+      onRetry={startMicroDrill}
+      onNext={startAttempt}
+      onExit={goBack}
+    />
+  ) : null;
+
+  const lessonPanel =
+    voided || attemptResult ? (
+      <ResultScreen
+        result={attemptResult?.result ?? null}
+        voided={voided}
+        criteria={attemptResult?.criteria ?? null}
+        previousBest={hasGraduationDrill ? null : previousBest.current}
+        onRetry={startAttempt}
+        onNext={attemptResult?.passed ? goNext : undefined}
+        onExit={goBack}
+        prominentDiagnosis={
+          !voided && shownAssist.prominentDiagnosis && !attemptResult?.passed
+        }
+        relaxedNote={
+          !voided && shownAssist.wpmRelaxed && attemptResult && !attemptResult.passed
+            ? `Target kecepatan diturunkan ke ${attemptResult.criteria.minWpm} WPM (dari ${lesson.passCriteria.minWpm}) karena ini percobaan ke-${attemptResult.attempt}. Akurasinya tetap ${attemptResult.criteria.minAccuracy}% — kecepatan boleh menunggu, ketepatan tidak.`
+            : null
+        }
+        onMicroDrill={
+          shownAssist.offerMicroDrill && attemptResult && !attemptResult.passed
+            ? startMicroDrill
+            : undefined
+        }
+        microDrillLabel={microDrillLabel(attemptResult?.result ?? null)}
+        onAssistPass={
+          shownAssist.offerSkip && attemptResult && !attemptResult.passed
+            ? assistPass
+            : undefined
+        }
+        graduation={attemptResult?.graduation ?? null}
+      />
+    ) : null;
+
   return (
     <section>
       {/* Bilah status berisi angka yang berubah 4×/detik, jadi ia bukan heading.
@@ -310,12 +356,6 @@ export default function LessonPage() {
       <h1 className="sr-only">
         Unit {unit.order} · {lesson.title}
       </h1>
-
-      {lesson.intro && !finished && (
-        <p className="mb-6 max-w-[68ch] border-l-2 border-accent pl-3 text-[15px]">
-          {lesson.intro}
-        </p>
-      )}
 
       <TypingStage
         target={target}
@@ -331,13 +371,22 @@ export default function LessonPage() {
         footer={
           // Mode yang aktif terlihat DI SINI, tanpa membuka pengaturan
           // (ADR-029) — tepat di bawah keyboard, tempat mata pemula berada.
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <InputModeToggle mode={mode} onChange={changeMode} />
-            <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
-              target {criteria.minWpm} wpm · {criteria.minAccuracy}% · Tab — ulangi · Esc —
-              keluar
-            </p>
+          // Intro lesson ikut ke sini (ADR-041): di atas area teks ia mendorong
+          // seluruh panggung ke bawah, dan tiap kemunculannya menggeser caret.
+          <div className="mt-4 flex flex-col gap-3">
+            {lesson.intro && !finished && <LessonIntro text={lesson.intro} />}
+            <div className="flex flex-wrap items-center gap-3">
+              <InputModeToggle mode={mode} onChange={changeMode} />
+              <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
+                {criteria.minWpm}wpm · {criteria.minAccuracy}% · Tab ulangi · Esc keluar
+              </p>
+            </div>
           </div>
+        }
+        overlay={
+          finished && (
+            <div className="rs-overlay">{micro !== null ? microPanel : lessonPanel}</div>
+          )
         }
       />
 
@@ -346,49 +395,37 @@ export default function LessonPage() {
           Penyimpanan browser tidak tersedia — progresmu tidak akan tersimpan.
         </p>
       )}
-
-      {micro !== null && microDone && (
-        <ResultScreen
-          result={microResult}
-          voided={microResult === null}
-          onRetry={startMicroDrill}
-          onNext={startAttempt}
-          onExit={goBack}
-        />
-      )}
-
-      {micro === null && (voided || attemptResult) && (
-        <ResultScreen
-          result={attemptResult?.result ?? null}
-          voided={voided}
-          criteria={attemptResult?.criteria ?? null}
-          previousBest={hasGraduationDrill ? null : previousBest.current}
-          onRetry={startAttempt}
-          onNext={attemptResult?.passed ? goNext : undefined}
-          onExit={goBack}
-          prominentDiagnosis={
-            !voided && shownAssist.prominentDiagnosis && !attemptResult?.passed
-          }
-          relaxedNote={
-            !voided && shownAssist.wpmRelaxed && attemptResult && !attemptResult.passed
-              ? `Target kecepatan diturunkan ke ${attemptResult.criteria.minWpm} WPM (dari ${lesson.passCriteria.minWpm}) karena ini percobaan ke-${attemptResult.attempt}. Akurasinya tetap ${attemptResult.criteria.minAccuracy}% — kecepatan boleh menunggu, ketepatan tidak.`
-              : null
-          }
-          onMicroDrill={
-            shownAssist.offerMicroDrill && attemptResult && !attemptResult.passed
-              ? startMicroDrill
-              : undefined
-          }
-          microDrillLabel={microDrillLabel(attemptResult?.result ?? null)}
-          onAssistPass={
-            shownAssist.offerSkip && attemptResult && !attemptResult.passed
-              ? assistPass
-              : undefined
-          }
-          graduation={attemptResult?.graduation ?? null}
-        />
-      )}
     </section>
+  );
+}
+
+/**
+ * Intro lesson: satu baris di bawah keyboard (ADR-041).
+ *
+ * Kalimat pertama selalu terlihat dan selalu SATU baris — sisanya di balik
+ * `<details>`, jadi tingginya tidak pernah berubah kecuali pengguna membukanya
+ * sendiri. Ia sengaja tidak disembunyikan pada keystroke pertama: itu satu
+ * re-render React di jalur input, dan gerbang nol re-render lebih mahal
+ * daripada sebaris teks redup.
+ */
+function LessonIntro({ text }: { text: string }) {
+  const cut = text.indexOf('. ');
+  const first = cut === -1 ? text : text.slice(0, cut + 1);
+  const rest = cut === -1 ? '' : text.slice(cut + 2);
+  const box = 'border-l-2 border-accent pl-3 text-[13px] leading-snug text-fg-dim';
+
+  if (rest === '') return <p className={box}>{first}</p>;
+
+  return (
+    <details className={box}>
+      <summary className="cursor-pointer list-none truncate [&::-webkit-details-marker]:hidden">
+        {first}{' '}
+        <span className="font-mono text-[10px] tracking-[0.12em] text-fg uppercase underline underline-offset-2">
+          selengkapnya
+        </span>
+      </summary>
+      <p className="mt-1">{rest}</p>
+    </details>
   );
 }
 

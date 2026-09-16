@@ -138,23 +138,28 @@ export default function PracticePage() {
               </p>
             </div>
           }
+          // Hasil dilukis DI ATAS panggung (ADR-041), bukan sesudahnya: di bawah
+          // keyboard bersiluet ia jatuh di luar lipatan layar laptop.
+          overlay={
+            finished && (
+              <div className="rs-overlay">
+                <ResultScreen
+                  result={result}
+                  voided={voided}
+                  criteria={null}
+                  previousBest={null}
+                  onRetry={() => void begin()}
+                  onExit={exit}
+                />
+              </div>
+            )
+          }
         />
 
         {isMemoryMode() && (
           <p className="mt-4 rounded border border-line bg-surface px-3 py-2 text-fg-dim">
             Penyimpanan browser tidak tersedia — hasilmu tidak akan tersimpan.
           </p>
-        )}
-
-        {finished && (
-          <ResultScreen
-            result={result}
-            voided={voided}
-            criteria={null}
-            previousBest={null}
-            onRetry={() => void begin()}
-            onExit={exit}
-          />
         )}
       </section>
     );

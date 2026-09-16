@@ -1909,3 +1909,83 @@ lisan ("nggak", "udah"). Pemilik memilih jalan tengah dan menambahkan satu prefe
   disisir mengikutinya.
 - (−) **Butir DoD pemilik:** apakah teks barunya masih terasa punya karakter, atau justru
   jadi datar karena kalimatnya dipendekkan semua.
+
+## ADR-041 — Layar sesi: intro turun ke bawah keyboard, layar hasil menjadi overlay
+
+**Tanggal:** 2026-09-16 · **Status:** Diterima
+
+### Konteks
+
+Pemilik menyebut dua keluhan atas `/learn` dan `/practice`: paragraf intro lesson
+"memakan terlalu banyak space di atas", dan angka WPM di layar hasil "tidak terlihat
+secara langsung, user harus scroll ke bawah". Keduanya berbagi satu akar: layar sesi
+hanya pernah **ditambah**, tidak pernah **ditukar** — intro, panggung, dan hasil semuanya
+menumpuk dalam satu kolom.
+
+Anggaran vertikal di layar 900 px, sesudah header (49 px) dan `py-10` (80 px): intro dua
+baris ±84 px, bilah metrik, area teks, keyboard bersiluet (ADR-036, bagian tertinggi),
+baris footer yang sering *wrap*. `ResultScreen` dirender **sesudah** `TypingStage`, jadi
+ia mulai persis di titik terjauh dari lipatan. Mockup perbandingan disetujui pemilik
+(2026-09-16).
+
+Pilihan yang dibuang, dan alasannya mekanis, bukan selera:
+
+- **Meng-unmount `TypingStage` saat selesai.** Itu membuang sesi engine dan memaksa
+  `VirtualKeyboard` mengukur ulang rect tombol saat kembali — rect yang dipakai fit affine
+  siluet tangan (ADR-036). Menukar satu masalah tata letak dengan pengukuran ulang di
+  jalur yang paling mahal.
+- **`display: none` pada keyboard saat hasil tampil.** Rect tombol menjadi nol, dan
+  `ResizeObserver` akan memberi siluet posisi yang salah saat keyboard muncul lagi.
+- **`scrollIntoView()` ke layar hasil.** Murah, tapi tetap menyisakan layar yang harus
+  digulir; yang diminta adalah hasil yang **terlihat**, bukan yang mudah dicari.
+
+### Keputusan
+
+1. **Intro lesson pindah ke bawah keyboard**, masuk ke slot `footer` `TypingStage` yang
+   sudah ada — bukan blok sendiri di atas bilah metrik. Alasannya bukan kerapian: apa pun
+   yang muncul atau hilang **di bawah** keyboard tidak menggeser area teks, jadi ia berada
+   di luar kelas layout shift yang tiga kali lolos di Fase 2 (dok. 08 penutup). Berlaku
+   untuk `/learn/:id` dan paragraf pengantar `/placement`.
+2. **Intro ditulis satu baris**, `text-[13px]`, `--fg-dim`, dengan bar aksen kiri
+   dipertahankan (identitas, dok. 12). Kalimat kedua dan seterusnya disembunyikan di balik
+   `<details>`; ringkasannya **selalu** satu baris, jadi tinggi baris tidak berubah kecuali
+   pengguna sendiri membukanya.
+3. **Intro TIDAK disembunyikan pada keystroke pertama.** Mockup mengusulkannya, dan itu
+   dibatalkan di sini: menyembunyikannya butuh satu `useState` yang dibalik dari jalur
+   input, yaitu satu re-render React saat mengetik. Gerbang Fase 1 (`rerender.test.tsx`)
+   menjaga **nol** re-render per keystroke, dan sebaris teks redup di bawah keyboard tidak
+   sebanding dengan melubanginya. Intro tetap tampil selama sesi, hilang saat hasil muncul.
+4. **Layar hasil menjadi overlay di atas area teks + keyboard**, bukan blok sesudahnya.
+   `TypingStage` mendapat prop `overlay?: ReactNode` yang dirender di dalam pembungkus
+   `relative` yang sama dengan `TypingArea` dan `VirtualKeyboard` — pola yang sudah ada di
+   komponen ini untuk overlay `status === 'paused'`. Panggung tetap ter-*mount*;
+   `active={false}` sudah mematikan input, jadi tidak ada listener baru dan tidak ada
+   pengukuran ulang.
+5. **Panel hasil menggulir di dalam dirinya**, bukan menggulir halaman:
+   `max-height: 100%` + `overflow-y: auto`. Cabang assist ladder yang paling panjang
+   (diagnosis tebal + catatan target diturunkan + drill mikro + "lanjut saja" + putusan
+   kelulusan kursus ADR-030) harus tetap muat tanpa memindahkan apa pun di belakangnya.
+6. **Fokus dan a11y:** panel diberi `role="dialog"` + `aria-modal="false"` dan menerima
+   fokus saat muncul. `aria-live="polite"` yang sudah ada dipertahankan. Pintasan
+   Enter / N / Esc di `ResultScreen` tidak berubah — ia sudah global.
+7. **Padding vertikal rute sesi turun** `py-10` → `py-6` (`/learn/:id`, `/placement`,
+   `/practice`, `/practice/adaptive`). Halaman lain tidak berubah.
+8. **Baris footer dipendekkan** menjadi `12wpm · 90% · Tab ulangi · Esc keluar` supaya ia
+   satu baris di `max-w-3xl`, bukan dua.
+9. Berlaku di ketiga permukaan yang memakai `TypingStage` dengan hasil di halaman yang
+   sama: `/learn/:id`, `/practice`, `/practice/adaptive`. `/placement` tidak ikut butir
+   4–6 — hasilnya halaman sendiri, bukan panel.
+
+### Konsekuensi
+
+- (+) Area teks naik ±84 px di `/learn`; WPM terlihat tanpa menggulir di ketiga permukaan.
+- (+) Nol unmount, nol pengukuran ulang, nol listener baru, nol re-render tambahan saat
+  mengetik — keputusan ini tidak menyentuh jalur input sama sekali.
+- (−) Overlay menutupi teks yang baru saja diketik. Scrim dibuat 94% (bukan buram penuh)
+  supaya konteksnya masih terbaca samar, tapi pengguna yang ingin memeriksa kesalahannya
+  huruf per huruf harus menutup panel dulu.
+- (−) Satu prop baru di `TypingStage` yang hanya dipakai tiga pemanggil; `/placement`
+  mengabaikannya.
+- (−) **Butir DoD pemilik:** apakah hasil yang menutup teks terasa membantu atau
+  mengagetkan, dan apakah intro satu baris di bawah keyboard masih terbaca oleh pemula
+  (ia berada di bawah bagian layar yang paling tinggi).

@@ -166,12 +166,6 @@ export default function PlacementPage() {
   return (
     <section>
       <h1 className="sr-only">Placement test</h1>
-      <p className="mb-6 max-w-[68ch] border-l-2 border-accent pl-3 text-[15px]">
-        Enam puluh detik untuk melihat posisi awalmu. Ketik senyaman biasanya — jangan
-        buru-buru, jangan sengaja pelan. Hasilnya menentukan titik mulai, dan tidak mengunci
-        apa pun.
-      </p>
-
       <TypingStage
         target={target}
         title="Placement test"
@@ -179,13 +173,21 @@ export default function PlacementPage() {
         onFinish={onFinish}
         onExit={() => void navigate('/learn')}
         footer={
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
-              Tab — ulangi · Esc — keluar
+          // Pengantar ikut turun ke bawah keyboard (ADR-041) — di atas area teks ia
+          // mendorong seluruh panggung, dan ini sesi pertama yang dilihat pemula.
+          <div className="mt-4 flex flex-col gap-3">
+            <p className="border-l-2 border-accent pl-3 text-[13px] leading-snug text-fg-dim">
+              Enam puluh detik untuk melihat posisi awalmu. Ketik senyaman biasanya.
+              Hasilnya menentukan titik mulai, dan tidak mengunci apa pun.
             </p>
-            <Link to="/learn/u1-l1" className="ul-hint underline underline-offset-2">
-              lewati, mulai dari nol
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
+                Tab ulangi · Esc keluar
+              </p>
+              <Link to="/learn/u1-l1" className="ul-hint underline underline-offset-2">
+                lewati, mulai dari nol
+              </Link>
+            </div>
           </div>
         }
       />
