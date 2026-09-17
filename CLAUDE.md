@@ -23,7 +23,7 @@ Kalau dok. 07 dan dok. 12 berbeda soal warna, **dok. 12 menang**.
 
 ## 2. Kerjakan fase berurutan
 
-Status sekarang (2026-09-16): **Fase 8 — kode selesai, DoD menunggu pemilik.** Sesudahnya,
+Status sekarang (2026-09-17): **Fase 8 — kode selesai, DoD menunggu pemilik.** Sesudahnya,
 atas permintaan pemilik, dikerjakan berturut-turut dan **sudah di-push** ke `origin/main`:
 siluet tangan (ADR-036→037, `071fc00`/`b605264`), `/posture` yang dapat dijelajah (ADR-038,
 `c5a475f`), beranda dengan dashboard progres (ADR-039, `abb8c5e`) dan salinan teksnya
@@ -38,7 +38,9 @@ membingungkan), disimpan di key `tendrill.focus` (seperti tema — **jangan** di
 CSS butuh dua atribut: `data-focus-mode` (store) dan `data-session="running"` (`TypingStage`,
 efek bergantung `status`, bukan keystroke). Keyboard & siluet tidak ikut memudar; menyembunyikan
 keyboard adalah `showKeyboard` (ADR-045) — pembungkus `hidden`, `VirtualKeyboard`
-tetap ter-mount, berlaku juga di `/learn`. Tidak ada pekerjaan
+tetap ter-mount, berlaku juga di `/learn`. Terakhir, tampilan `/settings` dirapikan (ADR-047,
+`08bf927`): sakelar, baris seragam, zona bahaya; gayanya di `settings-page.css`, **bukan**
+utilitas Tailwind — utilitas masuk CSS global dan sempat menjebol bundel awal (90,2 KB). Tidak ada pekerjaan
 kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan agent**:
 
 | Butir yang menunggu pemilik | Asal |
@@ -52,6 +54,7 @@ kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan age
 | Apakah hasil yang menutup teks membantu atau mengagetkan, dan apakah intro satu baris di bawah keyboard masih terbaca pemula | ADR-041 |
 | Apakah drill yang dikocok masih terasa berjenjang (u1-l1–l3), dan apakah sorotan Backspace membantu atau mengalihkan | ADR-042/043 |
 | Apakah header yang memudar menenangkan atau membingungkan, apakah mode fokus masih ditemukan kalau hanya di `/settings`, dan lesson tanpa keyboard masih bisa diikuti | ADR-044/045 |
+| Apakah `/settings` yang dirapikan terbaca di layar sungguhan, terang dan gelap (belum pernah dilihat agent — panel tidak menggambar) | ADR-047 |
 | Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
 | Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
 | Drill adaptif *terasa* menyasar kelemahan | Fase 7 |

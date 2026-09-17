@@ -175,15 +175,23 @@ Sumber "kutipan" di v1 diganti "kalimat": pool kutipan tidak pernah ditulis (dok
 ## 7. Flow pengaturan & data
 
 ```
-/settings
-  ├─ Tema: sistem / terang / gelap
-  ├─ Suara ketik: on / off (P1)
-  ├─ Tampilkan virtual keyboard: on / off
-  ├─ Tampilkan panduan jari: on / off
-  ├─ Ekspor progres → unduh JSON (P1)
-  ├─ Impor progres → unggah JSON (P1)
-  └─ Hapus semua data → konfirmasi ketik "DELETE" → clear localStorage
+/settings                                   (tata letak: dok. 07 §10b, ADR-047)
+  ├─ Tampilan
+  │   └─ Tema: terang / gelap
+  ├─ Layar mengetik
+  │   ├─ Keyboard di layar: on / off          (ADR-045)
+  │   ├─ Siluet tangan di latihan bebas: on / off (ADR-036)
+  │   ├─ Mode fokus: on / off                 (ADR-044, ADR-046)
+  │   └─ Suara ketik: on / off                (ADR-035)
+  ├─ Data
+  │   ├─ Ekspor progres → unduh JSON
+  │   └─ Impor progres → unggah JSON → konfirmasi "Timpa"
+  └─ Zona bahaya
+      └─ Hapus semua data → konfirmasi ketik "DELETE" → clear localStorage
 ```
+
+Mode input strict/non-strict **belum** ada di sini — hanya di bawah keyboard (ADR-029);
+kandidatnya tercatat di Backlog ide dok. 10.
 
 ## 8. Penanganan mobile
 

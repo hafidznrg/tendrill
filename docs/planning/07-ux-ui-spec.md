@@ -355,6 +355,21 @@ prinsip produk #3 ("jangan menghukum kesalahan secara emosional").
 - Salinan teksnya mengikuti ADR-040: kalimat pendek, kosakata netral, bentuk pasif
   kalau yang penting hasilnya dan bukan siapa pelakunya.
 
+## 10b. `/settings` (ADR-047)
+
+- **Satu pola baris:** judul (JetBrains Mono 500, 14px) dan penjelasan satu kalimat (IBM Plex
+  Sans 15px, `fg-dim`) di kiri, kontrol di kanan; baris membungkus di layar sempit. Baris
+  sekelompok berada di satu bingkai `line`, dipisah garis tipis.
+- **Label grup** mengikuti spesifikasi label dok. 12 §4 (11px, .16em, 500, uppercase).
+- **Kontrol:** nyala/mati = sakelar (checkbox asli ber-`role="switch"`, digambar CSS);
+  tema = segmen (radio asli tersembunyi). Status tidak diulang sebagai teks "nyala/mati".
+- **Urutan grup:** Tampilan → Layar mengetik → Data → Zona bahaya. Pesan ekspor/impor dan
+  konfirmasi "Timpa" hidup di dalam bingkai Data.
+- **Zona bahaya:** bingkai dan label `error`; tombol hapus redup (`opacity .4`) sampai
+  `DELETE` diketik.
+- **Gaya di `src/pages/settings-page.css`**, bukan utilitas Tailwind: utilitas masuk CSS
+  global di bundel awal (versi Tailwind sempat membuatnya 90,2 KB > 90).
+
 ## 11. Nada tulisan
 
 - Ringkas dan faktual. "27 WPM · 92% — butuh 95% untuk lanjut."

@@ -2223,3 +2223,28 @@ saat ia sendiri yang menyalakannya sulit dipahami.
 - (−) Mode fokus kembali jauh dari layar sesi — alasan awal ADR-045. Kalau uji pakai
   menunjukkan orang tidak menemukannya, kandidat berikutnya adalah sakelar di baris footer
   sesi (bersama `keyboard`), bukan bilah atas.
+
+---
+
+## ADR-047 — Tampilan `/settings` dirapikan; gayanya CSS per halaman
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+**Konteks.** Pemilik menilai tampilan dan tipografi `/settings` perlu diperbaiki. Temuan:
+checkbox/radio bawaan tidak ikut palet tema; teks "nyala/mati" mengulang status; label
+lebar tetap (`w-32`) dengan penjelasan yang memanjang ke samping; judul grup 13px/.12em/700
+menyimpang dari label dok. 12; grup "Tampilan & suara" berisi hal tentang layar mengetik;
+tombol hapus tidak punya gaya `disabled`; pesan ekspor/impor lepas dari aksinya.
+
+**Keputusan.**
+1. Pola baris seragam, sakelar dan segmen, pengelompokan ulang, zona bahaya — rincian di
+   dok. 07 §10b. Kontrol tetap elemen `input` asli (keyboard & pembaca layar tidak berubah).
+2. Gaya di `src/pages/settings-page.css` (ikut chunk lazy halaman). Versi pertama dengan
+   utilitas Tailwind menaikkan CSS global 0,7 KB dan bundel awal ke 90,2 KB — `npm run
+   budget` merah; versi CSS per halaman 89,3 KB.
+3. Tidak ada perubahan storage, store, atau teks pernyataan privasi (dok. 05 §7).
+4. Mode input strict/non-strict di `/settings` **tidak** dikerjakan — dicatat di Backlog ide.
+
+**Konsekuensi.**
+- (+) Status terbaca dari bentuk kontrol; tipografi konsisten dengan dok. 12.
+- (−) Satu berkas CSS lagi di luar Tailwind; pola yang sama dengan `practice-page.css`.

@@ -441,6 +441,9 @@ favicon/meta, deploy.
 konfirmasi, hapus data ber-`DELETE`, pernyataan privasi), suara ketik lazy, gerbang
 mobile, error boundary per rute, favicon/meta. Empty state sudah ada sejak Fase 6–7.
 
+**2026-09-17 (ADR-047):** tampilan `/settings` dirapikan — sakelar, baris seragam,
+tipografi dok. 12, zona bahaya. Hanya tampilan; storage tidak berubah. Bundel awal 89,3 KB.
+
 **DoD**
 - [ ] Uji pakai ke ≥ 3 orang nyata, semuanya bisa mulai tanpa dibantu — **hanya pemilik**
 - [ ] Lighthouse Performance ≥ 95 — **belum diukur** (butuh URL ter-deploy / Chrome sungguhan)
