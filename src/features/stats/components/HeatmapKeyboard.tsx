@@ -1,5 +1,5 @@
 import { KEYBOARD_ROWS } from '@/features/keyboard/fingerMap.ts';
-import type { HeatLevel, KeyHeat } from '../stats.ts';
+import { MIN_KEY_ATTEMPTS, type HeatLevel, type KeyHeat } from '../stats.ts';
 
 /**
  * Keyboard statis berwarna panas — dasar bersama `KeyHeatmap` dan
@@ -54,5 +54,27 @@ export function HeatmapKeyboard({ heat, kind, describe }: HeatmapKeyboardProps) 
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * Legenda empat pita + tombol berdata sedikit. `scale` ditulis pemanggil dari
+ * konstanta skala (ADR-033) — legenda yang tidak cocok dengan pewarnaannya lebih
+ * buruk daripada tanpa legenda.
+ */
+export function HeatLegend({ kind, scale }: { kind: 'error' | 'latency'; scale: string }) {
+  return (
+    <p className={`hm-legend hm-${kind}`}>
+      <span className="hm-legend-swatches" aria-hidden="true">
+        {[1, 2, 3, 4].map((level) => (
+          <span key={level} className="hm-key hm-swatch" data-level={level} />
+        ))}
+      </span>
+      <span>{scale}</span>
+      <span className="hm-legend-few">
+        <span className="hm-key hm-swatch" data-level="few" aria-hidden="true" />
+        data belum cukup (&lt; {MIN_KEY_ATTEMPTS}×)
+      </span>
+    </p>
   );
 }

@@ -3,13 +3,16 @@
    Setiap blok bertinggi tetap sejak paint pertama — kosong, satu sesi, atau
    200 sesi mengisi ruang yang sama. */
 
-.st-root {
+/* `sp-`, bukan `st-`: `settings-page.css` juga punya `.st-root`/`.st-title`, dan CSS
+   chunk lazy tidak dilepas saat pindah rute — nama yang sama saling menimpa. */
+.sp-root {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.75rem;
+  max-width: 56rem;
 }
 
-.st-title {
+.sp-title {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 19px;
@@ -24,6 +27,52 @@
   color: var(--fg-dim);
 }
 
+.st-lead {
+  margin-top: 0.4rem;
+}
+
+/* --- kartu --- */
+
+.st-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.st-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.9rem 1.1rem 0;
+}
+
+.st-card-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.st-card-head .st-question {
+  font-size: 13px;
+}
+
+.st-card-body {
+  padding: 0.75rem 1.1rem 1rem;
+}
+
+.st-charts {
+  display: grid;
+  gap: 1rem;
+}
+
+.st-card .st-note {
+  margin-top: 0.7rem;
+  color: var(--fg);
+}
+
 .st-lead a {
   color: var(--accent);
   text-decoration: underline;
@@ -31,16 +80,6 @@
 
 .st-note {
   font-size: 13px;
-}
-
-.st-h2 {
-  margin: 0 0 0.25rem;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--fg-dim);
 }
 
 .st-secondary {
@@ -51,32 +90,56 @@
 
 .st-summary {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
   margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
 }
 
 .st-stat {
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--surface);
+  padding: 0.8rem 1rem;
+  border-left: 1px solid var(--line);
+}
+
+.st-stat:first-child {
+  border-left: 0;
+}
+
+.st-stat-hero {
+  background: var(--surface-2);
 }
 
 .st-stat dt {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--fg-dim);
 }
 
 .st-stat dd {
-  margin: 0.2rem 0 0;
+  margin: 0.15rem 0 0;
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
+  line-height: 1.25;
   font-variant-numeric: tabular-nums;
+}
+
+.st-stat-hero dd {
+  font-size: 34px;
+  color: var(--accent);
+}
+
+.st-stat-note {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg-dim);
 }
 
 /* --- grafik --- */
@@ -142,8 +205,8 @@
 .st-days {
   display: grid;
   grid-template-columns: repeat(30, minmax(0, 1fr));
-  gap: 3px;
-  margin: 0.6rem 0 0;
+  gap: 4px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -151,7 +214,19 @@
 .st-day {
   aspect-ratio: 1;
   border: 1px solid var(--line);
-  border-radius: 2px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.st-days-foot {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.4rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
 }
 
 .st-day[data-practiced='true'] {
@@ -161,16 +236,10 @@
 
 /* --- heatmap --- */
 
-.st-heatmaps {
-  display: grid;
-  gap: 2rem;
-}
-
 .hm-root {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-top: 0.6rem;
 }
 
 .hm-row {
@@ -186,7 +255,7 @@
   height: 2rem;
   border: 1px solid var(--line);
   border-radius: 3px;
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--fg);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -211,17 +280,48 @@
 }
 
 .hm-key[data-level='1'] {
-  background: color-mix(in srgb, var(--heat) 22%, var(--surface));
+  background: color-mix(in srgb, var(--heat) 22%, var(--surface-2));
 }
 .hm-key[data-level='2'] {
-  background: color-mix(in srgb, var(--heat) 45%, var(--surface));
+  background: color-mix(in srgb, var(--heat) 45%, var(--surface-2));
 }
 .hm-key[data-level='3'] {
-  background: color-mix(in srgb, var(--heat) 70%, var(--surface));
+  background: color-mix(in srgb, var(--heat) 70%, var(--surface-2));
   color: var(--bg);
 }
 .hm-key[data-level='4'] {
   background: var(--heat);
   border-color: var(--heat);
   color: var(--bg);
+}
+
+/* --- legenda heatmap --- */
+
+.hm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  margin: 0.7rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+
+.hm-legend-swatches,
+.hm-legend-few {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.hm-legend-few {
+  gap: 0.4rem;
+}
+
+.hm-legend .hm-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
 }

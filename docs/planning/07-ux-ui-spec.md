@@ -321,6 +321,13 @@ berskala relatif terhadap median tombol pengguna sendiri (1,6× median = penuh).
 pita dibulatkan ke bawah, jadi selisih kecil dari acuan tetap netral. Karakter digabung
 per tombol fisik (`a` + `A`). Kesalahan memakai `--error`, kelambatan `--caret`.
 
+**Tampilan (ADR-050).** Ringkasan satu strip (WPM terkini menonjol, tiap angka berketerangan
+jendelanya); grafik WPM & akurasi dalam satu kartu "Perkembangan"; hari berlatih, kesalahan,
+dan kelambatan masing-masing kartu. Tiap heatmap berlegenda empat pita + "data belum cukup",
+dan teks skalanya **diturunkan dari konstanta** (`ERROR_RATE_FULL`, `LATENCY_RATIO_FULL`,
+`MIN_KEY_ATTEMPTS`), bukan ditulis tangan. Kelas akar halaman `sp-`, bukan `st-` (bentrok
+dengan `/settings`).
+
 ## 10. Streak yang tidak menghukum (R-24)
 
 Streak harian mudah berubah menjadi sumber rasa bersalah, dan itu bertentangan dengan

@@ -1,5 +1,5 @@
-import { MIN_KEY_ATTEMPTS, topKeys, type KeyHeat } from '../stats.ts';
-import { HeatmapKeyboard } from './HeatmapKeyboard.tsx';
+import { LATENCY_RATIO_FULL, MIN_KEY_ATTEMPTS, topKeys, type KeyHeat } from '../stats.ts';
+import { HeatLegend, HeatmapKeyboard } from './HeatmapKeyboard.tsx';
 import { keyName } from './KeyHeatmap.tsx';
 
 /**
@@ -10,17 +10,25 @@ import { keyName } from './KeyHeatmap.tsx';
 export function LatencyHeatmap({ heat }: { heat: Map<string, KeyHeat> }) {
   const slowest = topKeys(heat, 'meanMs');
   return (
-    <section className="st-heatmap" aria-labelledby="hm-latency-title">
-      <h2 id="hm-latency-title" className="st-h2">
-        Kelambatan
-      </h2>
-      <p className="st-question">Tombol mana yang memperlambatku?</p>
-      <HeatmapKeyboard heat={heat} kind="latency" describe={describeLatency} />
-      <p className="st-note" data-testid="latency-summary">
-        {slowest.length === 0
-          ? 'Belum ada tombol yang menonjol.'
-          : `Paling lambat: ${slowest.map((h) => `${keyName(h.keyId)} ${Math.round(h.meanMs)} ms`).join(' · ')}`}
-      </p>
+    <section className="st-card st-heatmap" aria-labelledby="hm-latency-title">
+      <header className="st-card-head">
+        <h2 id="hm-latency-title" className="st-card-title">
+          Kelambatan
+        </h2>
+        <p className="st-question">Tombol mana yang memperlambatku?</p>
+      </header>
+      <div className="st-card-body">
+        <HeatmapKeyboard heat={heat} kind="latency" describe={describeLatency} />
+        <p className="st-note" data-testid="latency-summary">
+          {slowest.length === 0
+            ? 'Belum ada tombol yang menonjol.'
+            : `Paling lambat: ${slowest.map((h) => `${keyName(h.keyId)} ${Math.round(h.meanMs)} ms`).join(' · ')}`}
+        </p>
+        <HeatLegend
+          kind="latency"
+          scale={`median → ${String(LATENCY_RATIO_FULL).replace('.', ',')}× median`}
+        />
+      </div>
     </section>
   );
 }

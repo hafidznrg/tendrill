@@ -10,6 +10,7 @@ import {
   computeKeyHeat,
   currentStreak,
   practiceDays,
+  RECENT_WINDOW,
   summarize,
   wpmRange,
 } from '@/features/stats/stats.ts';
@@ -38,63 +39,100 @@ export default function StatsPage() {
   const accuracy = sessions.map((s) => s.accuracy);
 
   return (
-    <section className="st-root">
-      <h1 className="st-title">Statistik</h1>
-
-      {sessions.length === 0 && (
-        <p className="st-lead">
-          Belum ada sesi. Selesaikan satu <Link to="/learn">lesson</Link> atau{' '}
-          <Link to="/practice">latihan bebas</Link> — grafik dan heatmap terisi dari situ.
-        </p>
-      )}
+    <section className="sp-root">
+      <div>
+        <h1 className="sp-title">Statistik</h1>
+        {sessions.length === 0 ? (
+          <p className="st-lead">
+            Belum ada sesi. Selesaikan satu <Link to="/learn">lesson</Link> atau{' '}
+            <Link to="/practice">latihan bebas</Link> — grafik dan heatmap terisi dari situ.
+          </p>
+        ) : (
+          <p className="st-lead">
+            Dari {summary.sessions} sesi tersimpan. Angka “terkini” adalah rata-rata{' '}
+            {RECENT_WINDOW} sesi terakhir.
+          </p>
+        )}
+      </div>
 
       <dl className="st-summary">
-        <Stat label="sesi" value={summary.sessions === 0 ? '—' : `${summary.sessions}`} />
         <Stat
+          hero
           label="wpm terkini"
           value={summary.recentWpm === null ? '—' : `${Math.round(summary.recentWpm)}`}
+          note={`rata-rata ${RECENT_WINDOW} sesi`}
         />
         <Stat
           label="akurasi"
           value={
             summary.recentAccuracy === null ? '—' : `${Math.round(summary.recentAccuracy)}%`
           }
+          note={`${RECENT_WINDOW} sesi`}
         />
         <Stat
           label="terbaik"
           value={summary.bestWpm === null ? '—' : `${Math.round(summary.bestWpm)}`}
+          note="WPM"
         />
-        <Stat label="menit" value={`${summary.totalMinutes}`} />
+        <Stat
+          label="sesi"
+          value={summary.sessions === 0 ? '—' : `${summary.sessions}`}
+          note="tersimpan"
+        />
+        <Stat label="menit" value={`${summary.totalMinutes}`} note="total" />
       </dl>
 
-      <WpmChart label="WPM per sesi" values={wpm} range={wpmRange(wpm)} unit="" tone="accent" />
-      <WpmChart
-        label="Akurasi per sesi"
-        values={accuracy}
-        range={accuracyRange(accuracy)}
-        unit="%"
-        tone="caret"
-      />
+      <section className="st-card" aria-labelledby="st-progress-title">
+        <header className="st-card-head">
+          <h2 id="st-progress-title" className="st-card-title">
+            Perkembangan
+          </h2>
+          <p className="st-question">satu titik per sesi, kiri ke kanan</p>
+        </header>
+        <div className="st-card-body st-charts">
+          <WpmChart
+            label="WPM per sesi"
+            values={wpm}
+            range={wpmRange(wpm)}
+            unit=""
+            tone="accent"
+          />
+          <WpmChart
+            label="Akurasi per sesi"
+            values={accuracy}
+            range={accuracyRange(accuracy)}
+            unit="%"
+            tone="caret"
+          />
+        </div>
+      </section>
 
       <PracticeGrid
         days={practiceDays(keystats.daily, now)}
         streak={currentStreak(keystats.daily, now)}
       />
 
-      <div className="st-heatmaps">
-        <KeyHeatmap heat={heat} />
-        <LatencyHeatmap heat={heat} />
-      </div>
-      <p className="st-note">Tombol yang diketik kurang dari 10 kali ditampilkan netral.</p>
+      <KeyHeatmap heat={heat} />
+      <LatencyHeatmap heat={heat} />
     </section>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+interface StatProps {
+  label: string;
+  value: string;
+  note: string;
+  hero?: boolean;
+}
+
+function Stat({ label, value, note, hero = false }: StatProps) {
   return (
-    <div className="st-stat">
+    <div className={`st-stat${hero ? ' st-stat-hero' : ''}`}>
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd>
+        {value}
+        <span className="st-stat-note">{note}</span>
+      </dd>
     </div>
   );
 }

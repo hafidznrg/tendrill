@@ -2300,3 +2300,29 @@ riwayat berupa tabel polos dengan id durasi mentah (`30s`).
 - (+) Tombol mulai jelas utama; pilihan sumber menjelaskan dirinya sendiri.
 - (−) Rata-rata mencampur semua durasi; dinyatakan di bawah kotak, bukan disembunyikan.
 - **Butir DoD pemilik:** apakah layar pilihan terbaca di layar sungguhan, terang dan gelap.
+
+---
+
+## ADR-050 — Tampilan `/stats` dipercantik; bentrok kelas dengan `/settings` diperbaiki
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+**Konteks.** Pemilik meminta `/stats` dipercantik (mockup lewat artifact). Sekalian ditemukan
+bug: `stats.css` dan `settings-page.css` sama-sama mendefinisikan `.st-root` dan `.st-title`.
+CSS chunk lazy tidak dilepas saat pindah rute, jadi setelah membuka `/settings`, `/stats`
+mewarisi grid 48rem-nya (dan sebaliknya). Tidak tertangkap test karena jsdom tidak menerapkan
+CSS.
+
+**Keputusan.**
+1. Tata letak di dok. 07 §9 "Tampilan". Komponen grafik & heatmap, skala warna (ADR-033),
+   dan sumber data tidak berubah; hanya bingkai, ringkasan, dan legenda.
+2. Legenda heatmap menurunkan teksnya dari konstanta skala; catatan "kurang dari 10 kali"
+   pindah ke legenda masing-masing heatmap.
+3. Akar & judul halaman stats memakai prefiks `sp-`.
+
+**Konsekuensi.**
+- (+) Skala warna heatmap terbaca tanpa membuka dokumen.
+- (−) Prefiks kelas masih bisa bentrok di halaman lain; belum ada gerbang otomatis — dicatat
+  di Backlog ide bila terulang.
+- **Butir DoD pemilik:** apakah `/stats` terbaca di layar sungguhan, terang dan gelap.
+

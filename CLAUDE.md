@@ -40,7 +40,7 @@ efek bergantung `status`, bukan keystroke). Keyboard & siluet tidak ikut memudar
 keyboard adalah `showKeyboard` (ADR-045) — pembungkus `hidden`, `VirtualKeyboard`
 tetap ter-mount, berlaku juga di `/learn`. Terakhir, tampilan `/settings` dirapikan (ADR-047,
 `08bf927`): sakelar, baris seragam, zona bahaya; gayanya di `settings-page.css`, **bukan**
-utilitas Tailwind — utilitas masuk CSS global dan sempat menjebol bundel awal (90,2 KB). Lalu `/learn` dipercantik (ADR-048): total lulus, peta unit, panel lesson berikutnya, kartu unit dengan garis kemajuan dan hasil terbaik; angka unit/lesson/review di deskripsi **diturunkan dari data**, gayanya di `unit-list.css`. Lalu layar pilihan `/practice` dipercantik (ADR-049): durasi bersegmen, kartu sumber teks dengan `hint` yang **wajib cocok dengan isi wordlist**, kotak ringkasan riwayat; layar mengetik tidak disentuh, dan `/practice/adaptive` berbagi `practice-page.css`. Tidak ada pekerjaan
+utilitas Tailwind — utilitas masuk CSS global dan sempat menjebol bundel awal (90,2 KB). Lalu `/learn` dipercantik (ADR-048): total lulus, peta unit, panel lesson berikutnya, kartu unit dengan garis kemajuan dan hasil terbaik; angka unit/lesson/review di deskripsi **diturunkan dari data**, gayanya di `unit-list.css`. Lalu layar pilihan `/practice` dipercantik (ADR-049): durasi bersegmen, kartu sumber teks dengan `hint` yang **wajib cocok dengan isi wordlist**, kotak ringkasan riwayat; layar mengetik tidak disentuh, dan `/practice/adaptive` berbagi `practice-page.css`. Lalu `/stats` dipercantik (ADR-050): strip ringkasan, kartu, legenda heatmap yang teksnya **diturunkan dari konstanta skala**; akar halamannya berprefiks `sp-` karena `.st-root`/`.st-title` bentrok dengan `/settings` (CSS chunk lazy tidak dilepas saat pindah rute — jangan pakai ulang nama kelas antar-halaman). Tidak ada pekerjaan
 kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan agent**:
 
 | Butir yang menunggu pemilik | Asal |
@@ -57,6 +57,7 @@ kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan age
 | Apakah `/settings` yang dirapikan terbaca di layar sungguhan, terang dan gelap (belum pernah dilihat agent — panel tidak menggambar) | ADR-047 |
 | Apakah panel berikutnya dan peta unit di `/learn` membantu, terang dan gelap | ADR-048 |
 | Apakah layar pilihan `/practice` terbaca di layar sungguhan, terang dan gelap | ADR-049 |
+| Apakah `/stats` terbaca di layar sungguhan, terang dan gelap | ADR-050 |
 | Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
 | Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
 | Drill adaptif *terasa* menyasar kelemahan | Fase 7 |
