@@ -13,7 +13,7 @@ export interface KeyboardCaptureHandlers {
   onBackspace: () => void;
   onRestart: () => void;
   onExit: () => void;
-  /** true selama sesi berjalan — menentukan apakah Space diblokir dari scroll. */
+  /** true selama sesi belum selesai (idle/running/paused) — Space diblokir dari scroll. */
   isActive: () => boolean;
 }
 

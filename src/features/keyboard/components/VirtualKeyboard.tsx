@@ -27,7 +27,7 @@ export interface VirtualKeyboardProps {
    * memakai yang pertama.
    */
   onReady: (
-    paint: (char: string | null) => void,
+    paint: (char: string | null, fix?: boolean) => void,
     paintHint: (hint: KeyHint | null) => void,
   ) => void;
   showFingerColors?: boolean;
@@ -233,7 +233,20 @@ export function VirtualKeyboard({
       }
     };
 
-    const paint = (char: string | null) => {
+    // Sorotan Backspace (ADR-043): menyala selama karakter tepat sebelum kursor
+    // salah, dan hanya ditulis saat keadaannya BERGANTI — satu `classList` per
+    // kesalahan, bukan per keystroke. Terpisah dari `lit`, supaya ia tidak ikut
+    // mematikan/menyalakan sorotan tombol berikutnya dan tidak menggeser siluet.
+    const fixEl = keyEls.get('Backspace') ?? null;
+    let fixLit = false;
+    const paintFix = (fix: boolean) => {
+      if (fix === fixLit) return;
+      fixLit = fix;
+      fixEl?.classList.toggle('vk-fix', fix);
+    };
+
+    const paint = (char: string | null, fix = false) => {
+      paintFix(fix);
       // Karakter berulang tidak perlu dicat ulang. Drill Unit 1 penuh dengan
       // 'ff jj ff jj', jadi ini menghapus separuh penulisan DOM di sana.
       if (char === litFor) return;
@@ -245,6 +258,7 @@ export function VirtualKeyboard({
     // wajib melukis ulang walau 'f' yang terakhir dilukis lewat `paint`.
     const paintHintExternal = (hint: KeyHint | null) => {
       litFor = undefined;
+      paintFix(false);
       paintHint(hint);
     };
 
@@ -253,7 +267,12 @@ export function VirtualKeyboard({
     onReady(paint, paintHintExternal);
     // Siluet bisa sudah siap sebelum efek ini jalan (data pose ter-cache): lukis sekarang.
     repaintHandsRef.current();
-    return () => onReady(noop, noop);
+    return () => {
+      // `fixLit` lahir kembali `false` di pemasangan berikutnya: kelasnya ikut dibersihkan
+      // supaya keduanya tidak pernah berbeda.
+      fixEl?.classList.remove('vk-fix');
+      onReady(noop, noop);
+    };
   }, [onReady]);
 
   // Siluet baru siap (mount atau resize) sesudah sorotan tombol mungkin sudah

@@ -122,7 +122,7 @@ menjadi diabaikan di kemudian hari.
 ### Yang wajib diblokir
 - `Ctrl/Cmd + V`, **`Shift + Insert`**, dan event `paste` serta `drop` di area sesi (R-24).
 - `Tab` default (jangan memindahkan fokus).
-- Scroll default oleh Space selama sesi berjalan.
+- Scroll default oleh Space selama sesi **belum selesai** — termasuk sebelum keystroke pertama dan selagi pause (ADR-043).
 
 ### Catatan layout keyboard
 Untuk **menampilkan** tombol di virtual keyboard: `event.code` (posisi fisik — `KeyA`, `Semicolon`).

@@ -114,6 +114,9 @@ Konsekuensinya:
   dengan mengganti `className` pada satu elemen tombol, bukan dengan me-render ulang
   seluruh keyboard.
 - Saat karakter butuh Shift, kedua tombol disorot: huruf dan Shift **di sisi berlawanan** (mengajarkan kebiasaan Shift yang benar sejak awal).
+- **Backspace disorot** (warna `--error`, tanpa animasi) selama karakter tepat sebelum
+  kursor salah (ADR-043). Tambahan, bukan pengganti: tombol berikutnya tetap disorot, dan
+  siluet tetap menunjuk tombol berikutnya. Di mode strict tidak pernah menyala.
 - Bisa dimatikan di settings — pengguna tingkat lanjut akan mematikannya, dan pemula harus didorong mematikannya setelah Unit 3.
 
 ### Siluet tangan (ADR-036)

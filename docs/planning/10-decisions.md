@@ -757,7 +757,7 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       sama sebagai opsi A (kocok urutan token), lihat ADR-042. Opsi B (beberapa varian
       teks per drill, untuk phrases/sentences) belum dikerjakan; naikkan kalau uji pakai
       menunjukkan kalimat yang sama pun mulai dihafal.
-- [ ] **Sorot Backspace saat ada karakter salah yang bisa dikoreksi** — uji yang sama
+- [x] **Sorot Backspace saat ada karakter salah yang bisa dikoreksi** — uji yang sama
       menemukan pemula berhenti dan **melihat keyboard** untuk mencari Backspace, jadi
       satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard". Murah
       (pelukis sorotan sudah ada), tapi menyentuh jalur keystroke — jadi ia butuh
@@ -779,7 +779,7 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       (mis. `latencyCount`), yaitu perubahan skema. Tetap ditunda ke Fase 7.
       **Catatan Fase 7 (2026-09-13):** latihan adaptif tidak terganggu secara berarti —
       `meanMs` tidak bergeser dan `errorRate` < 1% (ADR-034). Tetap ditunda.
-- [ ] **Spasi sebelum keystroke pertama menggulung halaman** — temuan audit yang sama.
+- [x] **Spasi sebelum keystroke pertama menggulung halaman** — temuan audit yang sama.
       `preventDefault` untuk spasi digerbangi `isActive()`, yang baru true setelah
       sesi berstatus `running` — yaitu setelah tombol pertama. Jadi spasi yang salah
       tekan di detik pertama masih menggulung halaman. Nol drill diawali spasi, nol
@@ -787,6 +787,7 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       input**, dan apa pun di sana wajib diukur lebih dulu — alasan yang sama persis
       dengan butir "Sorot Backspace" di atas. Kalau keduanya jadi dikerjakan,
       kerjakan sekali jalan dengan satu pengukuran.
+      **Dikerjakan bersama "Sorot Backspace" 2026-09-17, lihat ADR-043.**
 
 ---
 
@@ -2046,3 +2047,62 @@ Tiga opsi dibandingkan:
   memberi urutan baru tanpa meng-unmount panggung (merah kalau drill lama dipakai ulang).
 - **Butir DoD pemilik:** apakah drill yang dikocok masih terasa berjenjang, terutama
   `u1-l1`–`u1-l3` yang murni huruf.
+
+---
+
+## ADR-043 — Backspace disorot saat ada salah yang bisa dikoreksi; spasi diblokir sejak sebelum keystroke pertama
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+### Konteks
+
+Dua butir Backlog yang sama-sama menyentuh jalur input, dan karena itu dikerjakan sekali
+jalan dengan satu pengukuran, sesuai catatan di Backlog:
+
+1. Uji pemula 2026-09-12: pemula **berhenti dan melihat keyboard** untuk mencari Backspace.
+   ADR-029 menjawabnya untuk `/learn` (strict tidak butuh Backspace), tapi `/practice`
+   default non-strict, dan pengguna boleh memilih non-strict di `/learn`.
+2. `preventDefault` untuk spasi digerbangi `status === 'running'`, jadi spasi yang ditekan
+   sebelum keystroke pertama (atau selagi pause) masih menggulung halaman.
+
+### Keputusan
+
+1. **Aturan sorot:** Backspace menyala selama `cells[cursor - 1]` berstatus `incorrect` dan
+   sesi belum habis (`cursor < target.length`). Aturan ini tidak tahu mode: di strict
+   kursor tidak pernah melewati karakter salah, jadi otomatis tidak menyala.
+2. **Tambahan, bukan pengganti.** Tombol berikutnya tetap disorot dan siluet tetap
+   menunjuknya — non-strict memang tidak memaksa koreksi. Kelas terpisah `vk-fix`, warna
+   `--error` yang sama dengan karakter salah di teks, tanpa animasi (dok. 01 prinsip 3).
+3. **Di jalur imperatif yang sudah ada.** `paintCaret` meneruskan satu boolean ke pelukis;
+   `VirtualKeyboard` menulis `classList` hanya saat keadaannya **berganti**. Nol
+   `setState`, nol alokasi, nol listener baru.
+4. **Spasi:** `isActive()` menjadi `status !== 'finished'`. Capture sudah mati sesudah sesi
+   selesai, jadi halaman hasil tidak terpengaruh.
+
+### Pengukuran
+
+- `rerender.test.tsx` (nol commit React per keystroke) dan `perf:heap` (0,51 byte/keystroke,
+  ambang 8) tetap hijau. `perf:heap` hanya mengukur engine, yang tidak berubah; tambahan di
+  hook berupa satu perbandingan boolean tanpa objek baru.
+- `correctionCues.test.tsx`: nyala/padam, strict tidak pernah menyala, akhir drill tidak
+  menyala, **tepat dua penulisan kelas** untuk satu salah lalu enam benar, spasi diblokir
+  saat idle dan dilepas sesudah selesai. Kontrol negatif: mengembalikan `isActive` lama,
+  mematikan `needsFix`, dan membuang syarat akhir sesi masing-masing membuat test merah.
+- Dicek di browser dev (`/practice`, 1280×900): spasi saat idle `defaultPrevented`,
+  Backspace bergaris merah sementara `e` tetap disorot.
+- `autotype()` / `watchRealInput()` **tidak** dijalankan — tetap butir manual pemilik
+  (ADR-020, ADR-022), dan kini mencakup perubahan ini.
+
+### Konsekuensi
+
+- (+) Jalur koreksi non-strict tidak lagi memaksa pengguna melihat keyboard.
+- (+) Tidak ada lagi halaman yang meloncat saat spasi pertama salah tekan.
+- (−) Dua tombol bisa menyala bersamaan. Warnanya berbeda, tapi apakah pemula paham mana
+  yang "wajib" belum diuji.
+- (−) Spasi selagi idle juga tidak lagi mengaktifkan tombol yang sedang fokus (mis.
+  pilihan mode input yang baru diklik). Enter dan klik tetap bekerja.
+- (−) Salah yang sudah terlewat lebih dari satu karakter tidak menyalakan Backspace: yang
+  diperiksa hanya karakter tepat sebelum kursor. Disengaja — menyorot Backspace untuk
+  kesalahan lima karakter di belakang mendorong penghapusan panjang yang tidak menaikkan
+  akurasi (ADR-019).
+- **Butir DoD pemilik:** apakah sorotan Backspace membantu atau mengalihkan, di uji pakai.

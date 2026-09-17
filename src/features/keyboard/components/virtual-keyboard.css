@@ -98,6 +98,14 @@
   font-weight: 700;
 }
 
+/* Backspace saat karakter sebelum kursor salah (ADR-043). Warna error yang sama
+   dengan karakter salah di teks, tanpa animasi: ditandai, bukan diteriaki. */
+.vk-fix {
+  border-color: var(--error);
+  box-shadow: inset 0 0 0 1px var(--error);
+  color: var(--error);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vk-key {
     transition: none;

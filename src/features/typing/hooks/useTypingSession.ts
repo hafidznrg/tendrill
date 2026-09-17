@@ -41,6 +41,14 @@ import { useKeyboardCapture } from './useKeyboardCapture.ts';
 
 const METRICS_INTERVAL_MS = 250;
 
+/** Karakter tepat sebelum kursor salah — Backspace adalah jalur koreksinya (ADR-043). */
+function needsFix(s: SessionState): boolean {
+  // Sesi yang sudah habis tidak punya jalur koreksi lagi: tidak ada yang disorot.
+  return (
+    s.cursor > 0 && s.cursor < s.target.length && s.cells[s.cursor - 1]!.state === 'incorrect'
+  );
+}
+
 /** Kelas CSS per status karakter. Ditulis imperatif, jadi tidak lewat Tailwind JIT. */
 export const CHAR_CLASS: Record<CharState, string> = {
   pending: 'ta-pending',
@@ -86,7 +94,7 @@ export interface TypingSessionApi {
   registerCaret: (el: HTMLElement | null) => void;
   registerViewport: (el: HTMLElement | null) => void;
   /** Virtual keyboard menitipkan pelukisnya di sini (dok. 07 §4). */
-  registerNextKeyPainter: (paint: (char: string | null) => void) => void;
+  registerNextKeyPainter: (paint: (char: string | null, fix?: boolean) => void) => void;
   restart: () => void;
   resumeNow: () => void;
 }
@@ -116,7 +124,7 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
   const spansRef = useRef<HTMLElement[]>([]);
   const caretRef = useRef<HTMLElement | null>(null);
   const viewportRef = useRef<HTMLElement | null>(null);
-  const nextKeyPainterRef = useRef<((char: string | null) => void) | null>(null);
+  const nextKeyPainterRef = useRef<((char: string | null, fix?: boolean) => void) | null>(null);
   const geometryRef = useRef({ charWidth, lineHeight });
   geometryRef.current = { charWidth, lineHeight };
 
@@ -215,11 +223,13 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     }
 
     // Sorot tombol berikutnya di virtual keyboard — bagian dari jalur imperatif
-    // yang sama, jadi tetap nol pekerjaan React per keystroke.
+    // yang sama, jadi tetap nol pekerjaan React per keystroke. Backspace ikut
+    // disorot selama karakter tepat sebelum kursor salah (ADR-043): di mode
+    // strict itu tidak pernah terjadi, karena kursor tidak maju melewati salah.
     const paintKey = nextKeyPainterRef.current;
     if (paintKey) {
       const next = s.cells[s.cursor];
-      paintKey(next ? next.expected : null);
+      paintKey(next ? next.expected : null, needsFix(s));
     }
   }, []);
 
@@ -323,7 +333,10 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
 
       onRestart: restart,
       onExit: () => onExit?.(),
-      isActive: () => sessionRef.current.status === 'running',
+      // Bukan hanya `running` (ADR-043): spasi yang ditekan sebelum keystroke
+      // pertama, atau selagi pause, juga tidak boleh menggulung halaman — keduanya
+      // tetap diteruskan ke engine sebagai ketikan.
+      isActive: () => sessionRef.current.status !== 'finished',
     }),
     [finish, onExit, paintCaret, paintDirty, restart],
   );
@@ -387,14 +400,17 @@ export function useTypingSession(options: UseTypingSessionOptions): TypingSessio
     viewportRef.current = el;
   }, []);
 
-  const registerNextKeyPainter = useCallback((paint: (char: string | null) => void) => {
-    nextKeyPainterRef.current = paint;
-    // Sorot tombol pertama begitu keyboard siap — tanpa ini, keyboard baru
-    // hidup setelah keystroke pertama, yang justru saat pemula paling butuh.
-    const s = sessionRef.current;
-    const next = s.cells[s.cursor];
-    paint(next ? next.expected : null);
-  }, []);
+  const registerNextKeyPainter = useCallback(
+    (paint: (char: string | null, fix?: boolean) => void) => {
+      nextKeyPainterRef.current = paint;
+      // Sorot tombol pertama begitu keyboard siap — tanpa ini, keyboard baru
+      // hidup setelah keystroke pertama, yang justru saat pemula paling butuh.
+      const s = sessionRef.current;
+      const next = s.cells[s.cursor];
+      paint(next ? next.expected : null, needsFix(s));
+    },
+    [],
+  );
 
   return {
     status,
