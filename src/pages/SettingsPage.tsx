@@ -8,6 +8,7 @@ import {
 } from '@/lib/storage/flags.ts';
 import { readFocusMode } from '@/lib/storage/focus.ts';
 import { useSettingsStore } from '@/store/settingsStore';
+import './settings-page.css';
 
 /**
  * `/settings` (dok. 02 §7, dok. 05 §6–§7) — Fase 8.
@@ -19,10 +20,6 @@ import { useSettingsStore } from '@/store/settingsStore';
  * - Hapus data butuh mengetik `DELETE` (dok. 02 §7).
  * - Pernyataan privasi ditulis eksplisit (dok. 05 §7).
  */
-
-const H2 = 'font-mono text-[13px] font-bold tracking-[0.12em] uppercase text-fg-dim';
-const BTN = 'rounded border border-line px-3 py-1.5 font-mono text-[13px] hover:border-accent';
-const BTN_PRIMARY = 'rounded bg-accent px-3 py-1.5 font-mono text-[13px] font-bold text-bg';
 
 function exportFileName(now: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -122,126 +119,185 @@ export default function SettingsPage() {
   };
 
   return (
-    <section className="space-y-10">
+    <section className="st-root">
       <h1 className="font-mono text-[19px] font-bold tracking-[-0.02em]">Pengaturan</h1>
 
-      <div className="space-y-3">
-        <h2 className={H2}>Tampilan & suara</h2>
-        <fieldset className="flex items-center gap-3">
-          <legend className="sr-only">Tema</legend>
-          <span className="w-32 text-fg-dim">Tema</span>
-          {(['light', 'dark'] as const).map((t) => (
-            <label key={t} className="flex items-center gap-1.5">
-              <input
-                type="radio"
-                name="theme"
-                checked={theme === t}
-                onChange={() => setTheme(t)}
-              />
-              {t === 'light' ? 'terang' : 'gelap'}
-            </label>
-          ))}
-        </fieldset>
-        <label className="flex items-center gap-3">
-          <span className="w-32 text-fg-dim">Suara ketik</span>
-          <input type="checkbox" checked={sound} onChange={toggleSound} />
-          <span>{sound ? 'nyala' : 'mati'}</span>
-        </label>
-        <label className="flex items-center gap-3">
-          <span className="w-32 text-fg-dim">Siluet tangan</span>
-          <input type="checkbox" checked={hands} onChange={toggleHands} />
-          <span>
-            {hands ? 'tampil' : 'sembunyi'} di latihan bebas — di kurikulum selalu tampil
-          </span>
-        </label>
-        <label className="flex items-center gap-3">
-          <span className="w-32 text-fg-dim">Keyboard</span>
-          <input type="checkbox" checked={keyboard} onChange={toggleKeyboard} />
-          <span>
-            {keyboard ? 'tampil' : 'sembunyi'} di layar mengetik — siluet ikut tersembunyi
-          </span>
-        </label>
-        <label className="flex items-center gap-3">
-          <span className="w-32 text-fg-dim">Mode fokus</span>
-          <input type="checkbox" checked={focus} onChange={() => setFocusMode(!focus)} />
-          <span>
-            {focus ? 'nyala' : 'mati'} — selama mengetik, menu dan petunjuk memudar
-          </span>
-        </label>
+      <div className="st-group">
+        <h2 className="st-label">Tampilan</h2>
+        <div className="st-rows">
+          <div className="st-row">
+            <div>
+              <div className="st-title" id="theme-label">
+                Tema
+              </div>
+              <p className="st-desc">Warna seluruh aplikasi.</p>
+            </div>
+            <fieldset aria-labelledby="theme-label" className="st-seg">
+              {(['light', 'dark'] as const).map((t) => (
+                <label key={t}>
+                  <input
+                    type="radio"
+                    name="theme"
+                    checked={theme === t}
+                    onChange={() => setTheme(t)}
+                  />
+                  {t === 'light' ? 'terang' : 'gelap'}
+                </label>
+              ))}
+            </fieldset>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <h2 className={H2}>Data</h2>
-        <p className="text-fg-dim">
-          Semua progresmu hanya tersimpan di browser ini. Tidak ada data yang meninggalkan
-          perangkat — tidak ada akun, tidak ada analytics, tidak ada request ke server mana pun.
-          Membersihkan data browser akan menghapusnya, jadi ekspor sesekali.
-        </p>
-
-        <div className="flex flex-wrap gap-3">
-          <button type="button" className={BTN} onClick={onExport}>
-            Ekspor progres
-          </button>
-          <button type="button" className={BTN} onClick={() => fileRef.current?.click()}>
-            Impor progres
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            data-testid="import-file"
-            onChange={(e) => void onPickFile(e)}
+      <div className="st-group">
+        <h2 className="st-label">Layar mengetik</h2>
+        <div className="st-rows">
+          <SwitchRow
+            title="Keyboard di layar"
+            desc="Kalau disembunyikan, siluet tangan ikut hilang."
+            checked={keyboard}
+            onChange={toggleKeyboard}
+          />
+          <SwitchRow
+            title="Siluet tangan di latihan bebas"
+            desc="Di lesson kurikulum siluet selalu tampil."
+            checked={hands}
+            onChange={toggleHands}
+          />
+          <SwitchRow
+            title="Mode fokus"
+            desc="Menu dan petunjuk memudar selama kamu mengetik."
+            checked={focus}
+            onChange={() => setFocusMode(!focus)}
+          />
+          <SwitchRow
+            title="Suara ketik"
+            desc="Bunyi pelan tiap tombol ditekan."
+            checked={sound}
+            onChange={toggleSound}
           />
         </div>
+      </div>
 
-        {pendingImport && (
-          <div role="alertdialog" className="rounded border border-line bg-surface p-4">
-            <p>
-              Impor <b>{pendingImport.name}</b> akan <b>menimpa</b> seluruh progres di browser
-              ini.
-            </p>
-            <div className="mt-3 flex gap-3">
-              <button type="button" className={BTN_PRIMARY} onClick={confirmImport}>
-                Timpa
+      <div className="st-group">
+        <h2 className="st-label">Data</h2>
+        <div className="st-rows">
+          <div className="st-row">
+            <div>
+              <div className="st-title">Cadangkan progres</div>
+              <p className="st-desc">
+                Semua progresmu hanya tersimpan di browser ini. Tidak ada data yang meninggalkan
+                perangkat — tidak ada akun, tidak ada analytics, tidak ada request ke server
+                mana pun. Membersihkan data browser akan menghapusnya, jadi ekspor sesekali.
+              </p>
+            </div>
+            <div className="st-actions">
+              <button type="button" className="st-btn" onClick={onExport}>
+                Ekspor progres
               </button>
-              <button type="button" className={BTN} onClick={() => setPendingImport(null)}>
-                Batal
+              <button type="button" className="st-btn" onClick={() => fileRef.current?.click()}>
+                Impor progres
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                data-testid="import-file"
+                onChange={(e) => void onPickFile(e)}
+              />
+            </div>
+          </div>
+
+          {pendingImport && (
+            <div role="alertdialog" className="st-confirm">
+              <p>
+                Impor <b>{pendingImport.name}</b> akan <b>menimpa</b> seluruh progres di browser
+                ini.
+              </p>
+              <div
+                className="st-actions"
+                style={{ justifyContent: 'flex-start', marginTop: 12 }}
+              >
+                <button type="button" className="st-btn" data-primary onClick={confirmImport}>
+                  Timpa
+                </button>
+                <button type="button" className="st-btn" onClick={() => setPendingImport(null)}>
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
+
+          {notice && (
+            <p
+              role="status"
+              className="st-notice"
+              data-error={notice.kind === 'error' || undefined}
+            >
+              {notice.text}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="st-group">
+        <h2 className="st-label" data-danger>
+          Zona bahaya
+        </h2>
+        <div className="st-rows" data-danger>
+          <div className="st-row">
+            <div>
+              <div className="st-title">Hapus semua data</div>
+              <p className="st-desc">
+                Tidak bisa dibatalkan. Ketik <code>DELETE</code> untuk membuka tombolnya.
+              </p>
+            </div>
+            <div className="st-actions">
+              <input
+                aria-label="Ketik DELETE"
+                placeholder="DELETE"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                className="st-input"
+              />
+              <button
+                type="button"
+                className="st-btn"
+                data-danger
+                disabled={confirmText !== 'DELETE'}
+                onClick={onDeleteAll}
+              >
+                Hapus semua data
               </button>
             </div>
           </div>
-        )}
-
-        {notice && (
-          <p role="status" className={notice.kind === 'error' ? 'text-error' : 'text-accent'}>
-            {notice.text}
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        <h2 className={H2}>Hapus semua data</h2>
-        <p className="text-fg-dim">
-          Tidak bisa dibatalkan. Ketik <code className="font-mono">DELETE</code> untuk
-          memastikan.
-        </p>
-        <div className="flex gap-3">
-          <input
-            aria-label="Ketik DELETE"
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            className="rounded border border-line bg-bg px-2 py-1 font-mono"
-          />
-          <button
-            type="button"
-            className={BTN}
-            disabled={confirmText !== 'DELETE'}
-            onClick={onDeleteAll}
-          >
-            Hapus semua data
-          </button>
         </div>
       </div>
     </section>
+  );
+}
+
+/** Satu baris nyala/mati: checkbox asli ber-`role="switch"`, digambar ulang di `settings-page.css`. */
+function SwitchRow(props: {
+  title: string;
+  desc: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <label className="st-row">
+      <div>
+        <div className="st-title">{props.title}</div>
+        <p className="st-desc">{props.desc}</p>
+      </div>
+      <input
+        type="checkbox"
+        role="switch"
+        className="st-switch"
+        checked={props.checked}
+        onChange={props.onChange}
+      />
+    </label>
   );
 }

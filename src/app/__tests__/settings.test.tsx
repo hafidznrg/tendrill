@@ -53,7 +53,7 @@ afterEach(() => vi.restoreAllMocks());
 describe('/settings (Fase 8)', () => {
   it('suara ketik tersimpan ke typing:settings, default mati', async () => {
     renderPage();
-    const box = screen.getByRole('checkbox', { name: /suara ketik/i });
+    const box = screen.getByRole('switch', { name: /suara ketik/i });
     expect(box).not.toBeChecked();
     await userEvent.click(box);
     expect(read(STORAGE_KEYS.settings).soundEnabled).toBe(true);

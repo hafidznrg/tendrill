@@ -740,6 +740,7 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 - [ ] Ringkasan pencapaian yang bisa dibagikan
 - [ ] Latensi bigram penuh (saat ini hanya top-50, P1)
 - [ ] Playwright untuk 3 skenario E2E
+- [ ] Mode input strict/bebas (per `/learn` dan `/practice`) juga bisa diatur di `/settings` — sekarang hanya di bawah keyboard (ADR-029). Muncul saat merapikan tampilan `/settings` (2026-09-17)
 - [ ] Router tulis sendiri (−13 KB) — jalan keluar kalau anggaran mengikat (ADR-018)
 - [ ] Preact via `compat` (−60 KB) — jalan keluar darurat, evaluasi setelah Fase 2 (ADR-018)
 - [x] **Mode strict/non-strict bisa dipilih** — diputuskan 2026-09-12, lihat ADR-029
