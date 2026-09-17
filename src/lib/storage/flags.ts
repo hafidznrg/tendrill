@@ -55,14 +55,15 @@ export function writeShowHandsInPractice(shown: boolean): void {
 }
 
 /**
- * Mode fokus (ADR-044). Sama seperti siluet: hanya `true` yang menyalakan.
+ * Virtual keyboard di layar sesi (ADR-045). Kebalikan siluet: hanya `false` yang
+ * menyembunyikan — nilai asing berarti tampil, karena keyboard adalah default v1.
  */
-export function readFocusMode(): boolean {
-  return read(STORAGE_KEYS.settings).focusMode === true;
+export function readShowKeyboard(): boolean {
+  return read(STORAGE_KEYS.settings).showKeyboard !== false;
 }
 
-export function writeFocusMode(on: boolean): void {
-  write(STORAGE_KEYS.settings, { ...read(STORAGE_KEYS.settings), focusMode: on });
+export function writeShowKeyboard(shown: boolean): void {
+  write(STORAGE_KEYS.settings, { ...read(STORAGE_KEYS.settings), showKeyboard: shown });
 }
 
 /**

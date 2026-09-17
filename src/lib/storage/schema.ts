@@ -151,8 +151,8 @@ export interface SettingsData {
    */
   showHandsInPractice?: boolean;
   /**
-   * Mode fokus di layar sesi (ADR-044). Opsional & aditif, tanpa migrasi;
-   * tidak ada = mati.
+   * Mode fokus (ADR-044/045). Nilai AKTIF hidup di key `tendrill.focus`; field
+   * ini hanya cermin ekspor/impor, seperti `theme`.
    */
   focusMode?: boolean;
 }

@@ -14,6 +14,7 @@ import { units } from '@/data/curriculum/en/units.ts';
 import type { Lesson } from '@/data/curriculum/en/types.ts';
 import type { SessionResult } from '@/lib/engine';
 import { installFlushOnHide } from '@/lib/storage';
+import { readShowKeyboard } from '@/lib/storage/flags.ts';
 
 /**
  * `/placement` — placement test 60 detik (dok. 02 §2, dok. 04 §3, R-14).
@@ -45,6 +46,8 @@ export default function PlacementPage() {
   const [target, setTarget] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [runId, setRunId] = useState(0);
+  // Mengikuti pengaturan tanpa sakelar (ADR-045): placement tidak menambah kontrol.
+  const [showKeyboard] = useState(readShowKeyboard);
 
   useEffect(installFlushOnHide, []);
 
@@ -172,6 +175,7 @@ export default function PlacementPage() {
         runId={runId}
         onFinish={onFinish}
         onExit={() => void navigate('/learn')}
+        showKeyboard={showKeyboard}
         footer={
           // Pengantar ikut turun ke bawah keyboard (ADR-041) — di atas area teks ia
           // mendorong seluruh panggung, dan ini sesi pertama yang dilihat pemula.

@@ -4,6 +4,8 @@ export { LiveMetrics } from './components/LiveMetrics.tsx';
 export { TypingStage } from './components/TypingStage.tsx';
 export { InputModeToggle } from './components/InputModeToggle.tsx';
 export { HandsToggle } from './components/HandsToggle.tsx';
+export { KeyboardToggle } from './components/KeyboardToggle.tsx';
+export type { KeyboardToggleProps } from './components/KeyboardToggle.tsx';
 export type { HandsToggleProps } from './components/HandsToggle.tsx';
 export type { InputModeToggleProps } from './components/InputModeToggle.tsx';
 export type { TypingStageProps } from './components/TypingStage.tsx';

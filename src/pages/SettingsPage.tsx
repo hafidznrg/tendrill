@@ -1,11 +1,12 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { clearAll, exportAll, importAll, read, write, STORAGE_KEYS } from '@/lib/storage';
 import {
-  readFocusMode,
   readShowHandsInPractice,
-  writeFocusMode,
+  readShowKeyboard,
   writeShowHandsInPractice,
+  writeShowKeyboard,
 } from '@/lib/storage/flags.ts';
+import { readFocusMode } from '@/lib/storage/focus.ts';
 import { useSettingsStore } from '@/store/settingsStore';
 
 /**
@@ -33,10 +34,12 @@ type Notice = { kind: 'ok' | 'error'; text: string } | null;
 export default function SettingsPage() {
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
+  const focus = useSettingsStore((s) => s.focusMode);
+  const setFocusMode = useSettingsStore((s) => s.setFocusMode);
 
   const [sound, setSound] = useState(() => read(STORAGE_KEYS.settings).soundEnabled);
   const [hands, setHands] = useState(readShowHandsInPractice);
-  const [focus, setFocus] = useState(readFocusMode);
+  const [keyboard, setKeyboard] = useState(readShowKeyboard);
   const [pendingImport, setPendingImport] = useState<{ name: string; text: string } | null>(
     null,
   );
@@ -56,10 +59,10 @@ export default function SettingsPage() {
     setHands(next);
   };
 
-  const toggleFocus = () => {
-    const next = !focus;
-    writeFocusMode(next);
-    setFocus(next);
+  const toggleKeyboard = () => {
+    const next = !keyboard;
+    writeShowKeyboard(next);
+    setKeyboard(next);
   };
 
   const onExport = () => {
@@ -102,7 +105,8 @@ export default function SettingsPage() {
     const imported = read(STORAGE_KEYS.settings);
     setSound(imported.soundEnabled);
     setHands(readShowHandsInPractice());
-    setFocus(readFocusMode());
+    setKeyboard(readShowKeyboard());
+    setFocusMode(readFocusMode());
     if (imported.theme === 'light' || imported.theme === 'dark') setTheme(imported.theme);
     setNotice({ kind: 'ok', text: 'Progres dipulihkan.' });
   };
@@ -112,7 +116,8 @@ export default function SettingsPage() {
     setConfirmText('');
     setSound(read(STORAGE_KEYS.settings).soundEnabled);
     setHands(readShowHandsInPractice());
-    setFocus(readFocusMode());
+    setKeyboard(readShowKeyboard());
+    setFocusMode(readFocusMode());
     setNotice({ kind: 'ok', text: 'Semua data dihapus.' });
   };
 
@@ -150,8 +155,15 @@ export default function SettingsPage() {
           </span>
         </label>
         <label className="flex items-center gap-3">
+          <span className="w-32 text-fg-dim">Keyboard</span>
+          <input type="checkbox" checked={keyboard} onChange={toggleKeyboard} />
+          <span>
+            {keyboard ? 'tampil' : 'sembunyi'} di layar mengetik — siluet ikut tersembunyi
+          </span>
+        </label>
+        <label className="flex items-center gap-3">
           <span className="w-32 text-fg-dim">Mode fokus</span>
-          <input type="checkbox" checked={focus} onChange={toggleFocus} />
+          <input type="checkbox" checked={focus} onChange={() => setFocusMode(!focus)} />
           <span>
             {focus ? 'nyala' : 'mati'} — selama mengetik, menu dan petunjuk memudar
           </span>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { HandsToggle, InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
+import { HandsToggle, InputModeToggle, KeyboardToggle, ResultScreen, TypingStage } from '@/features/typing';
 import { persistSessionResult } from '@/features/typing/persistSession.ts';
 import {
   MIN_KEY_OCCURRENCES,
@@ -16,8 +16,10 @@ import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
 import {
   readInputMode,
   readShowHandsInPractice,
+  readShowKeyboard,
   writeInputMode,
   writeShowHandsInPractice,
+  writeShowKeyboard,
 } from '@/lib/storage/flags.ts';
 import type { InputMode } from '@/lib/storage/schema.ts';
 import './practice-page.css';
@@ -51,6 +53,11 @@ export default function AdaptivePage() {
   const changeHands = useCallback((next: boolean) => {
     setHands(next);
     writeShowHandsInPractice(next);
+  }, []);
+  const [keyboard, setKeyboard] = useState(readShowKeyboard);
+  const changeKeyboard = useCallback((next: boolean) => {
+    setKeyboard(next);
+    writeShowKeyboard(next);
   }, []);
 
   useEffect(installFlushOnHide, []);
@@ -112,10 +119,12 @@ export default function AdaptivePage() {
           active={!finished}
           strict={mode === 'strict'}
           showHands={hands}
+          showKeyboard={keyboard}
           limitMs={null}
           footer={
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <InputModeToggle mode={mode} onChange={changeMode} />
+              <KeyboardToggle shown={keyboard} onChange={changeKeyboard} />
               <HandsToggle shown={hands} onChange={changeHands} />
               <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
                 tanpa kriteria lulus · Tab — ulangi · Esc — kembali

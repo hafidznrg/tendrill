@@ -763,8 +763,8 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       (pelukis sorotan sudah ada), tapi menyentuh jalur keystroke — jadi ia butuh
       pengukuran, bukan sekadar ditambahkan.
 - [x] **Mode fokus** — janji PRD P1 yang tidak pernah dispesifikasi; dikerjakan
-      2026-09-17 atas permintaan pemilik, lihat ADR-044. Sisa: `showKeyboard` (sembunyikan
-      keyboard) masih field tanpa pembaca.
+      2026-09-17 atas permintaan pemilik, lihat ADR-044. Sakelar dipindah ke bilah atas dan
+      `showKeyboard` diberi pembaca pada hari yang sama, lihat ADR-045.
 - [ ] **`attempts` per tombol kurang satu tiap sesi** — temuan audit Fase 1–4,
       2026-09-12. `mergeKeystats` menurunkan jumlah percobaan dari `latencyByKey`,
       yang sengaja melewatkan keystroke **pertama** sesi (ia tidak punya jeda
@@ -2157,3 +2157,45 @@ meminta fitur ini dikerjakan.
   bertambah beberapa aturan.
 - **Butir DoD pemilik:** apakah memudarnya header terasa menenangkan atau membingungkan
   ("navigasinya hilang ke mana?").
+
+---
+
+## ADR-045 — Sakelar mode fokus di bilah atas; `showKeyboard` akhirnya dipakai
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima · **Merevisi:** ADR-044 poin 2–3
+
+**Konteks.** Pemilik menilai sakelar mode fokus di `/settings` terlalu jauh: ia harus mudah
+dijangkau, di samping tombol tema. Pemilik juga meminta opsi menyembunyikan keyboard —
+field `showKeyboard` sudah ada di skema sejak v1 tapi tidak pernah dibaca.
+
+Kendalanya bundel: bilah atas ada di bundel awal (89,3 / 90 KB). Membaca `typing:settings`
+dari sana menarik lapisan storage — persis yang membuat anggaran merah di 91,0 KB saat
+toggle tema (ADR-035).
+
+**Keputusan.**
+
+1. **Mode fokus disimpan di key sendiri, `tendrill.focus`**, lewat modul kecil
+   `lib/storage/focus.ts` — kembaran `theme.ts`. `settings.focusMode` tetap ada, tetapi
+   hanya **cermin ekspor/impor**, dicerminkan di `exportAll`/`importAll` seperti tema.
+   Nilai lama `settings.focusMode` dari ADR-044 (hidup beberapa jam) diabaikan.
+2. **Sakelar `FocusToggle` di header**, sebelah kiri `ThemeToggle`, lewat `settingsStore`.
+3. **Gerbang CSS dua atribut:** store menulis `data-focus-mode` di `<html>`; `TypingStage`
+   menulis `data-session="running"` tanpa membaca pengaturan apa pun. Dengan begitu sakelar
+   yang ditekan saat sesi idle langsung berlaku — ADR-044 membaca sekali saat mount, yang
+   tidak lagi cukup begitu sakelarnya bisa ditekan dari halaman sesi itu sendiri.
+4. **`showKeyboard`** dibaca/ditulis lewat `flags.ts` (halaman sesi sudah memuat storage).
+   `TypingStage` menerima prop `showKeyboard`; `VirtualKeyboard` tetap ter-mount di dalam
+   pembungkus `hidden`. Sakelar `KeyboardToggle` di footer `/learn/:id`, `/practice`,
+   `/practice/adaptive`, plus kotak centang di `/settings`. Hanya `false` yang
+   menyembunyikan — nilai asing berarti tampil.
+5. Menyembunyikan keyboard juga menyembunyikan siluet, **termasuk di `/learn`**.
+
+**Konsekuensi.**
+- (+) Mode fokus satu klik dari mana pun, tanpa menyentuh anggaran storage di bundel awal.
+- (+) Field skema yang menganggur sejak v1 akhirnya punya arti.
+- (−) Dua tempat menyimpan pengaturan tampilan (key kecil vs `typing:settings`) — harga
+  yang sama yang sudah dibayar tema.
+- (−) Pemula bisa menyembunyikan keyboard di Unit 1 dan kehilangan siluet. Tidak dicegah;
+  sakelarnya terlihat tepat di tempat keyboard tadi berada.
+- **Butir DoD pemilik:** apakah sakelar fokus di header mengganggu bilah atas, dan apakah
+  lesson tanpa keyboard masih bisa diikuti.

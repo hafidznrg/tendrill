@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HandsToggle, InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
+import { HandsToggle, InputModeToggle, KeyboardToggle, ResultScreen, TypingStage } from '@/features/typing';
 import { persistSessionResult } from '@/features/typing/persistSession.ts';
 import {
   DURATIONS,
@@ -16,8 +16,10 @@ import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
 import {
   readInputMode,
   readShowHandsInPractice,
+  readShowKeyboard,
   writeInputMode,
   writeShowHandsInPractice,
+  writeShowKeyboard,
 } from '@/lib/storage/flags.ts';
 import type { InputMode, PracticeMode, SessionRecord } from '@/lib/storage/schema.ts';
 import './practice-page.css';
@@ -58,6 +60,11 @@ export default function PracticePage() {
   const changeHands = useCallback((next: boolean) => {
     setHands(next);
     writeShowHandsInPractice(next);
+  }, []);
+  const [keyboard, setKeyboard] = useState(readShowKeyboard);
+  const changeKeyboard = useCallback((next: boolean) => {
+    setKeyboard(next);
+    writeShowKeyboard(next);
   }, []);
 
   /** Pool yang sudah terunduh, supaya "ulangi" tidak mengimpor ulang. */
@@ -128,10 +135,12 @@ export default function PracticePage() {
           active={!finished}
           strict={mode === 'strict'}
           showHands={hands}
+          showKeyboard={keyboard}
           limitMs={duration.limitMs}
           footer={
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <InputModeToggle mode={mode} onChange={changeMode} />
+              <KeyboardToggle shown={keyboard} onChange={changeKeyboard} />
               <HandsToggle shown={hands} onChange={changeHands} />
               <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
                 tanpa kriteria lulus · Tab — ulangi · Esc — kembali

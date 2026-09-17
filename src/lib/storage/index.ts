@@ -1,5 +1,6 @@
 import { migrate } from './migrations.ts';
 import { readStoredTheme, writeTheme } from './theme.ts';
+import { readFocusMode, writeFocusMode } from './focus.ts';
 import {
   CURRENT_VERSION,
   DEFAULTS,
@@ -400,7 +401,11 @@ export function exportAll(): string {
       // Tema aktif hidup di key `tendrill.theme` (dibaca skrip inline sebelum
       // paint), bukan di `typing:settings`. Ia dicerminkan saat ekspor, bukan
       // saat toggle — toggle ada di bundel awal, lapisan storage tidak (ADR-035).
-      settings: { ...read(STORAGE_KEYS.settings), ...themeField() },
+      settings: {
+        ...read(STORAGE_KEYS.settings),
+        ...themeField(),
+        focusMode: readFocusMode(), // ADR-045 — dicerminkan seperti tema
+      },
       meta: read(STORAGE_KEYS.meta),
     },
   });
@@ -479,13 +484,21 @@ export function importAll(json: string): ImportOutcome {
   for (const [key, value] of staged) {
     if (value === undefined) continue;
     const migrated = migrate(key, value as Record<string, unknown>);
-    if (migrated.ok) write(key, migrated.data as unknown as StorageShape[StorageKey]);
+    if (!migrated.ok) continue;
+    // `focusMode` hanya cermin (ADR-045): nilai aktifnya dipulihkan ke key sendiri di
+    // bawah, dan tidak menumpuk di `typing:settings`.
+    const { focusMode: _mirror, ...rest } = migrated.data as Record<string, unknown>;
+    void _mirror;
+    const payload = key === STORAGE_KEYS.settings ? rest : migrated.data;
+    write(key, payload as unknown as StorageShape[StorageKey]);
   }
 
   // Tema aktif hidup di key-nya sendiri (dibaca skrip inline index.html sebelum
   // paint), jadi ia ikut dipulihkan dari `settings.theme` — ADR-035.
   const theme = (data['settings'] as { theme?: unknown } | undefined)?.theme;
   if (theme === 'light' || theme === 'dark') writeTheme(theme);
+  const focusMode = (data['settings'] as { focusMode?: unknown } | undefined)?.focusMode;
+  if (typeof focusMode === 'boolean') writeFocusMode(focusMode);
   return { ok: true };
 }
 

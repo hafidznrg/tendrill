@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { InputModeToggle, ResultScreen, TypingStage } from '@/features/typing';
+import { InputModeToggle, KeyboardToggle, ResultScreen, TypingStage } from '@/features/typing';
 import { persistSessionResult, previousBestFor } from '@/features/typing/persistSession.ts';
 import { topProblemKeys } from '@/features/typing';
 import {
@@ -22,7 +22,13 @@ import {
 import type { GradedPart } from '@/features/curriculum';
 import type { SessionResult } from '@/lib/engine';
 import { installFlushOnHide, isMemoryMode } from '@/lib/storage';
-import { markGraduated, readInputMode, writeInputMode } from '@/lib/storage/flags.ts';
+import {
+  markGraduated,
+  readInputMode,
+  readShowKeyboard,
+  writeInputMode,
+  writeShowKeyboard,
+} from '@/lib/storage/flags.ts';
 import type { InputMode } from '@/lib/storage/schema.ts';
 import type { PassCriteria } from '@/data/curriculum/en/types.ts';
 
@@ -242,6 +248,11 @@ export default function LessonPage() {
     setMode(next);
     writeInputMode('learn', next);
   }, []);
+  const [keyboard, setKeyboard] = useState(readShowKeyboard);
+  const changeKeyboard = useCallback((next: boolean) => {
+    setKeyboard(next);
+    writeShowKeyboard(next);
+  }, []);
 
   const goNext = useCallback(() => {
     const next = loaded?.nextLessonId;
@@ -384,6 +395,8 @@ export default function LessonPage() {
         // Kurikulum selalu menampilkan siluet (ADR-036): di sinilah pemula belajar
         // di mana tangan beristirahat.
         showHands
+        // Pilihan eksplisit pengguna mengalahkan "siluet selalu tampil" (ADR-045).
+        showKeyboard={keyboard}
         footer={
           // Mode yang aktif terlihat DI SINI, tanpa membuka pengaturan
           // (ADR-029) — tepat di bawah keyboard, tempat mata pemula berada.
@@ -393,6 +406,7 @@ export default function LessonPage() {
             {lesson.intro && !finished && <LessonIntro text={lesson.intro} />}
             <div className="flex flex-wrap items-center gap-3">
               <InputModeToggle mode={mode} onChange={changeMode} />
+              <KeyboardToggle shown={keyboard} onChange={changeKeyboard} />
               <p className="font-mono text-[11px] tracking-[0.16em] text-fg-dim uppercase">
                 {criteria.minWpm}wpm · {criteria.minAccuracy}% · Tab ulangi · Esc keluar
               </p>

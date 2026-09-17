@@ -63,7 +63,10 @@ di atasnya menggeser seluruh panggung — kelas bug yang tiga kali lolos di Fase
 
 ### Mode fokus (ADR-044)
 
-Opsional, **mati default**, diatur di `/settings` (`typing:settings.focusMode`).
+Opsional, **mati default**. Sakelarnya di **bilah atas, di samping tombol tema** (ADR-045),
+disimpan di key `tendrill.focus` — pola yang sama dengan tema: key kecil sendiri supaya
+sakelar di bundel awal tidak menarik lapisan storage. Dicerminkan ke `settings.focusMode`
+hanya saat ekspor/impor.
 
 | | Saat sesi `running` dengan mode fokus nyala |
 |---|---|
@@ -73,15 +76,31 @@ Opsional, **mati default**, diatur di `/settings` (`typing:settings.focusMode`).
 Aturan:
 - **Memudar, tidak pernah dilepas.** Elemen tetap memesan ruangnya — `display: none` atau
   unmount akan menggeser panggung ke atas (dok. 07 §1 prinsip 2).
-- **Pemicunya transisi status, bukan keystroke.** Atribut `data-focus="on"` di `<html>`
-  ditulis di efek yang bergantung pada `status` — transisi yang sudah me-render. Nol
-  re-render tambahan, nol listener baru.
+- **Dua atribut, satu gerbang CSS** (ADR-045). `data-focus-mode="on"` di `<html>` ditulis
+  store saat sakelar berganti; `data-session="running"` ditulis `TypingStage` di efek yang
+  bergantung pada `status` — transisi yang sudah me-render. CSS baru memudarkan kalau
+  **keduanya** ada, jadi menyalakan sakelar di tengah lesson langsung berlaku tanpa remount.
+  Nol re-render tambahan per keystroke, nol listener baru.
 - Kembali terlihat saat `paused`, `finished`, keluar rute, atau unmount.
 - Hover atau fokus keyboard pada elemen yang memudar memunculkannya lagi; mouse tidak pernah
   "terkunci" dari navigasi.
 - Keyboard dan siluet **tidak** ikut: bagi pemula keduanya panduan, bukan hiasan
-  (ADR-036). Menyembunyikan keyboard adalah pengaturan lain (`showKeyboard`, belum dibuat).
+  (ADR-036). Menyembunyikan keyboard adalah pengaturan terpisah, di bawah.
 - Transisi 300 ms; `prefers-reduced-motion` → tanpa transisi.
+
+### Sembunyikan keyboard (ADR-045)
+
+`typing:settings.showKeyboard` (sudah ada di skema sejak v1, default `true`).
+
+- Sakelar `keyboard tampil/sembunyi` di baris bawah keyboard `/learn/:id`, `/practice`,
+  `/practice/adaptive` (bahasa visual `InputModeToggle`), dan di `/settings`. `/placement`
+  mengikuti pengaturan tanpa sakelar.
+- Berlaku di **semua** rute sesi, termasuk `/learn` — pilihan eksplisit pengguna mengalahkan
+  "siluet selalu tampil" (ADR-036), karena siluet menumpang di keyboard.
+- `VirtualKeyboard` **tetap ter-mount**, hanya pembungkusnya `hidden`. Pelukis sorotan dan
+  pengukuran siluet tidak dibongkar; saat muncul lagi `ResizeObserver` mengukur ulang.
+- Menyembunyikan menggeser baris footer ke atas. Diterima: pemicunya klik, bukan keystroke,
+  dan area teks **tidak** bergeser (ia di atas keyboard).
 
 ### Layar hasil adalah overlay, bukan blok berikutnya (ADR-041)
 

@@ -118,8 +118,9 @@ body {
 }
 
 /* Mode fokus (ADR-044, dok. 07 §2). Memudar, TIDAK dilepas: `display: none` di sini
-   menggeser seluruh panggung ke atas saat keystroke pertama. `data-focus` ditulis
-   `TypingStage` hanya saat status berganti. Hover/fokus memunculkan kembali. */
+   menggeser seluruh panggung ke atas saat keystroke pertama. Dua atribut (ADR-045):
+   `data-focus-mode` dari sakelar di bilah atas, `data-session` dari `TypingStage`
+   saat status berganti. Hover/fokus memunculkan kembali. */
 .stage-footer {
   display: contents;
 }
@@ -129,8 +130,8 @@ body {
   transition: opacity 300ms ease;
 }
 
-html[data-focus='on'] .app-header:not(:hover, :focus-within),
-html[data-focus='on'] .stage-footer > :not(:hover, :focus-within) {
+html[data-focus-mode='on'][data-session='running'] .app-header:not(:hover, :focus-within),
+html[data-focus-mode='on'][data-session='running'] .stage-footer > :not(:hover, :focus-within) {
   opacity: 0;
 }
 

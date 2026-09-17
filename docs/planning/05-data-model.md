@@ -142,7 +142,7 @@ generator adaptif (dok. 04 §8).
   version: 1,
   theme: "system" | "light" | "dark",
   soundEnabled: boolean,
-  showKeyboard: boolean,
+  showKeyboard: boolean,          // ADR-045: false → keyboard & siluet disembunyikan di layar sesi
   showFingerGuide: boolean,
   keyboardLayout: "qwerty",
   contentLanguage: "en",
@@ -155,8 +155,8 @@ generator adaptif (dok. 04 §8).
   // ADR-036 — siluet tangan di /practice & /practice/adaptive. Opsional & aditif,
   // tanpa migrasi; tidak ada = false. /learn selalu menampilkannya, jadi tidak disimpan.
   showHandsInPractice?: boolean,
-  // ADR-044 — mode fokus di layar sesi. Opsional & aditif, tanpa migrasi;
-  // hanya `true` yang menyalakan.
+  // ADR-044/045 — mode fokus. Nilai AKTIF hidup di key `tendrill.focus` (seperti
+  // tema); field ini hanya cermin saat ekspor/impor.
   focusMode?: boolean
 }
 ```

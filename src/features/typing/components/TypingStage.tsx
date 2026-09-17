@@ -4,7 +4,6 @@ import { VirtualKeyboard } from '@/features/keyboard';
 import { LiveMetrics } from './LiveMetrics.tsx';
 import { TypingArea } from './TypingArea.tsx';
 import { useCharMetrics } from '../hooks/useCharMetrics.ts';
-import { readFocusMode } from '@/lib/storage/flags.ts';
 import { colsFor } from '../cols.ts';
 import { useTypingSession } from '../hooks/useTypingSession.ts';
 
@@ -53,6 +52,11 @@ export interface TypingStageProps {
   limitMs?: number | null;
   /** Siluet tangan di keyboard (ADR-036). Halaman yang memutuskan permukaannya. */
   showHands?: boolean;
+  /**
+   * false → keyboard (dan siluetnya) disembunyikan (ADR-045). Tetap ter-mount:
+   * pelukis sorotan dan pengukuran siluet tidak dibongkar.
+   */
+  showKeyboard?: boolean;
 }
 
 export function TypingStage({
@@ -67,6 +71,7 @@ export function TypingStage({
   strict = false,
   limitMs = null,
   showHands = false,
+  showKeyboard = true,
 }: TypingStageProps) {
   const [textEl, setTextEl] = useState<HTMLElement | null>(null);
   const { charWidth, lineHeight, width, ready } = useCharMetrics(textEl);
@@ -86,20 +91,19 @@ export function TypingStage({
 
   const { restart, registerNextKeyPainter, status } = session;
 
-  // Mode fokus (ADR-044): dibaca sekali saat mount. Atributnya ditulis di efek
-  // yang bergantung pada `status` — transisi yang memang sudah me-render — jadi
-  // tidak ada commit tambahan dan jalur keystroke tidak disentuh. CSS yang
-  // memudarkan header dan footer; jangan diganti `display: none` (layout shift).
-  const [focusMode] = useState(readFocusMode);
+  // Mode fokus (ADR-044/045): panggung hanya mengumumkan `data-session`, TANPA
+  // membaca pengaturan — sakelar di bilah atas menulis `data-focus-mode`, dan CSS
+  // butuh keduanya. Efek ini bergantung pada `status`, transisi yang memang sudah
+  // me-render, jadi jalur keystroke tidak disentuh. Yang memudarkan adalah CSS;
+  // jangan diganti `display: none` (layout shift).
   useEffect(() => {
-    if (!focusMode) return;
     const root = document.documentElement;
-    if (status === 'running') root.dataset['focus'] = 'on';
-    else delete root.dataset['focus'];
+    if (status === 'running') root.dataset['session'] = 'running';
+    else delete root.dataset['session'];
     return () => {
-      delete root.dataset['focus'];
+      delete root.dataset['session'];
     };
-  }, [focusMode, status]);
+  }, [status]);
 
   // Restart hanya saat runId benar-benar berubah — bukan saat mount, yang akan
   // membuang sesi yang baru saja dibuat.
@@ -133,7 +137,7 @@ export function TypingStage({
           )}
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8" hidden={!showKeyboard}>
           <VirtualKeyboard onReady={registerNextKeyPainter} showHands={showHands} />
         </div>
 
