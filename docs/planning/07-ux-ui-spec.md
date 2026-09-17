@@ -383,6 +383,18 @@ prinsip produk #3 ("jangan menghukum kesalahan secara emosional").
   Lesson berikutnya ditandai garis aksen inset — status tetap **teks** (§11), tanpa lencana.
 - **Gaya di `unit-list.css`** (chunk lazy), bukan utilitas Tailwind — alasan yang sama dengan §10b.
 
+## 10d. `/practice` — layar pilihan (ADR-049)
+
+- Hanya layar **pilihan** yang diatur di sini; layar mengetik tetap §2 (ADR-041).
+- **Kepala:** judul + paragraf; tautan teks "Latih kelemahanmu →" ke `/practice/adaptive`.
+- **Satu panel:** durasi sebagai segmen (terpilih terisi `accent` + tebal), sumber teks sebagai
+  kartu berisi label dan satu baris isi pool (`hint` di `SOURCES`, wajib cocok dengan data
+  wordlist), lalu baris ringkasan pilihan + tombol primer "Mulai latihan".
+- **Riwayat:** tiga kotak (terbaik, rata-rata WPM, rata-rata akurasi) atas sesi yang tampil
+  (≤ 10, semua durasi), selalu dirender — "—" kalau kosong — lalu tabel; durasi memakai label
+  pilihan, angka rata kanan.
+- Gaya di `practice-page.css` (chunk lazy), bukan utilitas Tailwind.
+
 ## 11. Nada tulisan
 
 - Ringkas dan faktual. "27 WPM · 92% — butuh 95% untuk lanjut."

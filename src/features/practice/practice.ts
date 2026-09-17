@@ -31,6 +31,8 @@ export interface PracticeSource {
   label: string;
   /** Kunci di `pools` (`src/data/wordlists/en`). */
   pool: string;
+  /** Satu baris bahasa UI: apa isi pool-nya. Wajib cocok dengan datanya. */
+  hint: string;
 }
 
 /**
@@ -39,10 +41,30 @@ export interface PracticeSource {
  * pertanyaan lisensi yang dok. 04 §13 sengaja hindari.
  */
 export const SOURCES: readonly PracticeSource[] = [
-  { id: 'words', label: 'kata umum', pool: 'common-200' },
-  { id: 'sentences', label: 'kalimat', pool: 'sentences-basic' },
-  { id: 'punctuation', label: 'kalimat bertanda baca', pool: 'sentences-punct' },
-  { id: 'numbers', label: 'angka & simbol', pool: 'numbers-symbols' },
+  {
+    id: 'words',
+    label: 'kata umum',
+    pool: 'common-200',
+    hint: '200 kata bahasa Inggris paling sering',
+  },
+  {
+    id: 'sentences',
+    label: 'kalimat',
+    pool: 'sentences-basic',
+    hint: 'kalimat utuh — kapital, koma, titik',
+  },
+  {
+    id: 'punctuation',
+    label: 'kalimat bertanda baca',
+    pool: 'sentences-punct',
+    hint: 'tanda kutip, tanya, seru, titik dua, apostrof',
+  },
+  {
+    id: 'numbers',
+    label: 'angka & simbol',
+    pool: 'numbers-symbols',
+    hint: 'tahun, harga, persen, simbol umum',
+  },
 ];
 
 /**

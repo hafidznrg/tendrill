@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HandsToggle, InputModeToggle, KeyboardToggle, ResultScreen, TypingStage } from '@/features/typing';
+import { Link } from 'react-router';
+import {
+  HandsToggle,
+  InputModeToggle,
+  KeyboardToggle,
+  ResultScreen,
+  TypingStage,
+} from '@/features/typing';
 import { persistSessionResult } from '@/features/typing/persistSession.ts';
 import {
   DURATIONS,
@@ -174,54 +181,87 @@ export default function PracticePage() {
     );
   }
 
+  const summary = historySummary(history);
+
   return (
     <section className="pr-root">
-      <h1 className="pr-title">Latihan bebas</h1>
-      <p className="pr-lead">
-        Tanpa kriteria lulus dan tanpa pengaruh ke kurikulum. Hasilnya tetap masuk ke statistik
-        tombolmu.
-      </p>
-
-      <fieldset className="pr-group">
-        <legend className="pr-legend">durasi</legend>
-        <div className="pr-choices">
-          {DURATIONS.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              className="pr-choice"
-              aria-pressed={d.id === durationId}
-              onClick={() => setDurationId(d.id)}
-            >
-              {d.label}
-            </button>
-          ))}
+      <div className="pr-head">
+        <div>
+          <h1 className="pr-title">Latihan bebas</h1>
+          <p className="pr-lead">
+            Tanpa kriteria lulus dan tanpa pengaruh ke kurikulum. Hasilnya tetap masuk ke
+            statistik tombolmu.
+          </p>
         </div>
-      </fieldset>
+        <Link to="/practice/adaptive" className="pr-head-link">
+          Latih kelemahanmu →
+        </Link>
+      </div>
 
-      <fieldset className="pr-group">
-        <legend className="pr-legend">sumber teks</legend>
-        <div className="pr-choices">
-          {SOURCES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className="pr-choice"
-              aria-pressed={s.id === sourceId}
-              onClick={() => setSourceId(s.id)}
-            >
-              {s.label}
-            </button>
-          ))}
+      <div className="pr-panel">
+        <fieldset className="pr-group">
+          <legend className="pr-legend">durasi</legend>
+          <div className="pr-seg">
+            {DURATIONS.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className="pr-seg-item"
+                aria-pressed={d.id === durationId}
+                onClick={() => setDurationId(d.id)}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="pr-group">
+          <legend className="pr-legend">sumber teks</legend>
+          <div className="pr-sources">
+            {SOURCES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className="pr-source"
+                aria-pressed={s.id === sourceId}
+                onClick={() => setSourceId(s.id)}
+              >
+                <span className="pr-source-label">{s.label}</span>
+                <span className="pr-source-hint">{s.hint}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <div className="pr-go">
+          <p className="pr-go-summary">
+            {duration.label} <span aria-hidden="true">·</span> {source.label}
+          </p>
+          <button type="button" className="pr-start" onClick={() => void begin()}>
+            Mulai latihan
+          </button>
         </div>
-      </fieldset>
-
-      <button type="button" className="pr-start" onClick={() => void begin()}>
-        Mulai latihan
-      </button>
+      </div>
 
       <section className="pr-history">
         <h2 className="pr-history-title">Riwayat latihan bebas</h2>
+        {/* Kotak ringkasan selalu dirender, "—" kalau kosong: ruangnya dipesan
+            sejak paint pertama, tidak lahir saat sesi pertama masuk. */}
+        <div className="pr-tiles">
+          <Tile label="terbaik" value={summary ? `${summary.best}` : '—'} note="WPM" />
+          <Tile label="rata-rata" value={summary ? `${summary.avgWpm}` : '—'} note="WPM" />
+          <Tile
+            label="akurasi"
+            value={summary ? `${summary.avgAccuracy}%` : '—'}
+            note="rata-rata"
+          />
+        </div>
+        <p className="pr-tiles-note">
+          {history.length === 0
+            ? 'belum ada sesi'
+            : `dari ${history.length} sesi terakhir · semua durasi`}
+        </p>
         {history.length === 0 ? (
           <p className="pr-empty">Belum ada sesi latihan bebas.</p>
         ) : (
@@ -230,17 +270,21 @@ export default function PracticePage() {
               <tr>
                 <th scope="col">tanggal</th>
                 <th scope="col">durasi</th>
-                <th scope="col">wpm</th>
-                <th scope="col">akurasi</th>
+                <th scope="col" className="pr-num">
+                  wpm
+                </th>
+                <th scope="col" className="pr-num">
+                  akurasi
+                </th>
               </tr>
             </thead>
             <tbody>
               {history.map((item) => (
                 <tr key={item.id}>
                   <td>{formatDate(item.at)}</td>
-                  <td>{item.mode ?? '—'}</td>
-                  <td>{Math.round(item.netWpm)}</td>
-                  <td>{Math.round(item.accuracy)}%</td>
+                  <td>{durationLabel(item.mode)}</td>
+                  <td className="pr-num">{Math.round(item.netWpm)}</td>
+                  <td className="pr-num">{Math.round(item.accuracy)}%</td>
                 </tr>
               ))}
             </tbody>
@@ -249,6 +293,40 @@ export default function PracticePage() {
       </section>
     </section>
   );
+}
+
+function Tile({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="pr-tile">
+      <span className="pr-legend">{label}</span>
+      <strong className="pr-tile-value">{value}</strong>
+      <span className="pr-tile-note">{note}</span>
+    </div>
+  );
+}
+
+/** Ringkasan riwayat yang tampil (≤ `HISTORY_LIMIT` sesi), dibulatkan. */
+function historySummary(items: SessionRecord[]) {
+  if (items.length === 0) return null;
+  let best = 0;
+  let wpm = 0;
+  let acc = 0;
+  for (const item of items) {
+    best = Math.max(best, item.netWpm);
+    wpm += item.netWpm;
+    acc += item.accuracy;
+  }
+  return {
+    best: Math.round(best),
+    avgWpm: Math.round(wpm / items.length),
+    avgAccuracy: Math.round(acc / items.length),
+  };
+}
+
+/** `mode` tersimpan berupa id ("30s"); tampilkan label yang sama dengan pilihan. */
+function durationLabel(mode: SessionRecord['mode']): string {
+  if (!mode) return '—';
+  return DURATIONS.find((d) => d.id === mode)?.label ?? mode;
 }
 
 /** Tanggal lokal singkat — riwayat dibaca sekilas, bukan diaudit. */

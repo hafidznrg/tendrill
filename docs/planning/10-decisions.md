@@ -2275,3 +2275,28 @@ berikutnya hanya ditandai kata "berikutnya" — itu pun tertimpa kalau statusnya
   animasi.
 - **Butir DoD pemilik:** apakah panel berikutnya dan peta unit membantu, di layar sungguhan,
   terang dan gelap.
+
+---
+
+## ADR-049 — Layar pilihan `/practice` dipercantik
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+**Konteks.** Pemilik meminta `/practice` dipercantik (mockup lewat artifact). Layar lama:
+dua baris tombol pil setara, tombol mulai bergaya sekunder, sumber teks tanpa keterangan isi,
+riwayat berupa tabel polos dengan id durasi mentah (`30s`).
+
+**Keputusan.**
+1. Tata letak di dok. 07 §10d. Layar mengetik dan overlay hasil **tidak** disentuh (ADR-041).
+2. `PracticeSource` mendapat `hint` — keterangan isi pool dalam bahasa UI, ditulis sesudah
+   memeriksa isi `src/data/wordlists/en` (mis. `sentences-basic` berkapital dan berkoma,
+   bukan "huruf kecil").
+3. Ringkasan riwayat dihitung dari sesi yang sudah dibaca halaman (≤ `HISTORY_LIMIT`), tanpa
+   baca storage tambahan. Kotak dirender sejak paint pertama (tidak ada ruang yang lahir
+   belakangan).
+4. `/practice/adaptive` memakai berkas CSS yang sama; kelas yang dipakainya dipertahankan.
+
+**Konsekuensi.**
+- (+) Tombol mulai jelas utama; pilihan sumber menjelaskan dirinya sendiri.
+- (−) Rata-rata mencampur semua durasi; dinyatakan di bawah kotak, bukan disembunyikan.
+- **Butir DoD pemilik:** apakah layar pilihan terbaca di layar sungguhan, terang dan gelap.

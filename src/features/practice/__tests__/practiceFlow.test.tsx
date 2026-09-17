@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import PracticePage from '@/pages/PracticePage';
@@ -54,7 +55,11 @@ function typeSome(count: number): void {
 }
 
 async function startSession(duration: RegExp): Promise<void> {
-  render(<PracticePage />);
+  render(
+    <MemoryRouter>
+      <PracticePage />
+    </MemoryRouter>,
+  );
   click(duration);
   click(/Mulai latihan/);
   // `begin()` menunggu `import()` wordlist — tanpa ini, panggung belum ada.
