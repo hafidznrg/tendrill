@@ -512,3 +512,8 @@ pool. Validator tidak bisa melihat teks yang baru lahir saat pengguna membuka le
 `src/features/curriculum/__tests__/drills.test.ts` menutup celah itu untuk ke-36
 lesson non-placement, dengan dan tanpa statistik pengguna, dan gerbangnya sudah
 dibuktikan merah dengan kontrol negatif.
+
+5. **Drill statis dikocok tiap percobaan** (ADR-042). `letters`/`syllables`/`words`
+   ber-`generator: 'static'` diacak urutan tokennya setiap lesson dimulai atau diulang;
+   isi tokennya tidak berubah. `phrases`/`sentences`, drill `graduation`, dan placement
+   dipakai apa adanya. Contoh di §6 karenanya menunjukkan **isi**, bukan urutan tetap.

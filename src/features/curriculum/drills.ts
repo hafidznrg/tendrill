@@ -4,7 +4,8 @@ import { generateLetterDrill, generateWordDrill, type KeyUsageMap } from '@/lib/
 /**
  * Menyusun teks target sebuah lesson dari definisi drill-nya (dok. 04 §6).
  *
- * Drill `static` dipakai apa adanya; drill `weighted-random` dibangkitkan
+ * Drill `static` dipakai apa adanya — kecuali letters/syllables/words, yang
+ * urutan tokennya dikocok tiap percobaan (ADR-042); drill `weighted-random` dibangkitkan
  * generator berbobot (dok. 04 §8) dari statistik nyata pengguna — sehingga
  * review session menjadi personal, dan jatuh ke bobot seragam kalau `keystats`
  * masih kosong (dok. 04 §7).
@@ -16,6 +17,31 @@ import { generateLetterDrill, generateWordDrill, type KeyUsageMap } from '@/lib/
 export type DrillStats = KeyUsageMap;
 
 const WORD_BASED = new Set(['words', 'phrases', 'sentences']);
+
+/**
+ * Tipe drill statis yang urutan tokennya dikocok tiap percobaan (ADR-042).
+ *
+ * `phrases`/`sentences` sengaja tidak ikut: mengocok kata di sana merusak
+ * maknanya. Placement dan drill `graduation` juga tidak — keduanya adalah
+ * pengukuran yang harus sama untuk semua orang.
+ */
+const SHUFFLED = new Set(['letters', 'syllables', 'words']);
+
+/**
+ * Mengocok urutan token berpemisah spasi (Fisher–Yates).
+ *
+ * Himpunan dan jumlah karakternya tidak berubah, jadi aturan "tidak ada
+ * karakter yang belum diperkenalkan" dan tingkat kesulitannya ikut terjaga —
+ * yang hilang hanya urutan yang bisa dihafal.
+ */
+function shuffleTokens(content: string, random: () => number): string {
+  const tokens = content.trim().split(/\s+/);
+  for (let i = tokens.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [tokens[i], tokens[j]] = [tokens[j]!, tokens[i]!];
+  }
+  return tokens.join(' ');
+}
 
 let poolsPromise: Promise<Record<string, string[]>> | null = null;
 
@@ -37,7 +63,12 @@ function oneDrill(
   pools: Record<string, string[]>,
   random: () => number,
 ): string {
-  if (drill.generator === 'static') return drill.content ?? '';
+  if (drill.generator === 'static') {
+    const content = drill.content ?? '';
+    const shuffle =
+      lesson.kind !== 'placement' && drill.graduation !== true && SHUFFLED.has(drill.type);
+    return shuffle ? shuffleTokens(content, random) : content;
+  }
 
   const length = drill.length ?? 120;
   const shape = {

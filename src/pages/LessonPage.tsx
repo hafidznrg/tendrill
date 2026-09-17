@@ -64,6 +64,12 @@ export default function LessonPage() {
   const { progress, save } = useProgress();
 
   const [loaded, setLoaded] = useState<LoadedLesson | null>(null);
+  // Penjaga balapan untuk `startAttempt` yang async: kalau lesson berganti
+  // selama drill dibangkitkan, hasilnya milik lesson lama dan dibuang.
+  const loadedRef = useRef(loaded);
+  useEffect(() => {
+    loadedRef.current = loaded;
+  }, [loaded]);
   const [notFound, setNotFound] = useState(false);
   const [drills, setDrills] = useState<ResolvedDrill[] | null>(null);
   const [drillIndex, setDrillIndex] = useState(0);
@@ -211,16 +217,26 @@ export default function LessonPage() {
 
   // --- aksi layar hasil ----------------------------------------------------
   const startAttempt = useCallback(() => {
-    doneResults.current = [];
-    previousBest.current = previousBestFor(lessonId);
-    setAttemptResult(null);
-    setVoided(false);
-    setMicro(null);
-    setMicroResult(null);
-    setMicroDone(false);
-    setDrillIndex(0);
-    setRunId((n) => n + 1);
-  }, [lessonId]);
+    // Drill dibangkitkan ulang tiap percobaan, supaya urutan drill statis
+    // dikocok lagi dan drill `weighted-random` tidak berulang (ADR-042).
+    // `drills` sengaja TIDAK dikosongkan dulu: itu akan menampilkan "memuat
+    // latihan…" dan meng-unmount `TypingStage` (ADR-041). Pool wordlist sudah
+    // ter-cache sejak pemuatan pertama, jadi penantian ini hanya satu microtask.
+    if (!loaded) return;
+    void resolveDrills(loaded.lesson, readDrillStats()).then((resolved) => {
+      if (loadedRef.current !== loaded) return;
+      setDrills(resolved);
+      doneResults.current = [];
+      previousBest.current = previousBestFor(lessonId);
+      setAttemptResult(null);
+      setVoided(false);
+      setMicro(null);
+      setMicroResult(null);
+      setMicroDone(false);
+      setDrillIndex(0);
+      setRunId((n) => n + 1);
+    });
+  }, [lessonId, loaded]);
 
   const changeMode = useCallback((next: InputMode) => {
     setMode(next);

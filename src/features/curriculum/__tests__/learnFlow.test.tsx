@@ -281,3 +281,33 @@ describe('tata letak layar sesi (ADR-041)', () => {
     expect(document.activeElement).toBe(overlay!.querySelector('.rs-root'));
   });
 });
+
+describe('latihan diacak tiap percobaan (ADR-042)', () => {
+  it('"Ulangi" membangkitkan ulang drill tanpa meng-unmount panggung', async () => {
+    // Deret acak deterministik: setiap pemanggilan berbeda, jadi dua kocokan
+    // berurutan dijamin tidak kebetulan sama.
+    let n = 0;
+    const spy = vi.spyOn(Math, 'random').mockImplementation(() => (n++ * 0.6180339) % 1);
+    try {
+      await renderLesson();
+      const before = currentTarget();
+      await playLesson(true);
+
+      const stage = document.querySelector('.ta-text');
+      await act(async () => {
+        screen.getByRole('button', { name: /Ulangi/ }).click();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(document.querySelector('.rs-overlay')).toBeNull();
+      expect(screen.getByText(/drill 1\/\d/)).toBeTruthy();
+      // Elemen yang sama: tidak pernah jatuh ke "memuat latihan…" (ADR-041).
+      expect(document.querySelector('.ta-text')).toBe(stage);
+      const after = currentTarget();
+      expect(after).not.toBe(before);
+      expect(after.split(' ').sort()).toEqual(before.split(' ').sort());
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

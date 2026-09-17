@@ -100,7 +100,8 @@ describe('resolveDrills', () => {
       passCriteria: { minWpm: 10, minAccuracy: 90 },
       drills: [
         { type: 'letters', generator: 'static', content: '   ' },
-        { type: 'letters', generator: 'static', content: 'fff jjj' },
+        // `phrases` tidak dikocok (ADR-042), jadi urutannya bisa dibandingkan.
+        { type: 'phrases', generator: 'static', content: 'fff jjj' },
       ],
     };
     expect(await resolveDrillTexts(lesson)).toEqual(['fff jjj']);
@@ -116,9 +117,7 @@ describe('resolveDrills', () => {
       newKeys: [],
       reviewKeys: ['f', 'j', 'd', 'k'],
       passCriteria: { minWpm: 10, minAccuracy: 90 },
-      drills: [
-        { type: 'words', generator: 'weighted-random', length: 60, pool: 'tidak-ada' },
-      ],
+      drills: [{ type: 'words', generator: 'weighted-random', length: 60, pool: 'tidak-ada' }],
     };
     const texts = await resolveDrillTexts(lesson);
     expect(texts[0]).toHaveLength(60);
@@ -167,8 +166,66 @@ describe('resolveDrills', () => {
     for (const id of ['u1-l1', 'u3-review', 'u5-review', 'u6-l5']) {
       const lesson = lessons.find((l) => l.id === id)!;
       const resolved = await resolveDrills(lesson, {});
-      expect(resolved.some((d) => d.graduation), id).toBe(false);
+      expect(
+        resolved.some((d) => d.graduation),
+        id,
+      ).toBe(false);
     }
+  });
+});
+
+const sortedTokens = (text: string) => text.split(' ').sort();
+
+describe('pengocokan drill statis (ADR-042)', () => {
+  it.each(lessons.filter((l) => l.kind !== 'placement').map((l) => [l.id, l] as const))(
+    '%s: isi token setiap drill statis tetap sama, hanya urutannya',
+    async (_id, lesson) => {
+      const resolved = await resolveDrillTexts(lesson, {}, seeded(7));
+      const nonEmpty = lesson.drills.filter(
+        (d) => d.generator !== 'static' || (d.content ?? '').trim().length > 0,
+      );
+      nonEmpty.forEach((drill, i) => {
+        if (drill.generator !== 'static') return;
+        const original = drill.content!.trim().split(/\s+/).join(' ');
+        expect(sortedTokens(resolved[i]!)).toEqual(sortedTokens(original));
+      });
+    },
+  );
+
+  it('letters/syllables/words dikocok — percobaan berbeda mendapat urutan berbeda', async () => {
+    const lesson = lessons.find((l) => l.id === 'u1-l1')!;
+    const a = await resolveDrillTexts(lesson, {}, seeded(1));
+    const b = await resolveDrillTexts(lesson, {}, seeded(2));
+    expect(a[0]).not.toEqual(b[0]);
+    expect(a[0]).not.toEqual(lesson.drills[0]!.content);
+  });
+
+  // Kontrol negatif: yang harus tetap sama untuk semua orang tidak boleh ikut.
+  it('phrases/sentences, graduation, dan placement tidak pernah dikocok', async () => {
+    const check = async (id: string) => {
+      const lesson = lessons.find((l) => l.id === id)!;
+      const resolved = await resolveDrills(lesson, {}, seeded(3));
+      const statics = lesson.drills.filter(
+        (d) => d.generator === 'static' && (d.content ?? '').trim().length > 0,
+      );
+      let checked = 0;
+      lesson.drills.forEach((drill, i) => {
+        const keep =
+          drill.generator === 'static' &&
+          (lesson.kind === 'placement' ||
+            drill.graduation === true ||
+            drill.type === 'phrases' ||
+            drill.type === 'sentences');
+        if (!keep) return;
+        expect(resolved[i]!.text).toBe(drill.content!.trim());
+        checked++;
+      });
+      expect(statics.length).toBeGreaterThan(0);
+      return checked;
+    };
+    expect(await check('u6-review')).toBeGreaterThanOrEqual(2);
+    expect(await check('u3-l1')).toBeGreaterThan(0);
+    expect(await check(lessons.find((l) => l.kind === 'placement')!.id)).toBe(1);
   });
 });
 

@@ -27,7 +27,9 @@ Status sekarang (2026-09-16): **Fase 8 — kode selesai, DoD menunggu pemilik.**
 atas permintaan pemilik, dikerjakan berturut-turut dan **sudah di-push** ke `origin/main`:
 siluet tangan (ADR-036→037, `071fc00`/`b605264`), `/posture` yang dapat dijelajah (ADR-038,
 `c5a475f`), beranda dengan dashboard progres (ADR-039, `abb8c5e`) dan salinan teksnya
-(ADR-040, `f777f9d`), lalu tata ulang layar sesi (ADR-041, `8425b51`). Tidak ada pekerjaan
+(ADR-040, `f777f9d`), lalu tata ulang layar sesi (ADR-041, `8425b51`), dan pengacakan latihan: drill statis
+letters/syllables/words dikocok tiap percobaan (ADR-042) — phrases/sentences, `graduation`,
+dan placement **tidak pernah** dikocok. Tidak ada pekerjaan
 kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan agent**:
 
 | Butir yang menunggu pemilik | Asal |

@@ -753,6 +753,10 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
 - [x] **`/posture` bisa dijelajah per tombol** — dinaikkan 2026-09-15 atas permintaan
       pemilik, lihat ADR-038. Pose siluet per tombol (ADR-037) sudah ada, tapi `/posture`
       hanya pernah menampilkan posisi istirahat.
+- [x] **Acak latihan di setiap lesson** — usul pemilik 2026-09-17, dikerjakan hari yang
+      sama sebagai opsi A (kocok urutan token), lihat ADR-042. Opsi B (beberapa varian
+      teks per drill, untuk phrases/sentences) belum dikerjakan; naikkan kalau uji pakai
+      menunjukkan kalimat yang sama pun mulai dihafal.
 - [ ] **Sorot Backspace saat ada karakter salah yang bisa dikoreksi** — uji yang sama
       menemukan pemula berhenti dan **melihat keyboard** untuk mencari Backspace, jadi
       satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard". Murah
@@ -1989,3 +1993,56 @@ Pilihan yang dibuang, dan alasannya mekanis, bukan selera:
 - (−) **Butir DoD pemilik:** apakah hasil yang menutup teks terasa membantu atau
   mengagetkan, dan apakah intro satu baris di bawah keyboard masih terbaca oleh pemula
   (ia berada di bawah bagian layar yang paling tinggi).
+
+---
+
+## ADR-042 — Drill statis letters/syllables/words dikocok urutan tokennya tiap percobaan
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+### Konteks
+
+Usul pemilik: pengguna jangan mendapat soal yang sama berulang-ulang. Sekitar 80% drill
+kurikulum `static`, dan `LessonPage` hanya membangkitkan drill **sekali per pemuatan** —
+"ulangi" di layar hasil memakai teks yang sama persis, termasuk drill `weighted-random`.
+Akibatnya pada percobaan ke-3/ke-4 (tepat saat assist ladder bekerja) pengguna bisa
+mengetik dari hafalan, dan WPM yang lolos kriteria bukan lagi WPM meraba tombol.
+
+Tiga opsi dibandingkan:
+
+- **A. Kocok urutan token drill statis.** Dipilih.
+- **B. Beberapa varian teks per drill.** Setara hanya kalau ditulis hati-hati; biaya
+  konten besar. Ditunda ke Backlog.
+- **C. Ubah lebih banyak drill jadi `weighted-random`.** Ditolak: kesulitannya berbeda
+  dari teks yang dipakai mengkalibrasi ambang §4a, dan pola simetris seperti
+  `sd lk ds kl` hilang.
+
+### Keputusan
+
+1. `resolveDrills()` mengocok (Fisher–Yates, `random` yang bisa diinjeksi) token
+   berpemisah spasi pada drill `static` bertipe `letters`, `syllables`, `words`.
+2. **Tidak** dikocok: `phrases`/`sentences` (maknanya rusak), drill `graduation: true`
+   (tes kelulusan harus sama untuk semua orang, ADR-030), dan seluruh placement
+   (pengukuran penempatan).
+3. `startAttempt` di `LessonPage` membangkitkan ulang drill tiap percobaan. `drills`
+   **tidak** dikosongkan selama menunggu — itu akan meng-unmount `TypingStage` (ADR-041).
+   Pool wordlist sudah ter-cache, jadi penantiannya satu microtask.
+
+### Konsekuensi
+
+- (+) Himpunan dan jumlah karakter per drill identik → aturan "tidak ada karakter yang
+  belum diperkenalkan" terjaga tanpa validator baru, dan kesulitan praktis tidak berubah.
+- (+) Tidak menyentuh jalur input: pengocokan terjadi saat lesson dimuat/diulang.
+- (−) Pola berselang-seling di dalam token-token (`dd kk dd kk`) hilang; pasangan di dalam
+  satu token (`sd`, `kl`) tetap utuh. Transisi antartoken jadi acak, yang sedikit
+  mengubah bigram yang dilatih.
+- (−) Tanda baca yang menempel pada kata (`salt,`) ikut berpindah, jadi drill `words`
+  bisa berakhir dengan koma.
+- (−) Pembanding "terbaik sebelumnya" kini membandingkan urutan berbeda — lebih jujur,
+  tapi tidak lagi teks identik.
+- Dijaga `drills.test.ts`: isi token sama untuk ke-36 lesson, dua seed memberi urutan
+  berbeda, dan phrases/sentences/graduation/placement tidak berubah — kedua arah sudah
+  dibuktikan merah dengan kontrol negatif. `learnFlow.test.tsx` menjaga bahwa "Ulangi"
+  memberi urutan baru tanpa meng-unmount panggung (merah kalau drill lama dipakai ulang).
+- **Butir DoD pemilik:** apakah drill yang dikocok masih terasa berjenjang, terutama
+  `u1-l1`–`u1-l3` yang murni huruf.
