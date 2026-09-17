@@ -31,9 +31,10 @@ siluet tangan (ADR-036→037, `071fc00`/`b605264`), `/posture` yang dapat dijela
 letters/syllables/words dikocok tiap percobaan (ADR-042) — phrases/sentences, `graduation`,
 dan placement **tidak pernah** dikocok. Lalu sorot Backspace + spasi sebelum keystroke
 pertama (ADR-043): sorotan hanya lewat boolean di pelukis yang ada, ditulis saat berganti. Lalu mode fokus
-(ADR-044→045): opsional, header dan slot `footer` **memudar** (opacity, tidak pernah
-dilepas) selama `running`. Sakelarnya di bilah atas, disimpan di key `tendrill.focus` (seperti
-tema — **jangan** dipindah ke `typing:settings`, itu menarik storage ke bundel awal 89,6/90 KB).
+(ADR-044→046): opsional, header dan slot `footer` **memudar** (opacity, tidak pernah
+dilepas) selama `running`. Sakelarnya **hanya di `/settings`** (ADR-046: tombol bilah atas dicabut karena
+membingungkan), disimpan di key `tendrill.focus` (seperti tema — **jangan** dipindah ke
+`typing:settings`, store di bundel awal membacanya saat muat).
 CSS butuh dua atribut: `data-focus-mode` (store) dan `data-session="running"` (`TypingStage`,
 efek bergantung `status`, bukan keystroke). Keyboard & siluet tidak ikut memudar; menyembunyikan
 keyboard adalah `showKeyboard` (ADR-045) — pembungkus `hidden`, `VirtualKeyboard`
@@ -50,7 +51,7 @@ kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan age
 | Apakah teks beranda yang dipendekkan masih punya karakter, atau jadi datar | ADR-040 |
 | Apakah hasil yang menutup teks membantu atau mengagetkan, dan apakah intro satu baris di bawah keyboard masih terbaca pemula | ADR-041 |
 | Apakah drill yang dikocok masih terasa berjenjang (u1-l1–l3), dan apakah sorotan Backspace membantu atau mengalihkan | ADR-042/043 |
-| Apakah header yang memudar menenangkan atau membingungkan, sakelar fokus di bilah atas mengganggu, dan lesson tanpa keyboard masih bisa diikuti | ADR-044/045 |
+| Apakah header yang memudar menenangkan atau membingungkan, apakah mode fokus masih ditemukan kalau hanya di `/settings`, dan lesson tanpa keyboard masih bisa diikuti | ADR-044/045 |
 | Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
 | Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
 | Drill adaptif *terasa* menyasar kelemahan | Fase 7 |

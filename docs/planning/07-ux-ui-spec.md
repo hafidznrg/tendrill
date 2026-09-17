@@ -63,9 +63,9 @@ di atasnya menggeser seluruh panggung — kelas bug yang tiga kali lolos di Fase
 
 ### Mode fokus (ADR-044)
 
-Opsional, **mati default**. Sakelarnya di **bilah atas, di samping tombol tema** (ADR-045),
-disimpan di key `tendrill.focus` — pola yang sama dengan tema: key kecil sendiri supaya
-sakelar di bundel awal tidak menarik lapisan storage. Dicerminkan ke `settings.focusMode`
+Opsional, **mati default**. Sakelarnya **hanya di `/settings`** (ADR-046 — tombol di bilah
+atas dicoba lalu dicabut karena membingungkan). Disimpan di key `tendrill.focus` — pola yang sama dengan tema: key kecil sendiri supaya
+store di bundel awal (yang menulis `data-focus-mode` saat muat) tidak menarik lapisan storage. Dicerminkan ke `settings.focusMode`
 hanya saat ekspor/impor.
 
 | | Saat sesi `running` dengan mode fokus nyala |
@@ -77,9 +77,9 @@ Aturan:
 - **Memudar, tidak pernah dilepas.** Elemen tetap memesan ruangnya — `display: none` atau
   unmount akan menggeser panggung ke atas (dok. 07 §1 prinsip 2).
 - **Dua atribut, satu gerbang CSS** (ADR-045). `data-focus-mode="on"` di `<html>` ditulis
-  store saat sakelar berganti; `data-session="running"` ditulis `TypingStage` di efek yang
+  store saat muat dan saat sakelar berganti; `data-session="running"` ditulis `TypingStage` di efek yang
   bergantung pada `status` — transisi yang sudah me-render. CSS baru memudarkan kalau
-  **keduanya** ada, jadi menyalakan sakelar di tengah lesson langsung berlaku tanpa remount.
+  **keduanya** ada, jadi panggung tidak perlu membaca pengaturan.
   Nol re-render tambahan per keystroke, nol listener baru.
 - Kembali terlihat saat `paused`, `finished`, keluar rute, atau unmount.
 - Hover atau fokus keyboard pada elemen yang memudar memunculkannya lagi; mouse tidak pernah

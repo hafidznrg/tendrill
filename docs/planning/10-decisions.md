@@ -2199,3 +2199,26 @@ toggle tema (ADR-035).
   sakelarnya terlihat tepat di tempat keyboard tadi berada.
 - **Butir DoD pemilik:** apakah sakelar fokus di header mengganggu bilah atas, dan apakah
   lesson tanpa keyboard masih bisa diikuti.
+
+---
+
+## ADR-046 — Sakelar mode fokus dicabut dari bilah atas; hanya di `/settings`
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima · **Merevisi:** ADR-045 poin 2
+
+**Konteks.** Pemilik mencoba tombol `fokus nyala/mati` di bilah atas (ADR-045) dan menilainya
+membingungkan: berdiri di samping tombol tema tanpa konteks, dan tombol yang ikut memudar
+saat ia sendiri yang menyalakannya sulit dipahami.
+
+**Keputusan.**
+1. `FocusToggle` dihapus. Satu-satunya sakelar adalah kotak centang di `/settings`.
+2. **Penyimpanan tidak diubah:** tetap key `tendrill.focus` lewat `settingsStore`. Store ada
+   di bundel awal dan wajib menulis `data-focus-mode` saat muat untuk rute mana pun;
+   memindahkannya ke `typing:settings` menarik lapisan storage ke bundel awal (ADR-035).
+3. Gerbang CSS dua atribut (ADR-045 poin 3) dan `showKeyboard` tidak berubah.
+
+**Konsekuensi.**
+- (+) Bilah atas kembali seperti sebelum ADR-045.
+- (−) Mode fokus kembali jauh dari layar sesi — alasan awal ADR-045. Kalau uji pakai
+  menunjukkan orang tidak menemukannya, kandidat berikutnya adalah sakelar di baris footer
+  sesi (bersama `keyboard`), bukan bilah atas.

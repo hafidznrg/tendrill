@@ -1,7 +1,6 @@
 import { Suspense, useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { RouteErrorBoundary } from './ErrorBoundary';
-import { FocusToggle } from './FocusToggle';
 import { ThemeToggle } from './ThemeToggle';
 import markUrl from '@/assets/brand/mark.svg';
 import { prefetchSessionPath } from '../prefetch.ts';
@@ -66,8 +65,7 @@ export function AppLayout() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          <FocusToggle />
+        <div className="ml-auto">
           <ThemeToggle />
         </div>
       </header>
