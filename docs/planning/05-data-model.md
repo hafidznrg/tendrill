@@ -154,7 +154,10 @@ generator adaptif (dok. 04 §8).
   },
   // ADR-036 — siluet tangan di /practice & /practice/adaptive. Opsional & aditif,
   // tanpa migrasi; tidak ada = false. /learn selalu menampilkannya, jadi tidak disimpan.
-  showHandsInPractice?: boolean
+  showHandsInPractice?: boolean,
+  // ADR-044 — mode fokus di layar sesi. Opsional & aditif, tanpa migrasi;
+  // hanya `true` yang menyalakan.
+  focusMode?: boolean
 }
 ```
 

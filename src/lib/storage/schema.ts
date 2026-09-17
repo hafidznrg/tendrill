@@ -150,6 +150,11 @@ export interface SettingsData {
    * aditif, tanpa migrasi; tidak ada = mati. `/learn` selalu menampilkannya.
    */
   showHandsInPractice?: boolean;
+  /**
+   * Mode fokus di layar sesi (ADR-044). Opsional & aditif, tanpa migrasi;
+   * tidak ada = mati.
+   */
+  focusMode?: boolean;
 }
 
 /** dok. 02 §4: strict di `/learn`, non-strict di `/practice`. */

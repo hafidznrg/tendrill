@@ -55,6 +55,17 @@ export function writeShowHandsInPractice(shown: boolean): void {
 }
 
 /**
+ * Mode fokus (ADR-044). Sama seperti siluet: hanya `true` yang menyalakan.
+ */
+export function readFocusMode(): boolean {
+  return read(STORAGE_KEYS.settings).focusMode === true;
+}
+
+export function writeFocusMode(on: boolean): void {
+  write(STORAGE_KEYS.settings, { ...read(STORAGE_KEYS.settings), focusMode: on });
+}
+
+/**
  * Kelulusan kursus (ADR-030).
  *
  * `markGraduated` sengaja tidak menimpa nilai yang sudah ada: tanggal kelulusan

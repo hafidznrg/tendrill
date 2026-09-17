@@ -61,6 +61,28 @@ di atasnya menggeser seluruh panggung — kelas bug yang tiga kali lolos di Fase
   input, dan gerbang nol re-render (dok. 08 Fase 1) lebih mahal daripada sebaris teks redup.
 - Rute sesi memakai `py-6`, bukan `py-10`.
 
+### Mode fokus (ADR-044)
+
+Opsional, **mati default**, diatur di `/settings` (`typing:settings.focusMode`).
+
+| | Saat sesi `running` dengan mode fokus nyala |
+|---|---|
+| **Memudar** (`opacity: 0`) | header aplikasi (logo, navigasi, tombol tema); seluruh isi slot `footer` `TypingStage` (intro, sakelar, petunjuk pintasan) |
+| **Tetap** | bilah metrik, area teks, virtual keyboard, siluet tangan, overlay jeda, layar hasil |
+
+Aturan:
+- **Memudar, tidak pernah dilepas.** Elemen tetap memesan ruangnya — `display: none` atau
+  unmount akan menggeser panggung ke atas (dok. 07 §1 prinsip 2).
+- **Pemicunya transisi status, bukan keystroke.** Atribut `data-focus="on"` di `<html>`
+  ditulis di efek yang bergantung pada `status` — transisi yang sudah me-render. Nol
+  re-render tambahan, nol listener baru.
+- Kembali terlihat saat `paused`, `finished`, keluar rute, atau unmount.
+- Hover atau fokus keyboard pada elemen yang memudar memunculkannya lagi; mouse tidak pernah
+  "terkunci" dari navigasi.
+- Keyboard dan siluet **tidak** ikut: bagi pemula keduanya panduan, bukan hiasan
+  (ADR-036). Menyembunyikan keyboard adalah pengaturan lain (`showKeyboard`, belum dibuat).
+- Transisi 300 ms; `prefers-reduced-motion` → tanpa transisi.
+
 ### Layar hasil adalah overlay, bukan blok berikutnya (ADR-041)
 
 `ResultScreen` dirender **di atas** area teks + keyboard, di dalam pembungkus `relative`

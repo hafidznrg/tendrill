@@ -1,6 +1,11 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { clearAll, exportAll, importAll, read, write, STORAGE_KEYS } from '@/lib/storage';
-import { readShowHandsInPractice, writeShowHandsInPractice } from '@/lib/storage/flags.ts';
+import {
+  readFocusMode,
+  readShowHandsInPractice,
+  writeFocusMode,
+  writeShowHandsInPractice,
+} from '@/lib/storage/flags.ts';
 import { useSettingsStore } from '@/store/settingsStore';
 
 /**
@@ -31,6 +36,7 @@ export default function SettingsPage() {
 
   const [sound, setSound] = useState(() => read(STORAGE_KEYS.settings).soundEnabled);
   const [hands, setHands] = useState(readShowHandsInPractice);
+  const [focus, setFocus] = useState(readFocusMode);
   const [pendingImport, setPendingImport] = useState<{ name: string; text: string } | null>(
     null,
   );
@@ -48,6 +54,12 @@ export default function SettingsPage() {
     const next = !hands;
     writeShowHandsInPractice(next);
     setHands(next);
+  };
+
+  const toggleFocus = () => {
+    const next = !focus;
+    writeFocusMode(next);
+    setFocus(next);
   };
 
   const onExport = () => {
@@ -90,6 +102,7 @@ export default function SettingsPage() {
     const imported = read(STORAGE_KEYS.settings);
     setSound(imported.soundEnabled);
     setHands(readShowHandsInPractice());
+    setFocus(readFocusMode());
     if (imported.theme === 'light' || imported.theme === 'dark') setTheme(imported.theme);
     setNotice({ kind: 'ok', text: 'Progres dipulihkan.' });
   };
@@ -99,6 +112,7 @@ export default function SettingsPage() {
     setConfirmText('');
     setSound(read(STORAGE_KEYS.settings).soundEnabled);
     setHands(readShowHandsInPractice());
+    setFocus(readFocusMode());
     setNotice({ kind: 'ok', text: 'Semua data dihapus.' });
   };
 
@@ -133,6 +147,13 @@ export default function SettingsPage() {
           <input type="checkbox" checked={hands} onChange={toggleHands} />
           <span>
             {hands ? 'tampil' : 'sembunyi'} di latihan bebas — di kurikulum selalu tampil
+          </span>
+        </label>
+        <label className="flex items-center gap-3">
+          <span className="w-32 text-fg-dim">Mode fokus</span>
+          <input type="checkbox" checked={focus} onChange={toggleFocus} />
+          <span>
+            {focus ? 'nyala' : 'mati'} — selama mengetik, menu dan petunjuk memudar
           </span>
         </label>
       </div>

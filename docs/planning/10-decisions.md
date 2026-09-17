@@ -762,6 +762,9 @@ Tempat parkir untuk ide yang muncul di tengah pengerjaan. **Tidak dikerjakan sam
       satu-satunya jalur koreksi justru mematahkan "jangan melihat keyboard". Murah
       (pelukis sorotan sudah ada), tapi menyentuh jalur keystroke — jadi ia butuh
       pengukuran, bukan sekadar ditambahkan.
+- [x] **Mode fokus** — janji PRD P1 yang tidak pernah dispesifikasi; dikerjakan
+      2026-09-17 atas permintaan pemilik, lihat ADR-044. Sisa: `showKeyboard` (sembunyikan
+      keyboard) masih field tanpa pembaca.
 - [ ] **`attempts` per tombol kurang satu tiap sesi** — temuan audit Fase 1–4,
       2026-09-12. `mergeKeystats` menurunkan jumlah percobaan dari `latencyByKey`,
       yang sengaja melewatkan keystroke **pertama** sesi (ia tidak punya jeda
@@ -2106,3 +2109,51 @@ jalan dengan satu pengukuran, sesuai catatan di Backlog:
   kesalahan lima karakter di belakang mendorong penghapusan panjang yang tidak menaikkan
   akurasi (ADR-019).
 - **Butir DoD pemilik:** apakah sorotan Backspace membantu atau mengalihkan, di uji pakai.
+
+---
+
+## ADR-044 — Mode fokus: header dan footer sesi memudar selama `running`
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+**Konteks.** PRD (dok. 01, P1) menjanjikan "mode fokus (menyembunyikan elemen
+non-esensial)" sebagai bagian baris *Tema*, tetapi tidak pernah diturunkan ke dok. 05, 07,
+atau 08, dan Fase 8 ditutup tanpa mengerjakan, menunda, atau menolaknya. Audit 2026-09-17
+menemukan celahnya: "non-esensial" tidak didefinisikan, pemicunya tidak jelas, dan dua
+tafsiran naif melanggar batasan keras — menyembunyikan elemen pada keystroke pertama
+(re-render di jalur input) dan melepas header (layout shift seluruh panggung). Pemilik
+meminta fitur ini dikerjakan.
+
+**Keputusan.**
+
+1. **Ruang lingkup:** yang memudar hanya header aplikasi dan isi slot `footer`
+   `TypingStage`. Bilah metrik, teks, keyboard, siluet, overlay jeda, dan layar hasil
+   tetap. Keyboard & siluet adalah panduan pemula (ADR-036/037), bukan hiasan.
+2. **Opsional, mati default**, `typing:settings.focusMode?: boolean` (aditif, tanpa
+   migrasi), sakelar di `/settings`. Dibaca **sekali saat mount** `TypingStage`.
+3. **Pemicu = status `running`**, bukan keystroke. Satu `useEffect` bergantung pada
+   `status` menulis/menghapus `data-focus="on"` di `<html>`. Transisi status sudah
+   me-render (dok. 03), jadi tidak ada commit tambahan; jalur input tidak disentuh.
+4. **Memudar (`opacity`), tidak dilepas.** Tidak ada `display: none`/unmount, jadi tidak
+   ada layout shift. `:hover` dan `:focus-within` mengembalikan opasitas.
+5. **Pembungkus footer `display: contents`** (`.stage-footer`) — tata letak dan urutan DOM
+   yang dijaga `learnFlow.test.tsx` tidak berubah; CSS menarget anak-anaknya.
+6. Atribut dihapus saat `paused`/`finished` dan saat unmount, supaya tidak ada rute lain
+   yang mewarisi header tak terlihat.
+
+**Alternatif yang ditolak.**
+- *Otomatis untuk semua orang:* pemula justru butuh intro dan petunjuk pintasan.
+- *Menyembunyikan keyboard/siluet juga:* bertentangan dengan ADR-036; itu tugas
+  `showKeyboard` yang terpisah dan masih di backlog.
+- *State React "sedang fokus" di `AppLayout`:* menambah langganan store dan commit di luar
+  panggung; atribut DOM cukup dan murah.
+
+**Konsekuensi.**
+- (+) Janji PRD yang menggantung ditutup dengan definisi yang bisa diuji.
+- (+) Nol re-render dan nol listener tambahan; `rerender.test.tsx` tetap penjaganya.
+- (−) Elemen yang tak terlihat tetap bisa diklik/di-Tab — disengaja (fokus memunculkannya),
+  tapi pengguna bisa kaget.
+- (−) Bundel awal tidak berubah (kodenya di chunk sesi & `/settings`), tapi CSS global
+  bertambah beberapa aturan.
+- **Butir DoD pemilik:** apakah memudarnya header terasa menenangkan atau membingungkan
+  ("navigasinya hilang ke mana?").

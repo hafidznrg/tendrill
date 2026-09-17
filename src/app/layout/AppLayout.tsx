@@ -41,7 +41,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
-      <header className="flex items-center gap-6 border-b border-line px-6 py-3">
+      <header className="app-header flex items-center gap-6 border-b border-line px-6 py-3">
         <NavLink to="/" className="flex items-center gap-2">
           {/* dok. 12 §3: mark 34px + wordmark 26px di bilah atas. */}
           <img src={markUrl} alt="" width={34} height={34} />

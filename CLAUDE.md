@@ -30,7 +30,10 @@ siluet tangan (ADR-036→037, `071fc00`/`b605264`), `/posture` yang dapat dijela
 (ADR-040, `f777f9d`), lalu tata ulang layar sesi (ADR-041, `8425b51`), dan pengacakan latihan: drill statis
 letters/syllables/words dikocok tiap percobaan (ADR-042) — phrases/sentences, `graduation`,
 dan placement **tidak pernah** dikocok. Lalu sorot Backspace + spasi sebelum keystroke
-pertama (ADR-043): sorotan hanya lewat boolean di pelukis yang ada, ditulis saat berganti. Tidak ada pekerjaan
+pertama (ADR-043): sorotan hanya lewat boolean di pelukis yang ada, ditulis saat berganti. Lalu mode fokus
+(ADR-044): opsional, header dan slot `footer` **memudar** (opacity, tidak pernah
+dilepas) selama `running`, lewat `data-focus` di `<html>` yang ditulis efek bergantung `status` —
+bukan keystroke; keyboard & siluet tidak ikut. Tidak ada pekerjaan
 kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan agent**:
 
 | Butir yang menunggu pemilik | Asal |
@@ -43,6 +46,7 @@ kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan age
 | Apakah teks beranda yang dipendekkan masih punya karakter, atau jadi datar | ADR-040 |
 | Apakah hasil yang menutup teks membantu atau mengagetkan, dan apakah intro satu baris di bawah keyboard masih terbaca pemula | ADR-041 |
 | Apakah drill yang dikocok masih terasa berjenjang (u1-l1–l3), dan apakah sorotan Backspace membantu atau mengalihkan | ADR-042/043 |
+| Apakah header yang memudar menenangkan, atau membingungkan ("navigasinya ke mana?") | ADR-044 |
 | Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
 | Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
 | Drill adaptif *terasa* menyasar kelemahan | Fase 7 |

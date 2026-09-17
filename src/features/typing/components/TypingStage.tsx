@@ -4,6 +4,7 @@ import { VirtualKeyboard } from '@/features/keyboard';
 import { LiveMetrics } from './LiveMetrics.tsx';
 import { TypingArea } from './TypingArea.tsx';
 import { useCharMetrics } from '../hooks/useCharMetrics.ts';
+import { readFocusMode } from '@/lib/storage/flags.ts';
 import { colsFor } from '../cols.ts';
 import { useTypingSession } from '../hooks/useTypingSession.ts';
 
@@ -83,7 +84,22 @@ export function TypingStage({
     limitMs,
   });
 
-  const { restart, registerNextKeyPainter } = session;
+  const { restart, registerNextKeyPainter, status } = session;
+
+  // Mode fokus (ADR-044): dibaca sekali saat mount. Atributnya ditulis di efek
+  // yang bergantung pada `status` — transisi yang memang sudah me-render — jadi
+  // tidak ada commit tambahan dan jalur keystroke tidak disentuh. CSS yang
+  // memudarkan header dan footer; jangan diganti `display: none` (layout shift).
+  const [focusMode] = useState(readFocusMode);
+  useEffect(() => {
+    if (!focusMode) return;
+    const root = document.documentElement;
+    if (status === 'running') root.dataset['focus'] = 'on';
+    else delete root.dataset['focus'];
+    return () => {
+      delete root.dataset['focus'];
+    };
+  }, [focusMode, status]);
 
   // Restart hanya saat runId benar-benar berubah — bukan saat mount, yang akan
   // membuang sesi yang baru saja dibuat.
@@ -124,7 +140,9 @@ export function TypingStage({
         {overlay}
       </div>
 
-      {footer}
+      {/* `display: contents` — tata letak dan urutan DOM sama persis dengan tanpa
+          pembungkus (ADR-041); ia hanya kait CSS mode fokus (ADR-044). */}
+      <div className="stage-footer">{footer}</div>
     </>
   );
 }

@@ -67,7 +67,8 @@ Prioritas v1: **Pemula total** dan **Menengah tersendat**.
 |---|---|
 | **Latihan adaptif** | Generator drill berbobot dari tombol yang paling sering salah |
 | **Streak harian** | Hitungan hari berturut-turut berlatih |
-| **Tema terang/gelap** | Termasuk mode fokus (menyembunyikan elemen non-esensial) |
+| **Tema terang/gelap** | Persisten, tanpa kedipan saat muat |
+| **Mode fokus** | Opsional, mati default: selama sesi *berjalan*, header aplikasi dan baris di bawah keyboard memudar; metrik, teks, keyboard, dan siluet tetap (ADR-044, dok. 07 §2) |
 | **Ekspor/impor progres** | Unduh JSON, muat ulang di browser lain |
 | **Sound feedback** | Klik ketikan opsional, bisa dimatikan |
 
