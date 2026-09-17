@@ -1,4 +1,4 @@
-export { UnitList } from './components/UnitList.tsx';
+export { Track, UnitList } from './components/UnitList.tsx';
 export {
   ASSIST_WPM_FACTOR,
   PASSED_STATUSES,

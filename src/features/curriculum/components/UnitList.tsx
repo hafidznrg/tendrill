@@ -43,20 +43,39 @@ export function UnitList({ units, views, nextId = null }: UnitListProps) {
         if (list.length === 0) return null;
         const real = list.filter((v) => v.lesson.kind !== 'placement');
         const passed = real.filter((v) => isPassed(v.status)).length;
+        const pct = real.length > 0 ? Math.round((passed / real.length) * 100) : 0;
 
         return (
-          <section key={unit.id} className="ul-unit" aria-labelledby={`unit-${unit.id}`}>
+          <section
+            key={unit.id}
+            id={unit.id}
+            className="ul-unit"
+            aria-labelledby={`unit-${unit.id}`}
+          >
             <header className="ul-unit-head">
-              <h2 id={`unit-${unit.id}`} className="ul-unit-title">
-                Unit {unit.order} · {unit.title}
-              </h2>
-              <p className="ul-unit-summary">{unit.summary}</p>
-              <span className="ul-unit-meta">
+              <span className="ul-num" aria-hidden="true">
+                {String(unit.order).padStart(2, '0')}
+              </span>
+              <div>
+                <h2 id={`unit-${unit.id}`} className="ul-unit-title">
+                  Unit {unit.order} · {unit.title}
+                </h2>
+                <p className="ul-unit-summary">{unit.summary}</p>
+              </div>
+              <div className="ul-unit-side">
                 {/* Unit 0 tidak punya lesson nyata dan tidak punya kriteria — ia
                     diagnostik. Menampilkan "0 WPM · 0%" di sana hanya membuatnya
                     terlihat seperti unit yang mustahil dilulusi. */}
-                {real.length > 0 ? `${passed}/${real.length} lulus` : 'opsional'}
-              </span>
+                <span className="ul-unit-count">
+                  {real.length > 0 ? `${passed}/${real.length} lulus` : 'opsional'}
+                </span>
+                {real.length > 0 && (
+                  <span className="ul-unit-meta">
+                    {unit.passCriteria.minWpm} WPM · {unit.passCriteria.minAccuracy}%
+                  </span>
+                )}
+              </div>
+              {real.length > 0 && <Track pct={pct} />}
             </header>
 
             <ol className="ul-lessons">
@@ -71,8 +90,17 @@ export function UnitList({ units, views, nextId = null }: UnitListProps) {
   );
 }
 
+/** Garis kemajuan tipis — pelengkap angka "n/m lulus", bukan penggantinya. */
+export function Track({ pct }: { pct: number }) {
+  return (
+    <span className="ul-track" aria-hidden="true">
+      <span className="ul-track-fill" style={{ width: `${pct}%` }} />
+    </span>
+  );
+}
+
 function Row({ view, isNext }: { view: LessonView; isNext: boolean }) {
-  const { lesson, status, unlocked } = view;
+  const { lesson, status, unlocked, attempts, bestWpm, bestAccuracy } = view;
   const label = STATUS_LABEL[status] || (isNext ? 'berikutnya' : '');
 
   const body = (
@@ -86,7 +114,9 @@ function Row({ view, isNext }: { view: LessonView; isNext: boolean }) {
   );
 
   return (
-    <li className={`ul-row${unlocked ? '' : ' ul-row-locked'}`}>
+    <li
+      className={`ul-row${unlocked ? '' : ' ul-row-locked'}${isNext ? ' ul-row-next' : ''}`}
+    >
       {unlocked ? (
         <Link
           to={lesson.kind === 'placement' ? '/placement' : `/learn/${lesson.id}`}
@@ -100,6 +130,10 @@ function Row({ view, isNext }: { view: LessonView; isNext: boolean }) {
         // tautan justru lebih membingungkan daripada teks biasa.
         <span className="ul-row-link">{body}</span>
       )}
+      {/* Hasil terbaik apa adanya; lebar dipesan agar kolom status tidak bergeser. */}
+      <span className="ul-best">
+        {attempts > 0 ? `${Math.round(bestWpm)} WPM · ${Math.round(bestAccuracy)}%` : ''}
+      </span>
       <span className={`ul-status${isPassed(status) ? ' ul-status-passed' : ''}`}>
         {unlocked ? label : 'terkunci'}
       </span>

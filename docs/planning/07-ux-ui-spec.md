@@ -370,6 +370,19 @@ prinsip produk #3 ("jangan menghukum kesalahan secara emosional").
 - **Gaya di `src/pages/settings-page.css`**, bukan utilitas Tailwind: utilitas masuk CSS
   global di bundel awal (versi Tailwind sempat membuatnya 90,2 KB > 90).
 
+## 10c. `/learn` (ADR-048)
+
+- **Kepala:** judul + satu paragraf di kiri, total `n / m lulus` (mono 26px) di kanan.
+- **Peta unit:** satu garis kemajuan tipis per unit (U0 dilewati — tak punya lesson nyata),
+  tiap garis tautan ke kartu unitnya. Angka tetap di kartu; garis hanya pelengkap.
+- **Panel "berikutnya":** judul lesson, tombol baru (`kbd` besar), kriteria lulus, jumlah
+  percobaan kalau ada, dan satu tombol primer "Lanjutkan" (terisi `accent`). Placement dan
+  panduan posisi tangan turun menjadi tautan teks di bawahnya.
+- **Kartu unit:** nomor unit `01` redup di kiri, kriteria unit di kanan, garis kemajuan di bawah
+  kepala. Baris lesson menampilkan hasil terbaik (`WPM · %`) sesudah percobaan pertama.
+  Lesson berikutnya ditandai garis aksen inset — status tetap **teks** (§11), tanpa lencana.
+- **Gaya di `unit-list.css`** (chunk lazy), bukan utilitas Tailwind — alasan yang sama dengan §10b.
+
 ## 11. Nada tulisan
 
 - Ringkas dan faktual. "27 WPM · 92% — butuh 95% untuk lanjut."

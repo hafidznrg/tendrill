@@ -2248,3 +2248,30 @@ tombol hapus tidak punya gaya `disabled`; pesan ekspor/impor lepas dari aksinya.
 **Konsekuensi.**
 - (+) Status terbaca dari bentuk kontrol; tipografi konsisten dengan dok. 12.
 - (−) Satu berkas CSS lagi di luar Tailwind; pola yang sama dengan `practice-page.css`.
+
+---
+
+## ADR-048 — Tampilan `/learn` dipercantik
+
+**Tanggal:** 2026-09-17 · **Status:** Diterima
+
+**Konteks.** Pemilik meminta `/learn` dipercantik. Halaman lama: tiga tombol setara di atas
+(lanjutkan, placement, posisi tangan), kartu unit rata tanpa kemajuan visual, dan lesson
+berikutnya hanya ditandai kata "berikutnya" — itu pun tertimpa kalau statusnya `dicoba`.
+
+**Keputusan.**
+1. Tata letak baru di dok. 07 §10c (mockup disetujui lewat artifact): total lulus, peta unit,
+   panel lesson berikutnya dengan satu tombol primer, kartu unit dengan nomor, kriteria, garis
+   kemajuan, hasil terbaik per lesson, dan sorotan aksen pada lesson berikutnya.
+2. `.ul-cta-primary` kini terisi `accent` — berlaku juga di `/placement` dan `/posture`, supaya
+   tombol utama konsisten di semua halaman yang memakainya.
+3. Tanpa lencana, poin, atau piala (dok. 07 §11). Garis kemajuan melengkapi angka, tidak
+   menggantikannya. Tidak ada perubahan storage atau progres.
+4. Gaya di `unit-list.css` (chunk lazy), bukan utilitas Tailwind (pelajaran ADR-047).
+
+**Konsekuensi.**
+- (+) "Apa yang harus saya kerjakan sekarang" terjawab di atas lipatan.
+- (−) Garis kemajuan adalah elemen visual yang dekat dengan gamifikasi; dijaga tipis dan tanpa
+  animasi.
+- **Butir DoD pemilik:** apakah panel berikutnya dan peta unit membantu, di layar sungguhan,
+  terang dan gelap.

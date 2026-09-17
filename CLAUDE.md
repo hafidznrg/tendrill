@@ -40,7 +40,7 @@ efek bergantung `status`, bukan keystroke). Keyboard & siluet tidak ikut memudar
 keyboard adalah `showKeyboard` (ADR-045) — pembungkus `hidden`, `VirtualKeyboard`
 tetap ter-mount, berlaku juga di `/learn`. Terakhir, tampilan `/settings` dirapikan (ADR-047,
 `08bf927`): sakelar, baris seragam, zona bahaya; gayanya di `settings-page.css`, **bukan**
-utilitas Tailwind — utilitas masuk CSS global dan sempat menjebol bundel awal (90,2 KB). Tidak ada pekerjaan
+utilitas Tailwind — utilitas masuk CSS global dan sempat menjebol bundel awal (90,2 KB). Lalu `/learn` dipercantik (ADR-048): total lulus, peta unit, panel lesson berikutnya, kartu unit dengan garis kemajuan dan hasil terbaik; angka unit/lesson/review di deskripsi **diturunkan dari data**, gayanya di `unit-list.css`. Tidak ada pekerjaan
 kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan agent**:
 
 | Butir yang menunggu pemilik | Asal |
@@ -55,6 +55,7 @@ kode yang menggantung; yang tersisa hanya butir yang **tidak bisa dikerjakan age
 | Apakah drill yang dikocok masih terasa berjenjang (u1-l1–l3), dan apakah sorotan Backspace membantu atau mengalihkan | ADR-042/043 |
 | Apakah header yang memudar menenangkan atau membingungkan, apakah mode fokus masih ditemukan kalau hanya di `/settings`, dan lesson tanpa keyboard masih bisa diikuti | ADR-044/045 |
 | Apakah `/settings` yang dirapikan terbaca di layar sungguhan, terang dan gelap (belum pernah dilihat agent — panel tidak menggambar) | ADR-047 |
+| Apakah panel berikutnya dan peta unit di `/learn` membantu, terang dan gelap | ADR-048 |
 | Menyelesaikan sendiri Unit 1–3 dan menilai keadilan kriteria lulus | Fase 4 |
 | Heatmap latensi menyorot tombol yang *terasa* lambat | Fase 6 |
 | Drill adaptif *terasa* menyasar kelemahan | Fase 7 |
