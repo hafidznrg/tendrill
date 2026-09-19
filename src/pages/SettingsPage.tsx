@@ -8,6 +8,7 @@ import {
 } from '@/lib/storage/flags.ts';
 import { readFocusMode } from '@/lib/storage/focus.ts';
 import { useSettingsStore } from '@/store/settingsStore';
+import { MoonIcon, SunIcon } from '@/app/layout/themeIcons';
 import './settings-page.css';
 
 /**
@@ -134,14 +135,15 @@ export default function SettingsPage() {
             </div>
             <fieldset aria-labelledby="theme-label" className="st-seg">
               {(['light', 'dark'] as const).map((t) => (
-                <label key={t}>
+                <label key={t} title={t === 'light' ? 'Terang' : 'Gelap'}>
                   <input
                     type="radio"
                     name="theme"
                     checked={theme === t}
                     onChange={() => setTheme(t)}
                   />
-                  {t === 'light' ? 'terang' : 'gelap'}
+                  {t === 'light' ? <SunIcon /> : <MoonIcon />}
+                  <span className="sr-only">{t === 'light' ? 'terang' : 'gelap'}</span>
                 </label>
               ))}
             </fieldset>

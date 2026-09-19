@@ -141,8 +141,10 @@ label.st-row {
 }
 
 .st-seg label {
+  display: grid;
+  place-items: center;
   border-radius: 3px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;

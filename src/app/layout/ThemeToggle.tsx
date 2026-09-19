@@ -1,17 +1,21 @@
 import { useSettingsStore } from '@/store/settingsStore';
+import { MoonIcon, SunIcon } from './themeIcons';
 
 export function ThemeToggle() {
   const theme = useSettingsStore((s) => s.theme);
   const toggleTheme = useSettingsStore((s) => s.toggleTheme);
+  const dark = theme === 'dark';
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-pressed={theme === 'dark'}
-      className="rounded border border-line bg-surface px-3 py-1 font-mono text-[11px] font-medium tracking-[0.16em] text-fg-dim uppercase hover:text-fg"
+      aria-pressed={dark}
+      aria-label="Mode gelap"
+      title={dark ? 'Tema gelap — klik untuk terang' : 'Tema terang — klik untuk gelap'}
+      className="grid size-8 place-items-center rounded border border-line bg-surface text-fg-dim hover:text-fg"
     >
-      {theme === 'dark' ? 'gelap' : 'terang'}
+      {dark ? <MoonIcon /> : <SunIcon />}
     </button>
   );
 }
